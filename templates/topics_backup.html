@@ -1,0 +1,1030 @@
+{% extends "base.html" %}
+
+{% block title %}Topics Management | Ardelis Technologies{% endblock %}
+
+{% block head %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .platform-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-color: #dee2e6 !important;
+        }
+        .platform-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: var(--primary-color) !important;
+        }
+        .platform-card.selected {
+            border-color: var(--primary-color) !important;
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.05), rgba(249, 115, 22, 0.1));
+        }
+        .content-display-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .content-display-card .content-header {
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .copy-btn-topic {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .copy-btn-topic:hover {
+            background: #ea580c;
+            transform: translateY(-1px);
+        }
+        .copy-btn-topic.copied {
+            background: var(--success-color);
+        }
+
+        /* Hamburger Menu Styles */
+        .sidebar {
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .sidebar.collapsed {
+            margin-left: -250px;
+        }
+        .hamburger {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .hamburger:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: scale(1.05);
+        }
+        .main-content {
+            transition: all 0.3s;
+        }
+        .main-content.expanded {
+            margin-left: 0;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                height: 100vh;
+                margin-left: -250px;
+            }
+            .sidebar.show {
+                margin-left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .hamburger {
+                display: block;
+            }
+        }
+        @media (min-width: 769px) {
+            .hamburger {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hamburger Menu Button -->
+    <button class="hamburger" id="hamburger-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h4><i class="fas fa-rocket"></i> Content Dashboard</h4>
+                </div>
+                <nav class="nav flex-column">
+                    <a href="/" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="/topics" class="nav-link active">
+                        <i class="fas fa-lightbulb"></i> Topics
+                    </a>
+                    <a href="/content-generator" class="nav-link">
+                        <i class="fas fa-magic"></i> Generator
+                    </a>
+                    <a href="/analytics" class="nav-link">
+                        <i class="fas fa-chart-line"></i> Analytics
+                    </a>
+                </nav>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="main-content" id="main-content">
+                <div class="p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3 mb-0">Topics Management</h1>
+                            <p class="text-muted mb-0">Manage and organize content topics</p>
+                        </div>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTopicModal">
+                            <i class="fas fa-plus-circle"></i> Add New Topic
+                        </button>
+                    </div>
+
+                    <!-- Topics Statistics -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <h2 class="text-primary mb-1" id="totalTopics">-</h2>
+                                    <p class="text-muted mb-0">Total Topics</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <h2 class="text-success mb-1" id="completedTopics">-</h2>
+                                    <p class="text-muted mb-0">Completed</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <h2 class="text-warning mb-1" id="pendingTopics">-</h2>
+                                    <p class="text-muted mb-0">Pending</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Topics List -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Topics</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="filterTopics('all')">All</button>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="filterTopics('pending')">Pending</button>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="filterTopics('completed')">Completed</button>
+                                </div>
+                                <button class="btn btn-success btn-sm" onclick="generateAllForPlatform('linkedin', this)" title="Generate all LinkedIn posts">
+                                    <i class="fas fa-linkedin"></i> Generate All LinkedIn
+                                </button>
+                            </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="topicsList">
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading topics...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Platform Selection & Content Generation Modal -->
+    <div class="modal fade" id="generateContentModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-magic me-2"></i>Generate Content for: <span id="selectedTopicName"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Step 1: Platform Selection -->
+                    <div id="platformSelectionStep">
+                        <h6 class="mb-3">
+                            <i class="fas fa-globe me-2"></i>Step 1: Choose Platform
+                        </h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="card platform-card border-2 h-100" onclick="selectPlatform('linkedin')">
+                                    <div class="card-body text-center">
+                                        <i class="fab fa-linkedin fa-2x text-primary mb-2"></i>
+                                        <h6 class="card-title">LinkedIn</h6>
+                                        <p class="card-text small text-muted">Professional posts, 250-300 words</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card platform-card border-2 h-100" onclick="selectPlatform('twitter')">
+                                    <div class="card-body text-center">
+                                        <i class="fab fa-twitter fa-2x text-info mb-2"></i>
+                                        <h6 class="card-title">Twitter</h6>
+                                        <p class="card-text small text-muted">Thread format, short tweets</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card platform-card border-2 h-100" onclick="selectPlatform('instagram')">
+                                    <div class="card-body text-center">
+                                        <i class="fab fa-instagram fa-2x text-danger mb-2"></i>
+                                        <h6 class="card-title">Instagram</h6>
+                                        <p class="card-text small text-muted">Visual posts, engaging captions</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Quantity Selection (Hidden initially) -->
+                    <div id="quantitySelectionStep" style="display: none;">
+                        <h6 class="mb-3">
+                            <i class="fas fa-sliders-h me-2"></i>Step 2: Choose Quantity
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="form-label">Number of posts to generate:</label>
+                                <input type="range" class="form-range" id="topicQuantitySlider"
+                                       min="1" max="5" value="1" oninput="updateTopicQuantityDisplay(this.value)">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">1 post</small>
+                                    <span class="badge bg-primary" id="topicQuantityDisplay">1 post</span>
+                                    <small class="text-muted">5 posts</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <small class="text-muted">Platform:</small>
+                                        <div class="fw-bold" id="selectedPlatformDisplay">-</div>
+                                        <small class="text-muted">Style:</small>
+                                        <div class="fw-bold" id="selectedStyleDisplay">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Generation Progress (Hidden initially) -->
+                    <div id="generationProgressStep" style="display: none;">
+                        <h6 class="mb-3">
+                            <i class="fas fa-cog fa-spin me-2"></i>Step 3: Generating Content...
+                        </h6>
+                        <div class="text-center">
+                            <div class="spinner-border text-primary mb-3" role="status">
+                                <span class="visually-hidden">Generating...</span>
+                            </div>
+                            <p class="text-muted" id="generationStatusText">Creating your content...</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Generated Content (Hidden initially) -->
+                    <div id="generatedContentStep" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">
+                                <i class="fas fa-check-circle text-success me-2"></i>Generated Content
+                            </h6>
+                            <button class="btn btn-sm btn-outline-primary" onclick="resetGeneration()">
+                                <i class="fas fa-redo"></i> Generate More
+                            </button>
+                        </div>
+
+                        <!-- Content Display Area -->
+                        <div id="generatedContentDisplay">
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-spinner fa-spin"></i> Loading content...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="nextStepBtn" onclick="goToNextStep()" style="display: none;">
+                        Next <i class="fas fa-arrow-right ms-1"></i>
+                    </button>
+                    <button type="button" class="btn btn-success" id="generateBtn" onclick="startTopicGeneration()" style="display: none;">
+                        <i class="fas fa-magic me-1"></i> Generate Content
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Topic Modal -->
+    <div class="modal fade" id="addTopicModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus-circle me-2"></i>Create New Topic
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addTopicForm">
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-heading me-1"></i> Topic Title
+                                </label>
+                                <input type="text" class="form-control" id="topicTitle"
+                                       placeholder="e.g., The Future of AI in Healthcare" required>
+                                <small class="text-muted">Choose a clear, descriptive title for your topic</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-palette me-1"></i> Content Style
+                                </label>
+                                <select class="form-select" id="topicStyle" required>
+                                    <option value="">Select Style...</option>
+                                    <option value="educational">📚 Educational</option>
+                                    <option value="case_study">📊 Case Study</option>
+                                    <option value="story">📖 Story</option>
+                                    <option value="insight">💡 Insight</option>
+                                </select>
+                                <small class="text-muted">Choose the content approach</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-list-ul me-1"></i> Key Points
+                                <span class="badge bg-secondary ms-2">4-6 points recommended</span>
+                            </label>
+                            <textarea class="form-control" id="topicPoints" rows="5"
+                                      placeholder="Enter each key point on a new line. For example:&#10;&#10;• AI is transforming diagnostic accuracy&#10;• Personalized treatment plans become standard&#10;• Remote patient monitoring improves outcomes&#10;• Healthcare costs decrease through automation&#10;&#10;Tip: Use action-oriented points that highlight benefits, changes, or insights." required></textarea>
+                            <div class="d-flex justify-content-between mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Enter 4-6 specific, actionable points. Each point should be a complete concept.
+                                </small>
+                                <small class="text-muted" id="pointCount">0 points</small>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Pro Tips:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Be specific and focus on actionable insights</li>
+                                <li>Use the same style consistently across all points</li>
+                                <li>Think about what your audience needs to know</li>
+                                <li>Each point should expand on the main topic</li>
+                            </ul>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="addTopic()">
+                        <i class="fas fa-plus-circle me-1"></i> Create Topic
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let topics = [];
+        let currentFilter = 'all';
+
+        // Hamburger Menu Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+
+            hamburgerBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                sidebar.classList.toggle('show');
+                mainContent.classList.toggle('expanded');
+
+                // Change hamburger icon
+                const icon = hamburgerBtn.querySelector('i');
+                if (sidebar.classList.contains('collapsed') && !sidebar.classList.contains('show')) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                } else {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                }
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768) {
+                    if (!sidebar.contains(event.target) && !hamburgerBtn.contains(event.target)) {
+                        sidebar.classList.remove('show');
+                        sidebar.classList.add('collapsed');
+                        mainContent.classList.add('expanded');
+                        const icon = hamburgerBtn.querySelector('i');
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                }
+            });
+        });
+
+        async function loadTopics() {
+            try {
+                const response = await fetch('/api/topics');
+                topics = await response.json();
+                updateTopicsDisplay();
+                updateStatistics();
+            } catch (error) {
+                console.error('Error loading topics:', error);
+            }
+        }
+
+        function updateTopicsDisplay() {
+            const container = document.getElementById('topicsList');
+
+            let filteredTopics = topics;
+            if (currentFilter !== 'all') {
+                filteredTopics = topics.filter(t => (t.status || 'pending') === currentFilter);
+            }
+
+            if (filteredTopics.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-inbox"></i>
+                        <p class="mb-0">No topics found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredTopics.map(topic => `
+                <div class="border rounded p-3 mb-4 topic-card">
+                    <div class="row align-items-start">
+                        <div class="col-md-8">
+                            <h6 class="mb-2">${topic.topic}</h6>
+                            <div class="mb-2">
+                                ${topic.points.slice(0, 2).map(point =>
+                                    `<span class="badge bg-light text-dark me-1">${point}</span>`
+                                ).join('')}
+                            </div>
+                            <div>
+                                <span class="badge bg-${getStyleColor(topic.style)} me-2">${topic.style}</span>
+                                <span class="badge bg-${getStatusColor(topic.status || 'pending')}">${topic.status || 'pending'}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn btn-sm btn-primary me-1 mb-1" onclick="showPlatformSelection('${topic.topic}', '${topic.style}')">
+                                <i class="fas fa-magic"></i> Generate
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="editTopic('${topic.topic}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger mb-1" onclick="deleteTopic('${topic.topic}')"
+                                    title="Delete topic">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Generated Content Display (hidden initially) -->
+                    <div id="generatedContent-${topic.topic.replace(/[^a-zA-Z0-9]/g, '')}" class="mt-3" style="display: none;">
+                        <div class="border rounded p-3 bg-light">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0"><i class="fas fa-file-alt text-primary me-2"></i>Generated Content</h6>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="toggleContent('${topic.topic.replace(/[^a-zA-Z0-9]/g, '')}')">
+                                    <i class="fas fa-eye"></i> Show/Hide
+                                </button>
+                            </div>
+                            <div id="contentDisplay-${topic.topic.replace(/[^a-zA-Z0-9]/g, '')}">
+                                <div class="text-center text-muted py-3">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStatistics() {
+            const total = topics.length;
+            const completed = topics.filter(t => t.status === 'completed').length;
+            const pending = topics.filter(t => !t.status || t.status === 'pending').length;
+
+            document.getElementById('totalTopics').textContent = total;
+            document.getElementById('completedTopics').textContent = completed;
+            document.getElementById('pendingTopics').textContent = pending;
+        }
+
+        function getStyleColor(style) {
+            const colors = {
+                'educational': 'primary',
+                'case_study': 'success',
+                'story': 'info',
+                'insight': 'warning'
+            };
+            return colors[style] || 'secondary';
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'completed': 'success',
+                'pending': 'warning',
+                'failed': 'danger'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        function filterTopics(filter) {
+            currentFilter = filter;
+            updateTopicsDisplay();
+        }
+
+        // Update point count
+        function updatePointCount() {
+            const points = document.getElementById('topicPoints').value
+                .split('\n')
+                .filter(p => p.trim())
+                .length;
+            document.getElementById('pointCount').textContent = `${points} points`;
+        }
+
+        async function addTopic() {
+            const title = document.getElementById('topicTitle').value.trim();
+            const points = document.getElementById('topicPoints').value
+                .split('\n')
+                .filter(p => p.trim());
+            const style = document.getElementById('topicStyle').value;
+
+            // Validation
+            if (!title) {
+                showNotification('Please enter a topic title', 'error');
+                return;
+            }
+
+            if (points.length < 3) {
+                showNotification('Please enter at least 3 key points', 'error');
+                return;
+            }
+
+            if (!style) {
+                showNotification('Please select a content style', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/topics/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topic: title,
+                        points: points,
+                        style: style
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addTopicModal'));
+                    modal.hide();
+
+                    // Reset form and UI
+                    resetModalForm();
+
+                    // Reload topics
+                    await loadTopics();
+
+                    // Show success message
+                    showNotification(`Topic "${title}" added successfully!`, 'success');
+                } else {
+                    showNotification(result.message || 'Error adding topic', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding topic:', error);
+                showNotification('Error adding topic', 'error');
+            }
+        }
+
+        function resetModalForm() {
+            // Clear form
+            document.getElementById('addTopicForm').reset();
+
+            // Reset point count
+            updatePointCount();
+
+            // Reset modal title and button
+            document.querySelector('#addTopicModal .modal-title').innerHTML =
+                '<i class="fas fa-plus-circle me-2"></i>Create New Topic';
+            document.querySelector('#addTopicModal .btn-primary').innerHTML =
+                '<i class="fas fa-plus-circle me-1"></i> Create Topic';
+        }
+
+        function generateForTopic(topicTitle) {
+            showNotification(`Generating content for: ${topicTitle}`, 'info');
+            // In a real implementation, this would trigger content generation
+        }
+
+        function editTopic(topicTitle) {
+            // Find the topic
+            const topic = topics.find(t => t.topic === topicTitle);
+            if (!topic) return;
+
+            // Fill the form with existing data
+            document.getElementById('topicTitle').value = topic.topic;
+            document.getElementById('topicPoints').value = topic.points.join('\n');
+            document.getElementById('topicStyle').value = topic.style;
+            updatePointCount();
+
+            // Change modal title and button
+            document.querySelector('#addTopicModal .modal-title').innerHTML =
+                '<i class="fas fa-edit me-2"></i>Edit Topic';
+            document.querySelector('#addTopicModal .btn-primary').innerHTML =
+                '<i class="fas fa-save me-1"></i> Save Changes';
+
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('addTopicModal'));
+            modal.show();
+        }
+
+        function deleteTopic(topicTitle) {
+            if (!confirm(`Are you sure you want to delete the topic "${topicTitle}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            // Remove from array
+            topics = topics.filter(t => t.topic !== topicTitle);
+
+            // Save to file
+            saveTopicsToFile();
+
+            // Update display
+            updateTopicsDisplay();
+            updateStatistics();
+
+            // Show notification
+            showNotification(`Topic "${topicTitle}" deleted successfully`, 'success');
+        }
+
+        function saveTopicsToFile() {
+            // In a real implementation, this would save to the server
+            // For now, we'll just show a notification
+            console.log('Saving topics:', topics);
+        }
+
+        // Topic Generation Modal Functions
+        let selectedTopic = '';
+        let selectedStyle = '';
+        let selectedPlatform = '';
+
+        function showPlatformSelection(topic, style) {
+            selectedTopic = topic;
+            selectedStyle = style;
+
+            // Reset modal state
+            resetGenerationModal();
+
+            // Update modal title
+            document.getElementById('selectedTopicName').textContent = topic;
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('generateContentModal'));
+            modal.show();
+        }
+
+        function selectPlatform(platform) {
+            selectedPlatform = platform;
+
+            // Update UI
+            document.querySelectorAll('.platform-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+
+            // Update display
+            document.getElementById('selectedPlatformDisplay').textContent = platform.charAt(0).toUpperCase() + platform.slice(1);
+            document.getElementById('selectedStyleDisplay').textContent = selectedStyle.charAt(0).toUpperCase() + selectedStyle.slice(1);
+
+            // Show next button
+            document.getElementById('nextStepBtn').style.display = 'inline-block';
+            document.getElementById('nextStepBtn').textContent = 'Next';
+        }
+
+        function goToNextStep() {
+            // Hide platform selection
+            document.getElementById('platformSelectionStep').style.display = 'none';
+
+            // Show quantity selection
+            document.getElementById('quantitySelectionStep').style.display = 'block';
+
+            // Update buttons
+            document.getElementById('nextStepBtn').style.display = 'none';
+            document.getElementById('generateBtn').style.display = 'inline-block';
+        }
+
+        function updateTopicQuantityDisplay(value) {
+            document.getElementById('topicQuantityDisplay').textContent = value + (value == 1 ? ' post' : ' posts');
+        }
+
+        async function startTopicGeneration() {
+            const quantity = parseInt(document.getElementById('topicQuantitySlider').value);
+
+            // Hide quantity selection
+            document.getElementById('quantitySelectionStep').style.display = 'none';
+
+            // Show progress
+            document.getElementById('generationProgressStep').style.display = 'block';
+            document.getElementById('generationStatusText').textContent = `Generating ${quantity} ${selectedPlatform} posts about "${selectedTopic}"...`;
+
+            // Hide buttons
+            document.getElementById('generateBtn').style.display = 'none';
+
+            // Debug log
+            console.log('Starting generation:', { topic: selectedTopic, platform: selectedPlatform, style: selectedStyle, quantity: quantity });
+
+            try {
+                const response = await fetch('/api/generate/content', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topic: selectedTopic,
+                        platform: selectedPlatform,
+                        style: selectedStyle,
+                        num_posts: quantity,
+                        use_fast: true
+                    })
+                });
+
+                const result = await response.json();
+                console.log('API response:', result);
+
+                if (result.success) {
+                    document.getElementById('generationStatusText').textContent = result.message;
+
+                    // Wait for content to be generated, then fetch it
+                    setTimeout(async () => {
+                        await fetchAndDisplayGeneratedContent();
+                    }, 3000);
+                } else {
+                    throw new Error(result.message || 'Generation failed');
+                }
+            } catch (error) {
+                document.getElementById('generationStatusText').textContent = `Error: ${error.message}`;
+                console.error('Generation error:', error);
+            }
+        }
+
+        async function fetchAndDisplayGeneratedContent() {
+            try {
+                const response = await fetch('/api/generator/latest');
+                const result = await response.json();
+
+                if (result.success && result.content) {
+                    // Hide progress
+                    document.getElementById('generationProgressStep').style.display = 'none';
+
+                    // Show content
+                    document.getElementById('generatedContentStep').style.display = 'block';
+
+                    // Display content
+                    displayGeneratedContent(result.content, result.source || selectedPlatform);
+
+                    // Show close button
+                    document.querySelector('.modal-footer .btn-secondary').style.display = 'inline-block';
+                } else {
+                    throw new Error('No content found');
+                }
+            } catch (error) {
+                document.getElementById('generationStatusText').textContent = `Error loading content: ${error.message}`;
+            }
+        }
+
+        function displayGeneratedContent(content, platform) {
+            const posts = Array.isArray(content) ? content : [content];
+            const container = document.getElementById('generatedContentDisplay');
+
+            let contentHTML = '';
+            posts.forEach((post, index) => {
+                const postNumber = post.post_number || index + 1;
+                const topic = post.topic || selectedTopic;
+                const content = post.content || '';
+                const style = post.prompt_type || selectedStyle;
+                const cached = post.cached || false;
+
+                contentHTML += `
+                    <div class="content-display-card">
+                        <div class="content-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-primary me-2">Post ${postNumber}</span>
+                                <span class="badge bg-info me-2">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
+                                <span class="badge bg-secondary me-2">${style.charAt(0).toUpperCase() + style.slice(1)}</span>
+                                ${cached ? '<span class="badge bg-success"><i class="fas fa-bolt"></i> Cached</span>' : ''}
+                            </div>
+                            <button class="copy-btn-topic" onclick="copyTopicContent(\`${content.replace(/`/g, '\\`')}\`, this)">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <div class="content-body">${content.replace(/\n/g, '<br>')}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = contentHTML;
+        }
+
+        function copyTopicContent(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                button.classList.add('copied');
+
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                // Fallback
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                button.classList.add('copied');
+
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function resetGeneration() {
+            resetGenerationModal();
+            goToNextStep(); // Go back to quantity selection
+        }
+
+        function resetGenerationModal() {
+            // Reset variables
+            selectedPlatform = '';
+
+            // Reset UI
+            document.querySelectorAll('.platform-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Reset displays
+            document.getElementById('selectedPlatformDisplay').textContent = '-';
+            document.getElementById('selectedStyleDisplay').textContent = '-';
+            document.getElementById('topicQuantitySlider').value = 1;
+            updateTopicQuantityDisplay(1);
+
+            // Show platform selection, hide others
+            document.getElementById('platformSelectionStep').style.display = 'block';
+            document.getElementById('quantitySelectionStep').style.display = 'none';
+            document.getElementById('generationProgressStep').style.display = 'none';
+            document.getElementById('generatedContentStep').style.display = 'none';
+
+            // Reset buttons
+            document.getElementById('nextStepBtn').style.display = 'none';
+            document.getElementById('generateBtn').style.display = 'none';
+            document.querySelector('.modal-footer .btn-secondary').style.display = 'inline-block';
+        }
+
+        function showNotification(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `position-fixed top-0 end-0 p-3`;
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                <div class="toast show" role="alert">
+                    <div class="toast-header bg-${type} text-white">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong class="me-auto">Notification</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTopics();
+
+            // Point counting
+            document.getElementById('topicPoints').addEventListener('input', updatePointCount);
+
+            // Reset form when modal is hidden
+            document.getElementById('addTopicModal').addEventListener('hidden.bs.modal', resetModalForm);
+        });
+
+        // Generate All Posts for Platform
+        async function generateAllForPlatform(platform, buttonElement) {
+            const btn = buttonElement || event.target.closest('button');
+            const originalContent = btn.innerHTML;
+
+            try {
+                // Show loading state
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generating...`;
+
+                // Call production-ready bulk generation API
+                const response = await fetch(`/api/generate-bulk/${platform}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Show success message
+                    showNotification(`Successfully generated ${result.count} ${platform} posts!`, 'success');
+
+                    // Reload topics to show inline content
+                    await loadTopics();
+
+                    // Optionally redirect to generated posts page
+                    setTimeout(() => {
+                        if (confirm('Posts generated successfully! Would you like to view the generated posts?')) {
+                            window.location.href = '/generated-posts';
+                        }
+                    }, 1000);
+                } else {
+                    showNotification(`Failed to generate posts: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Bulk generation error:', error);
+                showNotification('Failed to generate posts. Please try again.', 'error');
+            } finally {
+                // Restore button state
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        }
+
+        // Toggle Inline Content Display
+        function toggleContent(topicId) {
+            const contentSection = document.getElementById(`content-${topicId}`);
+            const toggleBtn = document.getElementById(`toggle-btn-${topicId}`);
+
+            if (contentSection.style.display === 'none') {
+                contentSection.style.display = 'block';
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Content';
+            } else {
+                contentSection.style.display = 'none';
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> Show Generated Content';
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'error' ? 'danger' : 'success'} position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'} me-2"></i>
+                    ${message}
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

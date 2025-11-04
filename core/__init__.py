@@ -1,0 +1,1 @@
+# Core module for Ardelis Technologies Content Automation

@@ -1,0 +1,1265 @@
+{% extends "base.html" %}
+
+{% block title %}Content Generator | Ardelis Technologies{% endblock %}
+
+{% block head %}
+    <style>
+        /* Dark theme styles matching dashboard.css */
+        .generation-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            background: var(--card-bg) !important;
+        }
+        .generation-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .generated-content {
+            background: var(--darker-color) !important;
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            color: var(--text-primary) !important;
+            border-radius: 0.5rem;
+        }
+
+        .generated-content p {
+            color: var(--text-primary) !important;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .generated-content strong {
+            color: #ffffff !important;
+            font-weight: 600;
+        }
+
+        .generated-content em {
+            color: var(--text-secondary) !important;
+            font-style: italic;
+        }
+
+        /* Style options with dark theme */
+        .style-option {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--card-bg) !important;
+            border: 1px solid var(--card-border) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .style-option:hover {
+            background: rgba(249, 115, 22, 0.1) !important;
+            border-color: var(--primary-color) !important;
+            transform: translateY(-1px);
+        }
+
+        .style-option.active {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(249, 115, 22, 0.05)) !important;
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);
+        }
+
+        /* Voice recording area dark theme */
+        .border.rounded.p-3.bg-light {
+            background: var(--darker-color) !important;
+            border: 1px solid var(--card-border) !important;
+            color: var(--text-primary);
+        }
+
+        /* Form elements dark theme */
+        .form-control, .form-select {
+            background: var(--card-bg) !important;
+            border: 1px solid var(--card-border) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: var(--card-bg) !important;
+            border-color: var(--primary-color) !important;
+            color: var(--text-primary) !important;
+            box-shadow: 0 0 0 0.2rem rgba(249, 115, 22, 0.25);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted) !important;
+        }
+
+        /* Card headers dark theme */
+        .card-header.bg-white {
+            background: var(--card-bg) !important;
+            border-bottom: 1px solid var(--card-border) !important;
+        }
+
+        .card-header h5 {
+            color: var(--text-primary) !important;
+        }
+
+        /* Button styling for dark theme */
+        .btn-outline-primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-outline-secondary {
+            border-color: var(--text-muted);
+            color: var(--text-muted);
+        }
+
+        .btn-outline-secondary:hover {
+            background: var(--text-muted);
+            border-color: var(--text-muted);
+            color: white;
+        }
+
+        /* Loading and empty states */
+        .display-1.text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        /* Icons in style options */
+        .style-option i {
+            color: var(--primary-color) !important;
+        }
+
+        .style-option.active i {
+            color: white !important;
+            text-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+        }
+
+        /* Voice recording specific styling */
+        .badge.bg-danger {
+            background: var(--danger-color) !important;
+        }
+
+        /* Enhanced dark theme for generated content area */
+        #generatedContent {
+            background: var(--card-bg) !important;
+            border-radius: 0.5rem;
+        }
+
+        /* Copy buttons in generated content */
+        .copy-btn {
+            background: rgba(249, 115, 22, 0.1) !important;
+            border: 1px solid var(--primary-color) !important;
+            color: var(--primary-color) !important;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        /* Enhanced Header Layout */
+        .top-header {
+            padding: 1.5rem 0 !important;
+            border-bottom: 1px solid var(--card-border) !important;
+            background: var(--card-bg) !important;
+        }
+
+        .top-header .row {
+            align-items: center !important;
+            min-height: 80px;
+        }
+
+        /* Responsive button sizing */
+        .btn-sm-md {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .btn-sm-md {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Button hover effects */
+        .top-header .btn {
+            transition: all 0.3s ease;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .top-header .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        /* Header spacing improvements */
+        .top-header h1 {
+            font-weight: 600;
+            margin-bottom: 0.25rem !important;
+        }
+
+        .top-header p {
+            margin-bottom: 0 !important;
+            font-size: 0.9rem;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Top Header -->
+    <header class="top-header">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div>
+                    <h1 class="h3 mb-0">Content Generator</h1>
+                    <p class="text-muted mb-0">Generate single or multiple posts for your social media platforms</p>
+                </div>
+            </div>
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <div class="d-flex gap-2 justify-content-md-end justify-content-start">
+                    <button class="btn btn-primary btn-sm-md" onclick="startGeneration()">
+                        <i class="fas fa-magic me-2"></i>Generate Content
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm-md" onclick="refreshTopics()">
+                        <i class="fas fa-sync-alt me-1"></i>Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid p-4">
+        <div class="row g-4">
+            <!-- Generator Form -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-0">Content Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="generatorForm">
+                            <!-- Generation Mode Selection -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="fas fa-cog me-2"></i>Generation Mode
+                                </label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="generationMode" id="singleMode" value="single" checked>
+                                    <label class="btn btn-outline-primary" for="singleMode">
+                                        <i class="fas fa-pencil-alt me-1"></i> Single
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="generationMode" id="batchMode" value="batch">
+                                    <label class="btn btn-outline-success" for="batchMode">
+                                        <i class="fas fa-layer-group me-1"></i> Batch
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Single Topic Input -->
+                            <div class="mb-3" id="singleTopicSection">
+                                <label class="form-label">
+                                    <i class="fas fa-tag me-2"></i>Topic
+                                </label>
+                                <input type="text" class="form-control" id="topicInput" placeholder="Enter topic...">
+                            </div>
+
+                            <!-- Batch Topic Selection -->
+                            <div class="mb-3" id="batchTopicSection" style="display: none;">
+                                <label class="form-label">
+                                    <i class="fas fa-list me-2"></i>Select Topics
+                                </label>
+                                <div class="border rounded p-2" style="max-height: 200px; overflow-y: auto; background: var(--darker-color);">
+                                    <div id="topicCheckboxes">
+                                        <!-- Topics will be loaded here -->
+                                    </div>
+                                </div>
+                                <div class="mt-2 d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <span id="selectedCount">0</span> existing topics selected
+                                    </small>
+                                    <div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAllTopics()">
+                                            Select All
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearTopicSelection()">
+                                            Clear
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Add Custom Topic Section for Batch Mode -->
+                            <div class="mb-3" id="customTopicSection" style="display: none;">
+                                <label class="form-label">
+                                    <i class="fas fa-plus-circle me-2"></i>Add Custom Topic (Optional)
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="customTopicInput" placeholder="Enter a custom topic to include in batch generation...">
+                                    <button type="button" class="btn btn-outline-success" onclick="addCustomTopic()">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </div>
+                                <div class="mt-2">
+                                    <div id="customTopicsList" class="d-flex flex-wrap gap-2">
+                                        <!-- Custom topics will be displayed here -->
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    Add additional topics that aren't in your existing list
+                                </small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-palette me-2"></i>Style
+                                </label>
+                                <div class="list-group">
+                                    <div class="list-group-item style-option active" onclick="selectStyle('educational', this)">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-graduation-cap me-2"></i>
+                                            <div>
+                                                <h6 class="mb-0">Educational</h6>
+                                                <small class="text-muted">Informative and helpful content</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item style-option" onclick="selectStyle('promotional', this)">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-bullhorn me-2"></i>
+                                            <div>
+                                                <h6 class="mb-0">Promotional</h6>
+                                                <small class="text-muted">Marketing and sales focused</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item style-option" onclick="selectStyle('industry_insights', this)">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-chart-line me-2"></i>
+                                            <div>
+                                                <h6 class="mb-0">Industry Insights</h6>
+                                                <small class="text-muted">Trends and analysis</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-share-alt me-2"></i>Platforms
+                                </label>
+                                <div class="platform-selection">
+                                    <!-- Quick select buttons -->
+                                    <div class="btn-group w-100 mb-2" role="group">
+                                        <button type="button" class="btn btn-outline-primary" onclick="selectAllPlatforms()">
+                                            All Platforms
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="deselectAllPlatforms()">
+                                            None
+                                        </button>
+                                    </div>
+
+                                    <!-- Platform checkboxes -->
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="linkedin" id="linkedinCheck" checked>
+                                                <label class="form-check-label" for="linkedinCheck">
+                                                    <i class="fab fa-linkedin me-1"></i> LinkedIn
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="twitter" id="twitterCheck">
+                                                <label class="form-check-label" for="twitterCheck">
+                                                    <i class="fab fa-x-twitter me-1"></i> X
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="instagram" id="instagramCheck">
+                                                <label class="form-check-label" for="instagramCheck">
+                                                    <i class="fab fa-instagram me-1"></i> Instagram
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Batch Generation Settings -->
+                            <div class="mb-3" id="batchSettings">
+                                <label class="form-label">
+                                    <i class="fas fa-sliders-h me-2"></i>Posts per Topic
+                                </label>
+                                <select class="form-select" id="postsPerTopic">
+                                    <option value="1">1 Post per Topic</option>
+                                    <option value="3">3 Posts per Topic</option>
+                                    <option value="5">5 Posts per Topic</option>
+                                </select>
+                            </div>
+
+                            <!-- Single Generation Settings -->
+                            <div class="mb-3" id="singleSettings">
+                                <label class="form-label">
+                                    <i class="fas fa-copy me-2"></i>Number of Posts
+                                </label>
+                                <select class="form-select" id="numPostsSelect">
+                                    <option value="1">1 Post</option>
+                                    <option value="3">3 Posts</option>
+                                    <option value="5">5 Posts</option>
+                                </select>
+                            </div>
+
+                            <!-- Voice Recording Section -->
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-microphone me-2"></i>Voice Input (Optional)
+                                </label>
+                                <div class="border rounded p-3 bg-light">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <small class="text-muted">Click to record your content idea</small>
+                                        <div id="recordingTime" class="badge bg-danger" style="display: none;">00:00</div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-primary flex-fill" id="recordBtn" onclick="toggleRecording()">
+                                            <i class="fas fa-microphone"></i>
+                                            <span id="recordBtnText">Start Recording</span>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" id="playBtn" onclick="playRecording()" disabled>
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" id="clearBtn" onclick="clearRecording()" disabled>
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="mt-2">
+                                        <textarea class="form-control form-control-sm" id="voiceTranscript" rows="3" placeholder="Voice transcript will appear here..." readonly></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generated Content -->
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-0">Generated Content</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="generatedContent">
+                            <div class="text-center py-5">
+                                <i class="fas fa-magic display-1 text-muted"></i>
+                                <h4 class="mt-3 text-muted">Ready to Generate</h4>
+                                <p class="text-muted">Fill in the form and click "Generate Content" to create professional posts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        let selectedStyle = 'educational';
+        let availableTopics = [];
+        let selectedTopics = new Set();
+        let customTopics = new Set();
+
+        // Voice Recording Variables
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let recordingTimer;
+        let recordingStartTime;
+        let audioBlob;
+        let audioUrl;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTopics();
+            setupModeToggle();
+        });
+
+        // Setup mode toggle between single and batch
+        function setupModeToggle() {
+            const singleMode = document.getElementById('singleMode');
+            const batchMode = document.getElementById('batchMode');
+
+            singleMode.addEventListener('change', function() {
+                if (this.checked) {
+                    showSingleMode();
+                }
+            });
+
+            batchMode.addEventListener('change', function() {
+                if (this.checked) {
+                    showBatchMode();
+                }
+            });
+
+            // Initially show single mode
+            showSingleMode();
+        }
+
+        function showSingleMode() {
+            document.getElementById('singleTopicSection').style.display = 'block';
+            document.getElementById('batchTopicSection').style.display = 'none';
+            document.getElementById('batchSettings').style.display = 'none';
+            document.getElementById('singleSettings').style.display = 'block';
+        }
+
+        function showBatchMode() {
+            document.getElementById('singleTopicSection').style.display = 'none';
+            document.getElementById('batchTopicSection').style.display = 'block';
+            document.getElementById('customTopicSection').style.display = 'block';
+            document.getElementById('batchSettings').style.display = 'block';
+            document.getElementById('singleSettings').style.display = 'none';
+        }
+
+        // Load topics from API
+        function loadTopics() {
+            fetch('/api/topics')
+                .then(response => response.json())
+                .then(data => {
+                    availableTopics = data;
+                    renderTopicCheckboxes();
+                })
+                .catch(error => {
+                    console.error('Error loading topics:', error);
+                    availableTopics = [];
+                    renderTopicCheckboxes();
+                });
+        }
+
+        function renderTopicCheckboxes() {
+            const container = document.getElementById('topicCheckboxes');
+
+            if (availableTopics.length === 0) {
+                container.innerHTML = '<div class="text-muted p-3">No topics available. Add topics first.</div>';
+                return;
+            }
+
+            container.innerHTML = availableTopics.map((topic, index) => `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" value="${index}" id="topic_${index}"
+                           onchange="toggleTopicSelection(${index})">
+                    <label class="form-check-label" for="topic_${index}">
+                        <div>
+                            <strong>${topic.topic}</strong>
+                            <br><small class="text-muted">${topic.points ? topic.points[0] : 'No description available'}</small>
+                        </div>
+                    </label>
+                </div>
+            `).join('');
+        }
+
+        function toggleTopicSelection(index) {
+            const checkbox = document.getElementById(`topic_${index}`);
+            if (checkbox.checked) {
+                selectedTopics.add(index);
+            } else {
+                selectedTopics.delete(index);
+            }
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            document.getElementById('selectedCount').textContent = selectedTopics.size;
+        }
+
+        function selectAllTopics() {
+            availableTopics.forEach((topic, index) => {
+                const checkbox = document.getElementById(`topic_${index}`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    selectedTopics.add(index);
+                }
+            });
+            updateSelectedCount();
+        }
+
+        function clearTopicSelection() {
+            availableTopics.forEach((topic, index) => {
+                const checkbox = document.getElementById(`topic_${index}`);
+                if (checkbox) {
+                    checkbox.checked = false;
+                }
+            });
+            selectedTopics.clear();
+            updateSelectedCount();
+        }
+
+        function refreshTopics() {
+            loadTopics();
+            showNotification('Topics refreshed', 'info');
+        }
+
+        // Custom topic functions
+        function addCustomTopic() {
+            const input = document.getElementById('customTopicInput');
+            const topic = input.value.trim();
+
+            if (!topic) {
+                showNotification('Please enter a topic', 'warning');
+                return;
+            }
+
+            if (customTopics.has(topic)) {
+                showNotification('Topic already added', 'warning');
+                return;
+            }
+
+            customTopics.add(topic);
+            input.value = '';
+            updateCustomTopicsDisplay();
+            showNotification('Custom topic added', 'success');
+        }
+
+        function updateCustomTopicsDisplay() {
+            const container = document.getElementById('customTopicsList');
+
+            if (customTopics.size === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = Array.from(customTopics).map(topic => `
+                <span class="badge bg-primary d-inline-flex align-items-center gap-1" style="background: var(--primary-color) !important;">
+                    ${topic}
+                    <button type="button" class="btn-close btn-close-white btn-sm" onclick="removeCustomTopic('${topic}')" style="font-size: 0.6rem;"></button>
+                </span>
+            `).join('');
+        }
+
+        function removeCustomTopic(topic) {
+            customTopics.delete(topic);
+            updateCustomTopicsDisplay();
+        }
+
+        // Allow Enter key to add custom topic
+        document.getElementById('customTopicInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addCustomTopic();
+            }
+        });
+
+        // Voice Recording Functions
+        async function toggleRecording() {
+            if (!isRecording) {
+                await startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    audioUrl = URL.createObjectURL(audioBlob);
+                    document.getElementById('playBtn').disabled = false;
+                    document.getElementById('clearBtn').disabled = false;
+
+                    // Transcribe audio using ZAI API
+                    await transcribeAudio();
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                recordingStartTime = Date.now();
+
+                // Update UI
+                document.getElementById('recordBtn').classList.remove('btn-outline-primary');
+                document.getElementById('recordBtn').classList.add('recording');
+                document.getElementById('recordBtnText').textContent = 'Stop Recording';
+                document.getElementById('recordingTime').style.display = 'inline-block';
+
+                // Start timer
+                updateRecordingTimer();
+
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                showNotification('Failed to access microphone. Please check permissions.', 'error');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                isRecording = false;
+
+                // Update UI
+                document.getElementById('recordBtn').classList.remove('recording');
+                document.getElementById('recordBtn').classList.add('btn-outline-primary');
+                document.getElementById('recordBtnText').textContent = 'Start Recording';
+                document.getElementById('recordingTime').style.display = 'none';
+
+                // Clear timer
+                clearInterval(recordingTimer);
+            }
+        }
+
+        function updateRecordingTimer() {
+            recordingTimer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('recordingTime').textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        async function transcribeAudio() {
+            try {
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'recording.wav');
+
+                const response = await fetch('/api/transcribe/audio', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.transcript) {
+                        document.getElementById('voiceTranscript').value = data.transcript;
+                        // Also update the topic input with the transcribed text
+                        document.getElementById('topicInput').value = data.transcript;
+                        showNotification('Voice transcribed successfully!', 'success');
+                    } else {
+                        throw new Error(data.message || 'Transcription failed');
+                    }
+                } else {
+                    throw new Error('Transcription service unavailable');
+                }
+            } catch (error) {
+                console.error('Transcription error:', error);
+                showNotification('Failed to transcribe audio. You can still use the recorded text manually.', 'warning');
+                // Fallback: let user know they can still use the recording manually
+            }
+        }
+
+        function playRecording() {
+            if (audioUrl) {
+                const audio = new Audio(audioUrl);
+                audio.play();
+            }
+        }
+
+        function clearRecording() {
+            // Clear all recording data
+            audioBlob = null;
+            audioUrl = null;
+            audioChunks = [];
+
+            // Reset UI
+            document.getElementById('voiceTranscript').value = '';
+            document.getElementById('playBtn').disabled = true;
+            document.getElementById('clearBtn').disabled = true;
+
+            showNotification('Recording cleared', 'info');
+        }
+
+        function selectStyle(style, element) {
+            selectedStyle = style;
+            document.querySelectorAll('.style-option').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function startGeneration() {
+            const mode = document.querySelector('input[name="generationMode"]:checked').value;
+            const platforms = getSelectedPlatforms();
+
+            if (platforms.length === 0) {
+                showNotification('Please select at least one platform', 'warning');
+                return;
+            }
+
+            if (mode === 'single') {
+                generateSingleContent(platforms);
+            } else {
+                generateBatchContent(platforms);
+            }
+        }
+
+        function getSelectedPlatforms() {
+            const platforms = [];
+            const checkboxes = ['linkedinCheck', 'twitterCheck', 'instagramCheck'];
+
+            checkboxes.forEach(checkboxId => {
+                const checkbox = document.getElementById(checkboxId);
+                if (checkbox.checked) {
+                    platforms.push(checkbox.value);
+                }
+            });
+
+            return platforms;
+        }
+
+        function selectAllPlatforms() {
+            document.getElementById('linkedinCheck').checked = true;
+            document.getElementById('twitterCheck').checked = true;
+            document.getElementById('instagramCheck').checked = true;
+        }
+
+        function deselectAllPlatforms() {
+            document.getElementById('linkedinCheck').checked = false;
+            document.getElementById('twitterCheck').checked = false;
+            document.getElementById('instagramCheck').checked = false;
+        }
+
+        function generateSingleContent(platforms) {
+            const topic = document.getElementById('topicInput').value.trim();
+            const numPosts = parseInt(document.getElementById('numPostsSelect').value);
+
+            if (!topic) {
+                showNotification('Please enter a topic', 'warning');
+                return;
+            }
+
+            generatePostsForMultiplePlatforms(topic, platforms, numPosts, false);
+        }
+
+        function generateBatchContent(platforms) {
+            const postsPerTopic = parseInt(document.getElementById('postsPerTopic').value);
+
+            if (selectedTopics.size === 0 && customTopics.size === 0) {
+                showNotification('Please select at least one topic or add a custom topic', 'warning');
+                return;
+            }
+
+            // Combine selected existing topics and custom topics
+            const selectedTopicData = Array.from(selectedTopics).map(index => availableTopics[index]);
+            const customTopicData = Array.from(customTopics).map(topic => ({
+                topic: topic,
+                points: [`Content about ${topic}`],
+                style: selectedStyle,
+                created_date: new Date().toISOString()
+            }));
+
+            const allTopics = [...selectedTopicData, ...customTopicData];
+
+            generatePostsForMultipleTopics(allTopics, platforms, postsPerTopic);
+        }
+
+        function generatePostsForMultiplePlatforms(topic, platforms, numPosts, isBatchMode) {
+            const container = document.getElementById('generatedContent');
+            const totalPosts = platforms.length * numPosts;
+
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Generating content...</span>
+                    </div>
+                    <p class="mt-2 text-muted">
+                        ${isBatchMode ? `Generating ${totalPosts} posts for batch...` : `Generating ${totalPosts} post${totalPosts > 1 ? 's' : ''} about "${topic}" across ${platforms.length} platform${platforms.length > 1 ? 's' : ''}...`}
+                    </p>
+                    <small class="text-muted">Platforms: ${platforms.map(p => p === 'twitter' ? 'X' : p.charAt(0).toUpperCase() + p.slice(1)).join(', ')}</small>
+                </div>
+            `;
+
+            const promises = platforms.map(platform => {
+                return fetch('/api/generate/content', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topic: topic,
+                        style: selectedStyle,
+                        platform: platform,
+                        num_posts: numPosts,
+                        use_fast: true
+                    })
+                })
+                .then(response => response.json())
+                .then(data => ({ platform, data }));
+            });
+
+            Promise.all(promises)
+                .then(results => {
+                    container.innerHTML = '';
+                    let allContent = [];
+
+                    results.forEach(({ platform, data }) => {
+                        if (data.success) {
+                            const platformIcon = platform === 'linkedin' ? 'fab fa-linkedin' : platform === 'twitter' ? 'fab fa-x-twitter' : 'fab fa-instagram';
+                            const platformName = platform === 'twitter' ? 'X' : platform.charAt(0).toUpperCase() + platform.slice(1);
+
+                            // Handle different response formats
+                            let contentArray = [];
+                            if (data.posts && Array.isArray(data.posts)) {
+                                contentArray = data.posts.map(post => post.content || post);
+                            } else if (data.content && Array.isArray(data.content)) {
+                                contentArray = data.content;
+                            } else if (data.content) {
+                                contentArray = [data.content];
+                            }
+
+                            if (contentArray.length > 0) {
+                                const platformHtml = `
+                                    <div class="generated-content mb-4">
+                                        <h6 class="text-success mb-3">
+                                            <i class="${platformIcon} me-2"></i>${platformName} (${contentArray.length} post${contentArray.length > 1 ? 's' : ''})
+                                        </h6>
+                                        ${contentArray.map((content, idx) => `
+                                            <div class="mb-3">
+                                                <small class="text-muted d-block mb-1">Post ${idx + 1}</small>
+                                                <div>${content.replace(/\n/g, '<br>')}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                `;
+                                allContent.push(platformHtml);
+                            }
+                        }
+                    });
+
+                    if (allContent.length > 0) {
+                        container.innerHTML = allContent.join('');
+                        showNotification(`Successfully generated ${totalPosts} posts across ${platforms.length} platforms!`, 'success');
+                    } else {
+                        showError('Failed to generate content for any platform');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error generating content:', error);
+                    showError('Failed to generate content');
+                });
+        }
+
+        function generatePostsForTopic(topic, platform, numPosts, isBatchMode) {
+            const container = document.getElementById('generatedContent');
+
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Generating content...</span>
+                    </div>
+                    <p class="mt-2 text-muted">
+                        ${isBatchMode ? `Generating ${numPosts} posts for batch...` : `Generating ${numPosts} post${numPosts > 1 ? 's' : ''} about "${topic}"...`}
+                    </p>
+                    <div class="progress mb-3" style="height: 4px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            `;
+
+            fetch('/api/generate/content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    topic: topic,
+                    style: selectedStyle,
+                    platform: platform,
+                    num_posts: numPosts,
+                    use_fast: true
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Handle different response formats
+                    let contentArray = [];
+                    if (data.posts && Array.isArray(data.posts)) {
+                        contentArray = data.posts.map(post => post.content || post);
+                    } else if (data.content && Array.isArray(data.content)) {
+                        contentArray = data.content;
+                    } else if (data.content) {
+                        contentArray = [data.content];
+                    }
+
+                    if (contentArray.length > 0) {
+                        displayGeneratedContent(contentArray, numPosts > 1 || isBatchMode);
+                    } else {
+                        showError('No content was generated');
+                    }
+                } else {
+                    showError('Failed to generate content: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error generating content:', error);
+                showError('Failed to generate content');
+            });
+        }
+
+        function generatePostsForMultipleTopics(topics, platforms, postsPerTopic) {
+            const container = document.getElementById('generatedContent');
+            const totalPosts = topics.length * postsPerTopic * platforms.length;
+
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Batch generating content...</span>
+                    </div>
+                    <p class="mt-2 text-muted">
+                        Batch generating ${totalPosts} posts from ${topics.length} topics across ${platforms.length} platform${platforms.length > 1 ? 's' : ''}...
+                    </p>
+                    <small class="text-muted">Platforms: ${platforms.map(p => p === 'twitter' ? 'X' : p.charAt(0).toUpperCase() + p.slice(1)).join(', ')}</small>
+                    <div class="progress mb-3" style="height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        Estimated time: ${Math.ceil(totalPosts * 10 / 60)} minutes
+                    </small>
+                </div>
+            `;
+
+            // Process each platform separately for batch generation
+            const promises = platforms.map(platform => {
+                return fetch('/api/generate/content', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topics: topics,
+                        style: selectedStyle,
+                        platform: platform,
+                        num_posts: postsPerTopic,
+                        use_fast: true
+                    })
+                })
+                .then(response => response.json())
+                .then(data => ({ platform, data }));
+            });
+
+            Promise.all(promises)
+            .then(results => {
+                container.innerHTML = '';
+                let allContent = [];
+                let totalGenerated = 0;
+
+                results.forEach(({ platform, data }) => {
+                    if (data.success) {
+                        if (data.status === 'generating') {
+                            // For now, show success message since fast generator should work quickly
+                            const platformIcon = platform === 'linkedin' ? 'fab fa-linkedin' : platform === 'twitter' ? 'fab fa-x-twitter' : 'fab fa-instagram';
+                            const platformName = platform === 'twitter' ? 'X' : platform.charAt(0).toUpperCase() + platform.slice(1);
+
+                            allContent.push(`
+                                <div class="generated-content mb-4">
+                                    <h6 class="text-success mb-3">
+                                        <i class="${platformIcon} me-2"></i>${platformName} - Generation Started
+                                    </h6>
+                                    <p class="text-muted">Generating ${topics.length * postsPerTopic} posts for ${platformName}...</p>
+                                </div>
+                            `);
+                        } else if (data.content) {
+                            const platformIcon = platform === 'linkedin' ? 'fab fa-linkedin' : platform === 'twitter' ? 'fab fa-x-twitter' : 'fab fa-instagram';
+                            const platformName = platform === 'twitter' ? 'X' : platform.charAt(0).toUpperCase() + platform.slice(1);
+
+                            totalGenerated += Array.isArray(data.content) ? data.content.length : 1;
+
+                            allContent.push(`
+                                <div class="generated-content mb-4">
+                                    <h6 class="text-success mb-3">
+                                        <i class="${platformIcon} me-2"></i>${platformName}
+                                    </h6>
+                                    ${Array.isArray(data.content) ? data.content.map((content, idx) => `
+                                        <div class="mb-3">
+                                            <small class="text-muted d-block mb-1">Post ${idx + 1}</small>
+                                            <div>${content.replace(/\n/g, '<br>')}</div>
+                                        </div>
+                                    `).join('') : data.content.replace(/\n/g, '<br>')}
+                                </div>
+                            `);
+                        }
+                    } else {
+                        showError(`Failed to generate content for ${platform}: ${data.message || 'Unknown error'}`);
+                    }
+                });
+
+                if (allContent.length > 0) {
+                    container.innerHTML = allContent.join('');
+                    showNotification(`Batch generation completed! Generated content for ${results.length} platforms.`, 'success');
+                } else {
+                    showError('Failed to generate content for any platform');
+                }
+            })
+            .catch(error => {
+                console.error('Error starting batch generation:', error);
+                showError('Failed to start batch generation');
+            });
+        }
+
+        function displayGeneratedContent(contentArray, isBatch = false) {
+            const container = document.getElementById('generatedContent');
+
+            if (contentArray.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i> No content was generated
+                    </div>
+                `;
+                return;
+            }
+
+            // Add header for batch results
+            let headerHtml = '';
+            if (isBatch) {
+                headerHtml = `
+                    <div class="alert alert-success d-flex justify-content-between align-items-center" role="alert">
+                        <div>
+                            <i class="fas fa-check-circle me-2"></i>
+                            Successfully generated ${contentArray.length} posts!
+                        </div>
+                        <button class="btn btn-sm btn-light" onclick="copyAllContent(${contentArray.length})">
+                            <i class="fas fa-copy me-1"></i> Copy All
+                        </button>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = headerHtml + contentArray.map((content, index) => `
+                <div class="generated-content mb-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6>${isBatch ? `Post ${index + 1}` : 'Generated Post'}</h6>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyContent(${index})">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-2">${formatContent(content)}</div>
+                    <small class="text-muted">
+                        <i class="fas fa-clock"></i> Generated ${new Date().toLocaleTimeString()}
+                    </small>
+                </div>
+            `).join('');
+        }
+
+        function copyAllContent(contentCount) {
+            let allContent = '';
+            for (let i = 0; i < contentCount; i++) {
+                const postElement = document.querySelectorAll('.generated-content')[i];
+                if (postElement) {
+                    const content = postElement.querySelector('.mb-2').innerText;
+                    allContent += `Post ${i + 1}:\n${content}\n\n`;
+                }
+            }
+
+            navigator.clipboard.writeText(allContent.trim()).then(() => {
+                showNotification('All posts copied to clipboard!', 'success');
+            }).catch(err => {
+                showNotification('Failed to copy all content', 'error');
+            });
+        }
+
+        function formatContent(content) {
+            return content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\s*\n/g, '</p><p>')
+                .replace(/\n/g, '<br>')
+                .replace(/^(.*)$/, '<p>$1</p>')
+                .replace(/<p><\/p>/g, ''); // Remove empty paragraphs
+        }
+
+        function copyContent(index) {
+            const contentDivs = document.querySelectorAll('.generated-content');
+            if (contentDivs[index]) {
+                // Get the text content from the div, excluding the copy button
+                const contentElement = contentDivs[index].querySelector('div');
+                if (contentElement) {
+                    // Strip HTML tags and copy plain text
+                    const textContent = contentElement.textContent || contentElement.innerText;
+                    navigator.clipboard.writeText(textContent)
+                        .then(() => {
+                            showNotification('Content copied to clipboard!', 'success');
+                        })
+                        .catch(err => {
+                            showNotification('Failed to copy content', 'error');
+                        });
+                }
+            }
+        }
+
+        function pollForGeneratedContent(topic, platform, numPosts) {
+            const maxAttempts = 30; // Poll for up to 5 minutes (30 * 10 seconds)
+            let attempts = 0;
+
+            const poll = setInterval(() => {
+                attempts++;
+
+                fetch(`/api/generator/latest?platform=${platform}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.content && data.content.length > 0) {
+                            clearInterval(poll);
+                            // Extract content text from content objects and filter out empty content
+                            const posts = data.content
+                                .map(item => item.content)
+                                .filter(content => content && content.trim() !== '' && content !== '\n');
+
+                            if (posts.length > 0) {
+                                displayGeneratedContent(posts);
+                                showNotification(`Successfully generated ${posts.length} posts!`, 'success');
+                            } else {
+                                showError('Generated content was empty. Please try again.');
+                            }
+                        } else if (attempts >= maxAttempts) {
+                            clearInterval(poll);
+                            showError('Content generation timed out. Please try again.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error polling for content:', error);
+                        if (attempts >= maxAttempts) {
+                            clearInterval(poll);
+                            showError('Failed to fetch generated content');
+                        }
+                    });
+            }, 5000); // Poll every 5 seconds
+        }
+
+        function showError(message) {
+            const container = document.getElementById('generatedContent');
+            container.innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-circle"></i> ${message}
+                </div>
+            `;
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-check-circle me-2"></i>
+                    ${message}
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+{% endblock %}

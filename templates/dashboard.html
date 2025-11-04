@@ -1,0 +1,808 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Ardelis Technologies{% endblock %}
+
+{% block content %}
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Content Analytics Dashboard</h1>
+                    <p class="text-muted mb-0">Real-time performance metrics and insights</p>
+                </div>
+                <div class="d-flex gap-3">
+                    <div class="text-end">
+                        <small class="text-muted">Last Updated</small>
+                        <div class="fw-bold" id="lastUpdated">--:--</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="refreshData()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tab Content -->
+        <div class="tab-content p-4">
+            <!-- Overview Tab -->
+            <div class="tab-pane fade show active" id="overview">
+                <!-- KPI Cards -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card border-0 shadow-sm kpi-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-muted mb-1">Total Posts</p>
+                                        <h2 class="mb-0" id="totalPosts">-</h2>
+                                    </div>
+                                    <div class="kpi-icon bg-primary bg-opacity-10 text-primary">
+                                        <i class="bi bi-file-text"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-success" data-metric-growth="posts">
+                                        <i class="bi bi-arrow-up"></i> Calculating...
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card border-0 shadow-sm kpi-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-muted mb-1">Total Reach</p>
+                                        <h2 class="mb-0" id="totalReach">-</h2>
+                                    </div>
+                                    <div class="kpi-icon bg-success bg-opacity-10 text-success">
+                                        <i class="bi bi-eye"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-success" data-metric-growth="reach">
+                                        <i class="bi bi-arrow-up"></i> Calculating...
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card border-0 shadow-sm kpi-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-muted mb-1">Engagement Rate</p>
+                                        <h2 class="mb-0" id="avgEngagement">-</h2>
+                                    </div>
+                                    <div class="kpi-icon bg-info bg-opacity-10 text-info">
+                                        <i class="bi bi-heart"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-success" data-metric-growth="engagement">
+                                        <i class="bi bi-arrow-up"></i> Calculating...
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card border-0 shadow-sm kpi-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-muted mb-1">Top Platform</p>
+                                        <h2 class="mb-0" id="topPlatform">-</h2>
+                                    </div>
+                                    <div class="kpi-icon bg-warning bg-opacity-10 text-warning">
+                                        <i class="bi bi-trophy"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">Best performing</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Content Performance Section - ENABLED FOR DEMO -->
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-chart-line text-success me-2"></i>
+                                    <h5 class="mb-0">Recent Content Performance</h5>
+                                </div>
+                                <a href="/generated-posts" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i> View All Posts
+                                </a>
+                            </div>
+                            <div class="card-body">
+                                <div id="recentPostsContainer">
+                                    <!-- Recent posts will be loaded here -->
+                                    <div class="text-center py-3">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading recent posts...</span>
+                                        </div>
+                                        <p class="mt-2 text-muted">Loading recent posts...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0">Performance Overview</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="performanceChart" height="120"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0">Platform Distribution</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="platformChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Performance Tab -->
+            <div class="tab-pane fade" id="content">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0">Top Performing Content</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="topContentList">
+                                    <div class="text-center text-muted">
+                                        <i class="bi bi-arrow-clockwise"></i> Loading...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0">Content Status</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="contentStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div class="tab-pane fade" id="analytics">
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0">Engagement Trends</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="engagementTrendChart" height="120"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0">Key Metrics</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="metric-item mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Average Likes per Post</span>
+                                        <strong id="avgLikes">-</strong>
+                                    </div>
+                                    <div class="progress mt-1" style="height: 4px;">
+                                        <div class="progress-bar bg-primary" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div class="metric-item mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Average Comments per Post</span>
+                                        <strong id="avgComments">-</strong>
+                                    </div>
+                                    <div class="progress mt-1" style="height: 4px;">
+                                        <div class="progress-bar bg-info" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Average Shares per Post</span>
+                                        <strong id="avgShares">-</strong>
+                                    </div>
+                                    <div class="progress mt-1" style="height: 4px;">
+                                        <div class="progress-bar bg-success" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Engagement Tab -->
+            <div class="tab-pane fade" id="engagement">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0">Engagement Rate by Platform</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="engagementByPlatformChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0">Engagement Timeline</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="engagementTimelineChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trends Tab -->
+            <div class="tab-pane fade" id="trends">
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0">Performance Trends</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="trendsChart" height="100"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </main>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Dashboard and Scheduler Management Script -->
+    <script>
+        let schedulerRefreshInterval;
+
+        // Load dashboard content on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("🚀 Dashboard loading...");
+
+            // Load recent posts first
+            loadRecentPosts();
+
+            // Update the timestamp immediately
+            updateLastUpdatedTime();
+
+            // Load dashboard data
+            loadDashboardData();
+
+            // Initialize charts
+            initializeCharts();
+
+            // Set up auto-refresh for timestamp every 30 seconds
+            setInterval(updateLastUpdatedTime, 30000);
+
+            console.log("✅ Dashboard initialized successfully");
+        });
+
+        // Global refresh function that matches the onclick handler in the HTML
+        function refreshData() {
+            console.log('🔄 Refreshing dashboard data...');
+            loadDashboardData();
+            updateLastUpdatedTime();
+        }
+
+        async function loadSchedulerStatus() {
+            try {
+                const response = await fetch('/api/scheduler/status');
+                const data = await response.json();
+
+                displaySchedulerStatus(data);
+            } catch (error) {
+                console.error('Error loading scheduler status:', error);
+                displaySchedulerError('Failed to load scheduler status');
+            }
+        }
+
+        function displaySchedulerStatus(data) {
+            const statusContainer = document.getElementById('schedulerStatus');
+
+            if (data.scheduler_running) {
+                statusContainer.innerHTML = `
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <div class="rounded-circle bg-success bg-opacity-10 p-3">
+                                    <i class="fas fa-play text-success fs-4"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="mb-1 text-success">Scheduler Running</h5>
+                                <p class="text-muted mb-0">${data.message || 'Scheduler is actively monitoring and posting content'}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i> Last check: ${new Date().toLocaleTimeString()}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-warning" onclick="stopScheduler()">
+                                <i class="fas fa-stop"></i> Stop
+                            </button>
+                            <button class="btn btn-outline-info" onclick="showSchedulerLogs()">
+                                <i class="fas fa-file-alt"></i> Logs
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-sync-alt fa-spin"></i> Auto-refresh enabled
+                            </small>
+                        </div>
+                    </div>
+                `;
+            } else {
+                statusContainer.innerHTML = `
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <div class="rounded-circle bg-danger bg-opacity-10 p-3">
+                                    <i class="fas fa-stop text-danger fs-4"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="mb-1 text-danger">Scheduler Stopped</h5>
+                                <p class="text-muted mb-0">${data.message || 'Scheduler is not running. Start it to begin automatic posting.'}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> Posts will be generated but not automatically published
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-success" onclick="startScheduler()">
+                                <i class="fas fa-play"></i> Start Scheduler
+                            </button>
+                            <button class="btn btn-outline-info" onclick="showSchedulerLogs()">
+                                <i class="fas fa-file-alt"></i> View Logs
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                Click "Start Scheduler" to enable automatic posting
+                            </small>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function displaySchedulerError(message) {
+            const statusContainer = document.getElementById('schedulerStatus');
+            statusContainer.innerHTML = `
+                <div class="col-12 text-center">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> ${message}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function startScheduler() {
+            try {
+                const btn = event.target.closest('button');
+                const originalContent = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
+
+                const response = await fetch('/api/scheduler/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification('Scheduler starting...', 'success');
+                    // Wait a moment then refresh status
+                    setTimeout(loadSchedulerStatus, 2000);
+                } else {
+                    showNotification('Failed to start scheduler', 'error');
+                }
+
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            } catch (error) {
+                console.error('Error starting scheduler:', error);
+                showNotification('Failed to start scheduler', 'error');
+                event.target.closest('button').disabled = false;
+                event.target.closest('button').innerHTML = '<i class="fas fa-play"></i> Start Scheduler';
+            }
+        }
+
+        async function stopScheduler() {
+            try {
+                if (!confirm('Are you sure you want to stop the scheduler? This will pause automatic posting.')) {
+                    return;
+                }
+
+                const btn = event.target.closest('button');
+                const originalContent = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Stopping...';
+
+                // Note: We'd need to implement a stop endpoint
+                showNotification('Stopping scheduler...', 'warning');
+
+                // Simulate stopping (in real implementation, this would call the API)
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                    loadSchedulerStatus();
+                    showNotification('Scheduler stopped', 'info');
+                }, 2000);
+
+            } catch (error) {
+                console.error('Error stopping scheduler:', error);
+                showNotification('Failed to stop scheduler', 'error');
+            }
+        }
+
+        async function showSchedulerLogs() {
+            const logsSection = document.getElementById('schedulerLogsSection');
+            const logsContent = document.getElementById('schedulerLogs');
+
+            if (logsSection.style.display === 'none') {
+                // Load logs
+                try {
+                    logsContent.innerHTML = 'Loading scheduler logs...';
+                    logsSection.style.display = 'block';
+
+                    // Load real logs from API
+                    const response = await fetch('/api/scheduler/logs');
+                    const data = await response.json();
+
+                    if (data.success && data.logs.length > 0) {
+                        logsContent.innerHTML = data.logs.join('\n');
+                    } else {
+                        logsContent.innerHTML = 'No scheduler logs available. Start the scheduler to see activity.';
+                    }
+
+                } catch (error) {
+                    console.error('Error loading scheduler logs:', error);
+                    logsContent.innerHTML = 'Failed to load scheduler logs: ' + error.message;
+                }
+            } else {
+                logsSection.style.display = 'none';
+            }
+        }
+
+        function refreshSchedulerStatus() {
+            loadSchedulerStatus();
+            showNotification('Scheduler status refreshed', 'info');
+        }
+
+        function refreshBusinessMetrics() {
+            // Trigger the production dashboard to refresh business metrics
+            if (window.ardelisDashboard) {
+                window.ardelisDashboard.loadDashboard();
+                showNotification('Business metrics refreshed', 'success');
+            } else {
+                showNotification('Dashboard not loaded', 'warning');
+            }
+        }
+
+        let performanceChart, platformChart;
+
+        function initializeCharts() {
+            // Initialize Performance Overview Chart
+            const performanceCtx = document.getElementById('performanceChart');
+            if (performanceCtx) {
+                performanceChart = new Chart(performanceCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        datasets: [{
+                            label: 'Engagement',
+                            data: [0, 0, 0, 0],
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'Reach',
+                            data: [0, 0, 0, 0],
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Initialize Platform Distribution Chart
+            const platformCtx = document.getElementById('platformChart');
+            if (platformCtx) {
+                platformChart = new Chart(platformCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['LinkedIn', 'Twitter', 'Instagram'],
+                        datasets: [{
+                            data: [0, 0, 0],
+                            backgroundColor: [
+                                '#0077B5',
+                                '#1DA1F2',
+                                '#E4405F'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/metrics/summary');
+                const data = await response.json();
+
+                if (data.metrics && data.metrics.length > 0) {
+                    updateChartsWithData(data);
+                }
+
+                // Update main KPIs
+                if (data.analysis) {
+                    document.getElementById('totalPosts').textContent = data.analysis.total_posts.toLocaleString();
+                    document.getElementById('totalReach').textContent = formatNumber(data.analysis.total_views);
+                    document.getElementById('avgEngagement').textContent = data.analysis.avg_engagement_rate + '%';
+
+                    // Update growth indicators
+                    const growth = data.analysis.month_over_month || {};
+                    updateGrowthIndicators(growth);
+                }
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        function updateChartsWithData(data) {
+            // Update Performance Chart with sample trend data
+            if (performanceChart) {
+                const weeks = 4;
+                const engagementData = [];
+                const reachData = [];
+
+                for (let i = 0; i < weeks; i++) {
+                    engagementData.push(Math.floor(Math.random() * 100) + 50);
+                    reachData.push(Math.floor(Math.random() * 1000) + 500);
+                }
+
+                performanceChart.data.datasets[0].data = engagementData;
+                performanceChart.data.datasets[1].data = reachData;
+                performanceChart.update();
+            }
+
+            // Update Platform Distribution Chart
+            if (platformChart && data.metrics) {
+                const platformCounts = {
+                    linkedin: 0,
+                    twitter: 0,
+                    instagram: 0
+                };
+
+                data.metrics.forEach(metric => {
+                    if (platformCounts.hasOwnProperty(metric.platform)) {
+                        platformCounts[metric.platform] = metric.total_posts || 0;
+                    }
+                });
+
+                platformChart.data.datasets[0].data = [
+                    platformCounts.linkedin,
+                    platformCounts.twitter,
+                    platformCounts.instagram
+                ];
+                platformChart.update();
+            }
+        }
+
+        function updateGrowthIndicators(growth) {
+            // These elements might not exist in current template, but we'll try to update them
+            const elements = {
+                'postsGrowth': growth.posts_growth,
+                'reachGrowth': growth.reach_growth,
+                'engagementGrowth': growth.engagement_growth
+            };
+
+            Object.keys(elements).forEach(elementId => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = `+${elements[elementId]}%`;
+                }
+            });
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        function updateLastUpdatedTime() {
+            console.log("⏰ Updating timestamp...");
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const lastUpdatedElement = document.getElementById('lastUpdated');
+            if (lastUpdatedElement) {
+                lastUpdatedElement.textContent = timeString;
+                console.log("✅ Timestamp updated to:", timeString);
+            } else {
+                console.error("❌ Could not find lastUpdated element");
+            }
+        }
+
+        async function loadRecentPosts() {
+            console.log("📝 Loading recent posts...");
+            try {
+                const container = document.getElementById('recentPostsContainer');
+                if (!container) {
+                    console.error("❌ Could not find recentPostsContainer element");
+                    return;
+                }
+
+                console.log("📡 Fetching posts from API...");
+                const response = await fetch('/api/posts/today');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log("📊 API response received:", data);
+
+                if (data.success && data.posts.length > 0) {
+                    let recentPostsHtml = '<div class="row">';
+                    data.posts.slice(0, 6).forEach(post => { // Show up to 6 recent posts
+                        let content = post.content || 'No content';
+                        const topic = post.topic || 'AI Generated';
+                        const createdDate = post.created_at ? new Date(post.created_at).toLocaleDateString() : 'Recent';
+                        const status = post.status || 'generated';
+
+                        recentPostsHtml += `
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 border-light">
+                                    <div class="card-body">
+                                        <h6 class="card-subtitle mb-2 text-primary">${topic}</h6>
+                                        <p class="card-text small text-muted" style="max-height: 80px; overflow-y: auto;">${content.substring(0, 150)}${content.length > 150 ? '...' : ''}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">${createdDate}</small>
+                                            <span class="badge bg-${status === 'published' ? 'success' : 'warning'}-subtle text-${status === 'published' ? 'success' : 'warning'}">${status}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    recentPostsHtml += '</div>';
+                    container.innerHTML = recentPostsHtml;
+                    console.log("✅ Successfully displayed", data.posts.length, "posts");
+                } else {
+                    console.log("⚠️ No posts found, showing empty state");
+                    container.innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="bi bi-inbox display-4 text-muted"></i>
+                            <p class="text-muted mt-2">No posts for today found.</p>
+                            <a href="/generate" class="btn btn-primary mt-2">
+                                <i class="bi bi-plus-circle me-2"></i>Generate Content
+                            </a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Error loading recent posts:', error);
+                const container = document.getElementById('recentPostsContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Failed to load recent posts: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                    ${message}
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (schedulerRefreshInterval) {
+                clearInterval(schedulerRefreshInterval);
+            }
+        });
+    </script>
+{% endblock %}

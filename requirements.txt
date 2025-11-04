@@ -1,2 +1,3 @@
 zai-sdk
 python-dotenv
+requests

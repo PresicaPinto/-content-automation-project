@@ -1,0 +1,42 @@
+<!-- Static Sidebar Navigation -->
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <h4><i class="fas fa-rocket"></i> Ard..Technologies</h4>
+        <small class="text-muted">Content Automation System</small>
+    </div>
+    <nav class="nav flex-column">
+        <a href="/" class="nav-link {{ 'active' if request.endpoint in ['dashboard', 'dashboard_alt'] else '' }}">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        <a href="/topics" class="nav-link {{ 'active' if request.endpoint == 'topics' else '' }}">
+            <i class="fas fa-lightbulb"></i> Topics
+        </a>
+        <a href="/content-generator" class="nav-link {{ 'active' if request.endpoint == 'content_generator' else '' }}">
+            <i class="fas fa-magic"></i> Generator
+        </a>
+        <a href="/manual-posting" class="nav-link {{ 'active' if request.endpoint == 'manual_posting' else '' }}">
+            <i class="fas fa-share-alt"></i> Manual Posting
+        </a>
+        <a href="/scheduler" class="nav-link {{ 'active' if request.endpoint == 'scheduler' else '' }}">
+            <i class="fas fa-calendar-alt"></i> Scheduler
+        </a>
+        <a href="/generated-posts" class="nav-link {{ 'active' if request.endpoint == 'generated_posts' else '' }}">
+            <i class="fas fa-file-alt"></i> All Posts
+        </a>
+        <a href="/analytics" class="nav-link {{ 'active' if request.endpoint == 'analytics' else '' }}">
+            <i class="fas fa-chart-line"></i> Analytics
+        </a>
+        <!-- <a href="/demo" class="nav-link {{ 'active' if request.endpoint == 'demo' else '' }}">
+            <i class="fas fa-play"></i> Demo
+        </a> -->
+    </nav>
+
+    <div class="sidebar-footer mt-auto">
+        <div class="text-center p-3">
+            <small class="text-muted">
+                <i class="fas fa-code"></i> Production System<br>
+                Version 1.0
+            </small>
+        </div>
+    </div>
+</nav>

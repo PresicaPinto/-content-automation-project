@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}Content Automation Demo | Ardelis Technologies{% endblock %}
+
+{% block head %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --dark-bg: #1a1a2e;
+            --card-bg: #16213e;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: #ffffff;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .demo-header {
+            background: var(--primary-gradient);
+            padding: 3rem 0;
+            margin-bottom: 3rem;
+        }
+
+        .demo-section {
+            margin-bottom: 3rem;
+        }
+
+        .demo-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .metric-card {
+            background: var(--primary-gradient);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .loading-spinner {
+            display: none;
+        }
+
+        .loading-spinner.active {
+            display: inline-block;
+        }
+
+        .performance-meter {
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .performance-fill {
+            height: 100%;
+            background: var(--success-gradient);
+            transition: width 1s ease;
+        }
+
+        .main-content {
+            background: var(--dark-bg);
+        }
+
+        .sidebar {
+            background: #0f0f1e !important;
+        }
+
+        .nav-link {
+            color: #ffffff !important;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1) !important;
+        }
+
+        .nav-link.active {
+            background: var(--primary-gradient) !important;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Demo Header -->
+    <div class="demo-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-3">
+                        <i class="bi bi-lightning-charge-fill"></i> Content Automation Live Demo
+                    </h1>
+                    <p class="lead mb-0">Watch AI generate professional content in real-time with enterprise-grade speed and quality</p>
+                </div>
+                <div class="col-lg-4 text-end">
+                    <div class="metric-card text-white">
+                        <div class="metric-value">€100K</div>
+                        <div class="metric-label">Revenue Goal</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Live Generation Section -->
+        <div class="demo-section">
+            <div class="demo-card">
+                <h3 class="mb-4"><i class="bi bi-magic"></i> Live Content Generation</h3>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Select Topic:</label>
+                        <select class="form-select" id="topicSelect">
+                            <option value="ai-transformation">AI Transformation in Business</option>
+                            <option value="digital-marketing">Digital Marketing Trends 2024</option>
+                            <option value="cloud-computing">Cloud Computing Best Practices</option>
+                            <option value="cybersecurity">Cybersecurity for Enterprises</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Target Platform:</label>
+                        <select class="form-select" id="platformSelect">
+                            <option value="linkedin">LinkedIn Professional</option>
+                            <option value="twitter">Twitter Engaging</option>
+                            <option value="facebook">Facebook Business</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="text-center mb-4">
+                    <button class="btn btn-primary btn-lg" onclick="generateContent()">
+                        <i class="bi bi-lightning-charge-fill"></i> Generate Content Now
+                        <span class="loading-spinner spinner-border spinner-border-sm ms-2" id="loadingSpinner"></span>
+                    </button>
+                </div>
+
+                <div id="generatedContent" style="display: none;">
+                    <h5 class="mb-3">Generated Content:</h5>
+                    <div class="card bg-dark text-light">
+                        <div class="card-body">
+                            <div id="contentOutput"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="demo-section">
+            <div class="demo-card">
+                <h3 class="mb-4"><i class="bi bi-speedometer2"></i> Performance Metrics</h3>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-primary" id="generationTime">0.0s</h4>
+                            <small>Generation Time</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-success" id="qualityScore">0%</h4>
+                            <small>Quality Score</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-info" id="engagementPrediction">0%</h4>
+                            <small>Engagement Prediction</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-warning" id="platformOptimization">0%</h4>
+                            <small>Platform Optimization</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Showcase -->
+        <div class="demo-section">
+            <div class="demo-card">
+                <h3 class="mb-4"><i class="bi bi-stars"></i> Enterprise Features</h3>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-dark border-primary">
+                            <div class="card-body text-center">
+                                <i class="bi bi-shield-check display-4 text-primary mb-2"></i>
+                                <h5>Enterprise Security</h5>
+                                <p class="small">Bank-level encryption and data protection</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-dark border-success">
+                            <div class="card-body text-center">
+                                <i class="bi bi-graph-up display-4 text-success mb-2"></i>
+                                <h5>ROI Tracking</h5>
+                                <p class="small">Real-time business impact measurement</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-dark border-info">
+                            <div class="card-body text-center">
+                                <i class="bi bi-people display-4 text-info mb-2"></i>
+                                <h5>Multi-Platform</h5>
+                                <p class="small">LinkedIn, Twitter, Facebook integration</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        function generateContent() {
+            const spinner = document.getElementById('loadingSpinner');
+            const contentDiv = document.getElementById('generatedContent');
+            const outputDiv = document.getElementById('contentOutput');
+            const topic = document.getElementById('topicSelect').value;
+            const platform = document.getElementById('platformSelect').value;
+
+            // Show loading
+            spinner.classList.add('active');
+            contentDiv.style.display = 'none';
+
+            // Simulate content generation
+            setTimeout(() => {
+                const sampleContent = {
+                    'ai-transformation': {
+                        linkedin: "🚀 AI Transformation: The Key to Business Success in 2024\n\nMany businesses struggle with AI implementation. Here's how to succeed:\n\n1. Start with clear business objectives\n2. Invest in employee training\n3. Focus on data quality first\n4. Choose the right AI tools\n5. Measure ROI continuously\n\nThe companies that embrace AI now will be the market leaders of tomorrow. #AITransformation #DigitalStrategy #BusinessInnovation",
+                        twitter: "🤖 AI isn't just for tech giants anymore! Small businesses can leverage AI to:\n\n✅ Automate repetitive tasks\n✅ Improve customer service\n✅ Make data-driven decisions\n✅ Reduce operational costs\n\nStart small, think big! 📈\n\n#AI #SmallBusiness #DigitalTransformation",
+                        facebook: "🔥 TRANSFORM YOUR BUSINESS WITH AI 🔥\n\nDiscover how artificial intelligence can revolutionize your operations:\n\n📊 Data-driven insights\n🤖 Automated workflows\n💰 Cost reduction\n🎯 Better decision making\n\nReady to future-proof your business? Learn how our AI solutions can help you achieve your goals in 2024!\n\n#AI #BusinessTransformation #Innovation #Tech"
+                    },
+                    'digital-marketing': {
+                        linkedin: "📈 Digital Marketing Trends 2024: What's Working Now\n\nThe landscape is evolving rapidly. Here are the trends driving results:\n\n• AI-powered personalization\n• Interactive content formats\n• Voice search optimization\n• Social commerce integration\n• Privacy-first marketing\n\nCompanies adapting to these changes are seeing 3x higher engagement rates. #DigitalMarketing #MarketingStrategy #BusinessGrowth",
+                        twitter: "🎯 Digital marketing in 2024 is all about AUTHENTICITY + AI\n\nTop trends:\n🤖 Personalized content\n📱 Short-form video\n🎙️ Voice search\n🛒 Social shopping\n\nWhat's working for your brand? 👇\n\n#DigitalMarketing #MarketingTips #2024Trends",
+                        facebook: "📱 CRUSH YOUR DIGITAL MARKETING IN 2024! 📱\n\nWant to know the secret to viral content and massive engagement?\n\n✨ Create authentic, value-driven content\n✨ Use AI to understand your audience\n✨ Leverage video and interactive formats\n✨ Optimize for mobile and voice search\n✨ Build community, not just followers\n\nOur clients are seeing 200%+ ROI with these strategies! Want the same results?\n\n#DigitalMarketing #MarketingSuccess #SocialMedia #BusinessGrowth"
+                    }
+                };
+
+                const content = sampleContent[topic]?.[platform] || "Content generated successfully!";
+                outputDiv.textContent = content;
+
+                // Update metrics
+                updateMetrics();
+
+                // Hide loading, show content
+                spinner.classList.remove('active');
+                contentDiv.style.display = 'block';
+            }, 2000);
+        }
+
+        function updateMetrics() {
+            // Animate metrics
+            animateValue('generationTime', 0, 2.3, 1000, 's');
+            animateValue('qualityScore', 0, 94, 1000, '%');
+            animateValue('engagementPrediction', 0, 87, 1000, '%');
+            animateValue('platformOptimization', 0, 91, 1000, '%');
+        }
+
+        function animateValue(id, start, end, duration, suffix = '') {
+            const element = document.getElementById(id);
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= end) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                element.textContent = current.toFixed(1) + suffix;
+            }, 16);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Demo page loaded');
+        });
+    </script>
+{% endblock %}

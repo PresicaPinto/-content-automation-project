@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Posts | Content Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/dashboard.css') }}" rel="stylesheet">
+    <style>
+        .platform-tab {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        .platform-tab.active {
+            border-bottom-color: var(--primary-color);
+            background: rgba(249, 115, 22, 0.05);
+        }
+        .platform-tab:hover {
+            background: rgba(249, 115, 22, 0.1);
+        }
+        .post-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        .post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .post-content {
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            color: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .copy-btn:hover {
+            background: #ea580c;
+            transform: translateY(-1px);
+        }
+        .copy-btn.copied {
+            background: var(--success-color);
+        }
+        .stats-card {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(249, 115, 22, 0.05));
+            border: 1px solid rgba(249, 115, 22, 0.2);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        /* Hamburger Menu Styles */
+        .sidebar {
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .sidebar.collapsed {
+            margin-left: -250px;
+        }
+        .hamburger {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .hamburger:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: scale(1.05);
+        }
+        .main-content {
+            transition: all 0.3s;
+        }
+        .main-content.expanded {
+            margin-left: 0;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                height: 100vh;
+                margin-left: -250px;
+            }
+            .sidebar.show {
+                margin-left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .hamburger {
+                display: block;
+            }
+        }
+        @media (min-width: 769px) {
+            .hamburger {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hamburger Menu Button -->
+    <button class="hamburger" id="hamburger-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h4><i class="fas fa-rocket"></i> Content Dashboard</h4>
+                </div>
+                <nav class="nav flex-column">
+                    <a href="/" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="/topics" class="nav-link">
+                        <i class="fas fa-lightbulb"></i> Topics
+                    </a>
+                    <a href="/content-generator" class="nav-link">
+                        <i class="fas fa-magic"></i> Generator
+                    </a>
+                    <a href="/generated-posts" class="nav-link active">
+                        <i class="fas fa-file-alt"></i> Generated Posts
+                    </a>
+                    <a href="/analytics" class="nav-link">
+                        <i class="fas fa-chart-line"></i> Analytics
+                    </a>
+                </nav>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="main-content" id="main-content">
+                <div class="p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3 mb-0">Generated Posts</h1>
+                            <p class="text-muted mb-0">View and manage your generated content</p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary" onclick="refreshAllPosts()" id="refreshBtn">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                            <button class="btn btn-success" onclick="window.location.href='/topics'">
+                                <i class="fas fa-plus"></i> Generate More
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Platform Stats -->
+                    <div class="row g-4 mb-4" id="platformStats">
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <h3 class="text-primary mb-1" id="linkedinCount">-</h3>
+                                <p class="mb-0"><i class="fab fa-linkedin"></i> LinkedIn Posts</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <h3 class="text-info mb-1" id="instagramCount">-</h3>
+                                <p class="mb-0"><i class="fab fa-instagram"></i> Instagram Captions</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <h3 class="text-info mb-1" id="twitterCount">-</h3>
+                                <p class="mb-0"><i class="fab fa-twitter"></i> Twitter Threads</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Platform Tabs -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-0">
+                            <div class="d-flex border-bottom">
+                                <div class="platform-tab active p-3 flex-fill text-center" onclick="switchPlatform('linkedin')" data-platform="linkedin">
+                                    <i class="fab fa-linkedin text-primary"></i>
+                                    <strong class="ms-2">LinkedIn Posts</strong>
+                                </div>
+                                <div class="platform-tab p-3 flex-fill text-center" onclick="switchPlatform('instagram')" data-platform="instagram">
+                                    <i class="fab fa-instagram text-info"></i>
+                                    <strong class="ms-2">Instagram Captions</strong>
+                                </div>
+                                <div class="platform-tab p-3 flex-fill text-center" onclick="switchPlatform('twitter')" data-platform="twitter">
+                                    <i class="fab fa-twitter text-info"></i>
+                                    <strong class="ms-2">Twitter Threads</strong>
+                                </div>
+                            </div>
+
+                            <!-- Posts Container -->
+                            <div class="p-4">
+                                <div id="postsContainer">
+                                    <div class="loading text-center py-5" id="initialLoading">
+                                        <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                                        <p class="mt-2">Loading your generated posts...</p>
+                                        <p class="text-muted small">This should only take a moment</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentPlatform = 'linkedin';
+        let allPosts = {};
+
+        // Hamburger Menu Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+
+            hamburgerBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                sidebar.classList.toggle('show');
+                mainContent.classList.toggle('expanded');
+
+                // Change hamburger icon
+                const icon = hamburgerBtn.querySelector('i');
+                if (sidebar.classList.contains('collapsed') && !sidebar.classList.contains('show')) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                } else {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                }
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768) {
+                    if (!sidebar.contains(event.target) && !hamburgerBtn.contains(event.target)) {
+                        sidebar.classList.remove('show');
+                        sidebar.classList.add('collapsed');
+                        mainContent.classList.add('expanded');
+                        const icon = hamburgerBtn.querySelector('i');
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                }
+            });
+
+            // Load initial data
+            loadAllPosts();
+            updatePlatformStats();
+        });
+
+        async function loadAllPosts() {
+            try {
+                const platforms = ['linkedin', 'instagram', 'twitter'];
+
+                for (const platform of platforms) {
+                    try {
+                        const response = await fetch(`/api/generated-posts/${platform}`);
+                        const data = await response.json();
+
+                        console.log(`Loaded ${platform} posts:`, data); // Debug log
+
+                        if (data.success) {
+                            allPosts[platform] = data.posts || [];
+                            console.log(`${platform} has ${allPosts[platform].length} posts`); // Debug log
+                        } else {
+                            allPosts[platform] = [];
+                            console.log(`${platform} returned no success:`, data); // Debug log
+                        }
+                    } catch (platformError) {
+                        console.error(`Error loading ${platform} posts:`, platformError);
+                        allPosts[platform] = [];
+                    }
+                }
+
+                console.log('All posts loaded:', allPosts); // Debug log
+                console.log('Current platform:', currentPlatform); // Debug log
+
+                // Display current platform posts
+                displayPosts(currentPlatform);
+                updatePlatformStats();
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                document.getElementById('postsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                        <h5>Failed to load posts</h5>
+                        <p>Please refresh the page and try again.</p>
+                        <button class="btn btn-outline-primary" onclick="loadAllPosts()">
+                            <i class="fas fa-sync-alt"></i> Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function displayPosts(platform) {
+            const container = document.getElementById('postsContainer');
+            const posts = allPosts[platform] || [];
+
+            console.log(`displayPosts called for platform: ${platform}, posts count: ${posts.length}`); // Debug log
+
+            // Hide initial loading indicator
+            const initialLoading = document.getElementById('initialLoading');
+            if (initialLoading) {
+                initialLoading.style.display = 'none';
+            }
+
+            if (posts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-file-alt fa-2x text-muted mb-3"></i>
+                        <h5>No ${platform} posts found</h5>
+                        <p>Generate some posts to see them here!</p>
+                        <button class="btn btn-primary" onclick="window.location.href='/topics'">
+                            <i class="fas fa-plus"></i> Generate Posts
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = posts.map((post, index) => `
+                <div class="post-card position-relative">
+                    <button class="copy-btn" onclick="copyPostContent(this, '${post.content.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+
+                    <div class="mb-2">
+                        <span class="badge bg-primary">Post ${post.post_number || index + 1}</span>
+                        ${post.topic ? `<span class="badge bg-secondary ms-2">${post.topic}</span>` : ''}
+                        ${post.publish_date ? `<span class="badge bg-info ms-2"><i class="fas fa-calendar"></i> ${post.publish_date}</span>` : ''}
+                    </div>
+
+                    <div class="post-content">${post.content}</div>
+
+                    <div class="mt-3 text-muted small">
+                        ${post.generation_method ? `<span class="me-3"><i class="fas fa-cog"></i> ${post.generation_method}</span>` : ''}
+                        ${post.processing_time ? `<span class="me-3"><i class="fas fa-clock"></i> ${post.processing_time}</span>` : ''}
+                        ${post.generated_at ? `<span><i class="fas fa-clock"></i> ${new Date(post.generated_at).toLocaleString()}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function switchPlatform(platform) {
+            currentPlatform = platform;
+
+            // Update tab styling
+            document.querySelectorAll('.platform-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-platform="${platform}"]`).classList.add('active');
+
+            // Display posts for selected platform
+            displayPosts(platform);
+        }
+
+        function updatePlatformStats() {
+            document.getElementById('linkedinCount').textContent = (allPosts.linkedin || []).length;
+            document.getElementById('instagramCount').textContent = (allPosts.instagram || []).length;
+            document.getElementById('twitterCount').textContent = (allPosts.twitter || []).length;
+        }
+
+        function refreshAllPosts() {
+            document.getElementById('postsContainer').innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                    <p class="mt-2">Refreshing posts...</p>
+                </div>
+            `;
+
+            loadAllPosts();
+        }
+
+        function copyPostContent(button, content) {
+            navigator.clipboard.writeText(content).then(() => {
+                const originalContent = button.innerHTML;
+                button.classList.add('copied');
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    button.innerHTML = originalContent;
+                }, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = content;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+
+                const originalContent = button.innerHTML;
+                button.classList.add('copied');
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    button.innerHTML = originalContent;
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

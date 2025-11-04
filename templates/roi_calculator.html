@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business ROI Calculator | Ardelis Technologies</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/dashboard.css') }}" rel="stylesheet">
+
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+        }
+        .goal-progress {
+            position: relative;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .goal-progress::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, #28a745 var(--progress, 0%), transparent var(--progress, 0%));
+            border-radius: 15px;
+            opacity: 0.1;
+            z-index: 0;
+        }
+        .goal-content {
+            position: relative;
+            z-index: 1;
+        }
+        .metric-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+        }
+        .pipeline-stage {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 10px;
+            background: #f8f9fa;
+            position: relative;
+        }
+        .pipeline-stage::after {
+            content: '\2192';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: #6c757d;
+        }
+        .pipeline-stage:last-child::after {
+            display: none;
+        }
+        .funnel-chart {
+            position: relative;
+            height: 300px;
+        }
+        .roi-display {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .projection-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .projection-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .scenario-card {
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .scenario-card:hover {
+            border-color: #007bff;
+            transform: translateY(-2px);
+        }
+        .scenario-card.active {
+            border-color: #007bff;
+            background: #e7f3ff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-chart-line"></i> ROI Calculator</h4>
+        </div>
+        <nav class="nav flex-column">
+            <a href="/" class="nav-link">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="/topics" class="nav-link">
+                <i class="fas fa-lightbulb"></i> Topics
+            </a>
+            <a href="/content-generator" class="nav-link">
+                <i class="fas fa-magic"></i> Generator
+            </a>
+            <a href="/manual-posting" class="nav-link">
+                <i class="fas fa-share-alt"></i> Manual Posting
+            </a>
+            <a href="/roi-calculator" class="nav-link active">
+                <i class="fas fa-calculator"></i> ROI Calculator
+            </a>
+            <a href="/analytics" class="nav-link">
+                <i class="fas fa-chart-line"></i> Analytics
+            </a>
+        </nav>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="display-4 fw-bold mb-3">Business ROI Calculator</h1>
+                        <p class="lead mb-0">Track content performance and calculate expected return on investment for Ardelis Technologies</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="roi-display" id="roiDisplay">-</div>
+                        <p class="mb-0">Current ROI Multiple</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="container-fluid p-4">
+            <!-- Goal Progress Section -->
+            <div class="goal-progress" style="--progress: 0%">
+                <div class="goal-content">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="mb-3">Progress to €100,000 Revenue Goal</h3>
+                            <div class="progress mb-3" style="height: 30px;">
+                                <div id="goalProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%">
+                                    <span id="goalProgressText">0% Complete</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <h5 id="currentRevenue">€0</h5>
+                                    <small class="text-muted">Current Expected</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <h5 id="remainingRevenue">€100,000</h5>
+                                    <small class="text-muted">Remaining</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <h5 id="contentGenerated">0</h5>
+                                    <small class="text-muted">Posts Generated</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <h5 id="daysElapsed">0</h5>
+                                    <small class="text-muted">Days in 90-day mission</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="btn-group-vertical w-100" role="group">
+                                <button class="btn btn-outline-primary mb-2" onclick="refreshROI()">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh Calculations
+                                </button>
+                                <button class="btn btn-outline-success mb-2" onclick="exportROIReport()">
+                                    <i class="bi bi-download"></i> Export Report
+                                </button>
+                                <button class="btn btn-outline-info" onclick="showSettings()">
+                                    <i class="bi bi-gear"></i> Settings
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="card metric-card">
+                        <div class="card-body text-center">
+                            <div class="metric-icon bg-primary bg-opacity-10 text-primary">
+                                <i class="bi bi-eye"></i>
+                            </div>
+                            <h3 id="totalViews" class="mb-2">0</h3>
+                            <p class="text-muted mb-0">Total Expected Views</p>
+                            <small class="text-success" id="viewsGrowth">
+                                <i class="bi bi-arrow-up"></i> Based on content
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card metric-card">
+                        <div class="card-body text-center">
+                            <div class="metric-icon bg-info bg-opacity-10 text-info">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <h3 id="expectedLeads" class="mb-2">0</h3>
+                            <p class="text-muted mb-0">Expected Leads</p>
+                            <small class="text-muted">2% conversion rate</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card metric-card">
+                        <div class="card-body text-center">
+                            <div class="metric-icon bg-warning bg-opacity-10 text-warning">
+                                <i class="bi bi-calendar-check"></i>
+                            </div>
+                            <h3 id="expectedDemos" class="mb-2">0</h3>
+                            <p class="text-muted mb-0">Demo Requests</p>
+                            <small class="text-muted">10% of leads</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card metric-card">
+                        <div class="card-body text-center">
+                            <div class="metric-icon bg-success bg-opacity-10 text-success">
+                                <i class="bi bi-handshake"></i>
+                            </div>
+                            <h3 id="expectedDeals" class="mb-2">0</h3>
+                            <p class="text-muted mb-0">Expected Deals</p>
+                            <small class="text-muted">20% close rate</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Pipeline Funnel -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-8">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-0">
+                            <h5 class="mb-0">Sales Pipeline Funnel</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="funnelChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-0">
+                            <h5 class="mb-0">Cost Breakdown</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="costChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scenario Planning -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-0">
+                            <h5 class="mb-0">Revenue Projection Scenarios</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="scenario-card p-3" onclick="selectScenario('conservative')">
+                                        <h6 class="text-primary">Conservative</h6>
+                                        <p class="mb-2">Lower engagement, standard conversion</p>
+                                        <h5 id="conservativeRevenue">€0</h5>
+                                        <small class="text-muted">Expected revenue</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="scenario-card p-3 active" onclick="selectScenario('moderate')">
+                                        <h6 class="text-success">Moderate</h6>
+                                        <p class="mb-2">Current performance trajectory</p>
+                                        <h5 id="moderateRevenue">€0</h5>
+                                        <small class="text-muted">Expected revenue</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="scenario-card p-3" onclick="selectScenario('aggressive')">
+                                        <h6 class="text-warning">Aggressive</h6>
+                                        <p class="mb-2">High engagement, optimal conversion</p>
+                                        <h5 id="aggressiveRevenue">€0</h5>
+                                        <small class="text-muted">Expected revenue</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Projections Table -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm projection-table">
+                        <div class="card-header bg-white border-0">
+                            <h5 class="mb-0">30-Day Revenue Projections</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Day</th>
+                                            <th>Cumulative Posts</th>
+                                            <th>Expected Views</th>
+                                            <th>Leads (2%)</th>
+                                            <th>Demos (10%)</th>
+                                            <th>Deals (20%)</th>
+                                            <th>Cumulative Revenue</th>
+                                            <th>ROI Multiple</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="projectionTableBody">
+                                        <!-- Will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROI Timeline Chart -->
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">ROI Timeline Projection</h5>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button class="btn btn-outline-primary active" onclick="changeTimelineView('90days')">90 Days</button>
+                                <button class="btn btn-outline-primary" onclick="changeTimelineView('30days')">30 Days</button>
+                                <button class="btn btn-outline-primary" onclick="changeTimelineView('7days')">7 Days</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="roiTimelineChart" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">ROI Calculator Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="settingsForm">
+                        <div class="mb-3">
+                            <label class="form-label">Average Views per Post</label>
+                            <input type="number" class="form-control" id="avgViews" value="500">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Lead Conversion Rate (%)</label>
+                            <input type="number" class="form-control" id="leadRate" value="2" step="0.1">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Demo Booking Rate (%)</label>
+                            <input type="number" class="form-control" id="demoRate" value="10" step="0.1">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Deal Close Rate (%)</label>
+                            <input type="number" class="form-control" id="dealRate" value="20" step="0.1">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Average Deal Size (€)</label>
+                            <input type="number" class="form-control" id="dealSize" value="15000">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Monthly Cost (€)</label>
+                            <input type="number" class="form-control" id="monthlyCost" value="880">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        class ROICalculator {
+            constructor() {
+                this.settings = {
+                    avgViews: 500,
+                    leadRate: 0.02,
+                    demoRate: 0.10,
+                    dealRate: 0.20,
+                    dealSize: 15000,
+                    monthlyCost: 880,
+                    targetRevenue: 100000
+                };
+                this.currentScenario = 'moderate';
+                this.charts = {};
+                this.init();
+            }
+
+            init() {
+                this.loadSettings();
+                this.loadData();
+                this.setupEventListeners();
+            }
+
+            loadSettings() {
+                // Load from localStorage if available
+                const saved = localStorage.getItem('roiSettings');
+                if (saved) {
+                    this.settings = { ...this.settings, ...JSON.parse(saved) };
+                }
+            }
+
+            async loadData() {
+                try {
+                    // Load content metrics
+                    const contentResponse = await fetch('/api/content/status');
+                    const contentData = await contentResponse.json();
+
+                    // Load metrics summary
+                    const metricsResponse = await fetch('/api/metrics/summary');
+                    const metricsData = await metricsResponse.json();
+
+                    this.updateCalculations(contentData, metricsData);
+                    this.initializeCharts();
+                    this.updateProjectionTable();
+
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    this.showError('Failed to load ROI data. Please refresh the page.');
+                }
+            }
+
+            updateCalculations(contentData, metricsData) {
+                const totalPosts = contentData.total_content || 0;
+                const totalViews = totalPosts * this.settings.avgViews;
+                const expectedLeads = totalViews * this.settings.leadRate;
+                const expectedDemos = expectedLeads * this.settings.demoRate;
+                const expectedDeals = expectedDemos * this.settings.dealRate;
+                const expectedRevenue = expectedDeals * this.settings.dealSize;
+                const roiMultiple = (expectedRevenue / this.settings.monthlyCost);
+
+                // Update displays
+                document.getElementById('totalViews').textContent = Math.round(totalViews).toLocaleString();
+                document.getElementById('expectedLeads').textContent = Math.round(expectedLeads);
+                document.getElementById('expectedDemos').textContent = Math.round(expectedDemos);
+                document.getElementById('expectedDeals').textContent = Math.round(expectedDeals);
+                document.getElementById('roiDisplay').textContent = roiMultiple.toFixed(1) + 'x';
+
+                // Update goal progress
+                const progressPercentage = Math.min(100, (expectedRevenue / this.settings.targetRevenue) * 100);
+                const progressBar = document.getElementById('goalProgressBar');
+                progressBar.style.width = progressPercentage + '%';
+                document.getElementById('goalProgressText').textContent = progressPercentage.toFixed(1) + '% Complete';
+
+                document.getElementById('currentRevenue').textContent = '€' + Math.round(expectedRevenue).toLocaleString();
+                document.getElementById('remainingRevenue').textContent = '€' + Math.round(Math.max(0, this.settings.targetRevenue - expectedRevenue)).toLocaleString();
+                document.getElementById('contentGenerated').textContent = totalPosts;
+
+                // Calculate days elapsed in 90-day mission
+                const startDate = new Date(); // This should be actual start date
+                const daysElapsed = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
+                document.getElementById('daysElapsed').textContent = daysElapsed;
+
+                // Update goal progress background
+                const goalProgress = document.querySelector('.goal-progress');
+                goalProgress.style.setProperty('--progress', progressPercentage + '%');
+
+                // Update scenarios
+                this.updateScenarios(totalPosts);
+            }
+
+            updateScenarios(totalPosts) {
+                const scenarios = {
+                    conservative: { multiplier: 0.7 },
+                    moderate: { multiplier: 1.0 },
+                    aggressive: { multiplier: 1.5 }
+                };
+
+                for (const [scenario, config] of Object.entries(scenarios)) {
+                    const totalViews = totalPosts * this.settings.avgViews * config.multiplier;
+                    const expectedLeads = totalViews * this.settings.leadRate;
+                    const expectedDemos = expectedLeads * this.settings.demoRate;
+                    const expectedDeals = expectedDemos * this.settings.dealRate;
+                    const expectedRevenue = expectedDeals * this.settings.dealSize;
+
+                    document.getElementById(scenario + 'Revenue').textContent = '€' + Math.round(expectedRevenue).toLocaleString();
+                }
+            }
+
+            initializeCharts() {
+                // Funnel Chart
+                const funnelCtx = document.getElementById('funnelChart').getContext('2d');
+                this.charts.funnel = new Chart(funnelCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Total Views', 'Leads', 'Demo Requests', 'Closed Deals'],
+                        datasets: [{
+                            data: [
+                                parseInt(document.getElementById('totalViews').textContent.replace(/,/g, '')) || 0,
+                                parseInt(document.getElementById('expectedLeads').textContent) || 0,
+                                parseInt(document.getElementById('expectedDemos').textContent) || 0,
+                                parseInt(document.getElementById('expectedDeals').textContent) || 0
+                            ],
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(255, 206, 86, 0.8)',
+                                'rgba(75, 192, 192, 0.8)'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Cost Chart
+                const costCtx = document.getElementById('costChart').getContext('2d');
+                this.charts.cost = new Chart(costCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Content Creation', 'Tools & Software', 'Management', 'Overhead'],
+                        datasets: [{
+                            data: [220, 110, 330, 220],
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 206, 86, 0.8)',
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(153, 102, 255, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // ROI Timeline Chart
+                const timelineCtx = document.getElementById('roiTimelineChart').getContext('2d');
+                this.charts.timeline = new Chart(timelineCtx, {
+                    type: 'line',
+                    data: {
+                        labels: this.generateTimelineLabels(90),
+                        datasets: [{
+                            label: 'Cumulative Revenue (€)',
+                            data: this.generateTimelineData(90),
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Cumulative Cost (€)',
+                            data: this.generateCostData(90),
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '€' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            generateTimelineLabels(days) {
+                const labels = [];
+                for (let i = 0; i <= days; i += 7) {
+                    labels.push('Day ' + i);
+                }
+                return labels;
+            }
+
+            generateTimelineData(days) {
+                const data = [];
+                const dailyPosts = 3; // Average posts per day
+                const dailyRevenue = dailyPosts * this.settings.avgViews * this.settings.leadRate *
+                                   this.settings.demoRate * this.settings.dealRate * this.settings.dealSize / 7;
+
+                for (let i = 0; i <= days; i += 7) {
+                    data.push(Math.round(dailyRevenue * i));
+                }
+                return data;
+            }
+
+            generateCostData(days) {
+                const data = [];
+                const dailyCost = this.settings.monthlyCost / 30;
+
+                for (let i = 0; i <= days; i += 7) {
+                    data.push(Math.round(dailyCost * i));
+                }
+                return data;
+            }
+
+            updateProjectionTable() {
+                const tbody = document.getElementById('projectionTableBody');
+                tbody.innerHTML = '';
+
+                const dailyPosts = 3;
+                let cumulativePosts = 0;
+                let cumulativeViews = 0;
+                let cumulativeLeads = 0;
+                let cumulativeDemos = 0;
+                let cumulativeDeals = 0;
+                let cumulativeRevenue = 0;
+
+                for (let day = 1; day <= 30; day += 3) {
+                    cumulativePosts += dailyPosts * 3;
+                    cumulativeViews += dailyPosts * 3 * this.settings.avgViews;
+                    const newLeads = dailyPosts * 3 * this.settings.avgViews * this.settings.leadRate;
+                    cumulativeLeads += newLeads;
+                    const newDemos = newLeads * this.settings.demoRate;
+                    cumulativeDemos += newDemos;
+                    const newDeals = newDemos * this.settings.dealRate;
+                    cumulativeDeals += newDeals;
+                    const newRevenue = newDeals * this.settings.dealSize;
+                    cumulativeRevenue += newRevenue;
+
+                    const roiMultiple = cumulativeRevenue / (this.settings.monthlyCost / 30 * day);
+
+                    const row = `
+                        <tr>
+                            <td>Day ${day}</td>
+                            <td>${cumulativePosts}</td>
+                            <td>${Math.round(cumulativeViews).toLocaleString()}</td>
+                            <td>${Math.round(cumulativeLeads)}</td>
+                            <td>${Math.round(cumulativeDemos)}</td>
+                            <td>${Math.round(cumulativeDeals)}</td>
+                            <td>€${Math.round(cumulativeRevenue).toLocaleString()}</td>
+                            <td><span class="badge bg-success">${roiMultiple.toFixed(1)}x</span></td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                }
+            }
+
+            setupEventListeners() {
+                // Auto-refresh every 5 minutes
+                setInterval(() => {
+                    this.loadData();
+                }, 300000);
+            }
+
+            showError(message) {
+                // Show error message (implement as needed)
+                console.error(message);
+            }
+        }
+
+        // Initialize ROI Calculator
+        let roiCalculator;
+        document.addEventListener('DOMContentLoaded', () => {
+            roiCalculator = new ROICalculator();
+        });
+
+        // Global functions
+        function refreshROI() {
+            roiCalculator.loadData();
+            showNotification('ROI calculations refreshed', 'success');
+        }
+
+        function selectScenario(scenario) {
+            roiCalculator.currentScenario = scenario;
+
+            // Update UI
+            document.querySelectorAll('.scenario-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.target.closest('.scenario-card').classList.add('active');
+
+            // Recalculate with scenario
+            roiCalculator.loadData();
+        }
+
+        function changeTimelineView(view) {
+            // Update button states
+            document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update timeline chart based on view
+            let days = 90;
+            if (view === '30days') days = 30;
+            if (view === '7days') days = 7;
+
+            roiCalculator.charts.timeline.data.labels = roiCalculator.generateTimelineLabels(days);
+            roiCalculator.charts.timeline.data.datasets[0].data = roiCalculator.generateTimelineData(days);
+            roiCalculator.charts.timeline.data.datasets[1].data = roiCalculator.generateCostData(days);
+            roiCalculator.charts.timeline.update();
+        }
+
+        function showSettings() {
+            const modal = new bootstrap.Modal(document.getElementById('settingsModal'));
+
+            // Populate current settings
+            document.getElementById('avgViews').value = roiCalculator.settings.avgViews;
+            document.getElementById('leadRate').value = roiCalculator.settings.leadRate * 100;
+            document.getElementById('demoRate').value = roiCalculator.settings.demoRate * 100;
+            document.getElementById('dealRate').value = roiCalculator.settings.dealRate * 100;
+            document.getElementById('dealSize').value = roiCalculator.settings.dealSize;
+            document.getElementById('monthlyCost').value = roiCalculator.settings.monthlyCost;
+
+            modal.show();
+        }
+
+        function saveSettings() {
+            roiCalculator.settings = {
+                avgViews: parseInt(document.getElementById('avgViews').value),
+                leadRate: parseFloat(document.getElementById('leadRate').value) / 100,
+                demoRate: parseFloat(document.getElementById('demoRate').value) / 100,
+                dealRate: parseFloat(document.getElementById('dealRate').value) / 100,
+                dealSize: parseInt(document.getElementById('dealSize').value),
+                monthlyCost: parseInt(document.getElementById('monthlyCost').value),
+                targetRevenue: roiCalculator.settings.targetRevenue
+            };
+
+            // Save to localStorage
+            localStorage.setItem('roiSettings', JSON.stringify(roiCalculator.settings));
+
+            // Close modal and refresh
+            bootstrap.Modal.getInstance(document.getElementById('settingsModal')).hide();
+            roiCalculator.loadData();
+            showNotification('Settings saved successfully', 'success');
+        }
+
+        function exportROIReport() {
+            // Create a simple text report
+            const report = `
+ROI Calculator Report - ${new Date().toLocaleDateString()}
+================================================
+
+Current Performance:
+- Total Posts Generated: ${document.getElementById('contentGenerated').textContent}
+- Expected Total Views: ${document.getElementById('totalViews').textContent}
+- Expected Leads: ${document.getElementById('expectedLeads').textContent}
+- Expected Demo Requests: ${document.getElementById('expectedDemos').textContent}
+- Expected Closed Deals: ${document.getElementById('expectedDeals').textContent}
+
+Financial Projections:
+- Current Expected Revenue: ${document.getElementById('currentRevenue').textContent}
+- Progress to €100K Goal: ${document.getElementById('goalProgressText').textContent}
+- Current ROI Multiple: ${document.getElementById('roiDisplay').textContent}
+
+Settings:
+- Average Views per Post: ${roiCalculator.settings.avgViews}
+- Lead Conversion Rate: ${(roiCalculator.settings.leadRate * 100).toFixed(1)}%
+- Demo Booking Rate: ${(roiCalculator.settings.demoRate * 100).toFixed(1)}%
+- Deal Close Rate: ${(roiCalculator.settings.dealRate * 100).toFixed(1)}%
+- Average Deal Size: €${roiCalculator.settings.dealSize.toLocaleString()}
+- Monthly Cost: €${roiCalculator.settings.monthlyCost.toLocaleString()}
+
+Generated on: ${new Date().toLocaleString()}
+            `.trim();
+
+            // Download as text file
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `roi-report-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+
+            showNotification('ROI report exported successfully', 'success');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle me-2"></i>
+                    ${message}
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

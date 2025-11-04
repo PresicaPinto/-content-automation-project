@@ -1,94 +1,140 @@
 import os
+import sys
 import json
-from datetime import datetime, timedelta
+import logging
+from generators.linkedin_generator import LinkedInGenerator
+from generators.twitter_generator import TwitterThreadGenerator
+from scheduler import SocialMediaScheduler # Import the new scheduler
+
+# Ensure ZAI_API_KEY and BUFFER_ACCESS_TOKEN are loaded from .env
+# (This is handled by core/ai_client.py and scheduler.py respectively, but main.py needs to ensure .env is loaded)
 from dotenv import load_dotenv
-from zai import ZaiClient # Correct import for zai-sdk
-from prompts.platform_prompts import get_prompt
-from twitter_generator import TwitterThreadGenerator # Import the new generator
+load_dotenv()
 
-load_dotenv() # Load environment variables from .env file
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("app.log")
+    ]
+)
+logger = logging.getLogger(__name__)
 
-ZAI_API_KEY = os.getenv("ZAI_API_KEY")
+def run_linkedin_generation(num_posts: int = None):
+    logger.info("Starting LinkedIn post generation.")
+    generator = LinkedInGenerator()
+    posts = generator.generate_linkedin_posts(num_posts=num_posts)
+    if posts:
+        logger.info(f"Successfully generated {len(posts)} LinkedIn posts.")
+    else:
+        logger.warning("No LinkedIn posts were generated.")
+    return posts
 
-if not ZAI_API_KEY:
-    raise ValueError("ZAI_API_KEY not found in environment variables. Please set it in a .env file.")
+def run_twitter_generation(linkedin_calendar: list = None):
+    logger.info("Starting Twitter thread generation.")
+    if linkedin_calendar is None:
+        # If no LinkedIn calendar is provided, try to load from file
+        try:
+            with open(os.path.join("outputs", "content_calendar.json"), 'r') as f:
+                linkedin_calendar = json.load(f)
+            logger.info("Loaded LinkedIn calendar from file for Twitter generation.")
+        except FileNotFoundError:
+            logger.error("Error: LinkedIn content_calendar.json not found. Please run LinkedIn generation first.")
+            return
 
-# Initialize the Zai client globally for reuse
-client = ZaiClient(api_key=ZAI_API_KEY)
-
-def generate_content(prompt: str) -> str:
-    """
-    Generates content using the Z.AI API.
-    """
-    print(f"Generating content for prompt: {prompt[:50]}...")
-    try:
-        response = client.chat.completions.create(
-            model="GLM-4.5-Flash", # Updated to a valid z.ai model name
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        print(f"Error generating content: {e}")
-        return f"Error: Could not generate content for prompt: {prompt}"
-
-if __name__ == "__main__":
-    # --- Day 2: LinkedIn Batch Content Generation ---
-    try:
-        with open("topics.json", 'r') as f:
-            topics_data = json.load(f)
-    except FileNotFoundError:
-        print("Error: topics.json not found. Please create it with content ideas.")
-        exit()
-
-    linkedin_content_calendar = []
-    base_date = datetime.now()
-
-    print(f"\n--- Starting Batch Content Generation for {len(topics_data)} LinkedIn Posts ---")
-
-    for i, item in enumerate(topics_data):
-        topic = item['topic']
-        prompt_type = "professional_post" # Using professional_post for all LinkedIn for now
-
-        formatted_prompt = get_prompt("linkedin", prompt_type, topic)
-        generated_text = generate_content(formatted_prompt)
-
-        publish_date = base_date + timedelta(days=i)
-
-        linkedin_content_calendar.append({
-            'post_number': i + 1,
-            'topic': topic,
-            'platform': "linkedin",
-            'prompt_type': prompt_type,
-            'content': generated_text,
-            'publish_date': publish_date.strftime('%Y-%m-%d'),
-            'status': 'draft'
-        })
-        print(f"Generated post {i+1}/{len(topics_data)} for topic: {topic[:30]}...")
+    generator = TwitterThreadGenerator()
+    twitter_calendar = generator.generate_twitter_calendar(linkedin_calendar)
 
     output_dir = "outputs"
     os.makedirs(output_dir, exist_ok=True)
-    linkedin_output_file_path = os.path.join(output_dir, "content_calendar.json")
-
-    with open(linkedin_output_file_path, 'w') as f:
-        json.dump(linkedin_content_calendar, f, indent=2)
-
-    print(f"\n--- LinkedIn Batch Content Generation Complete ---")
-    print(f"Content calendar saved to {linkedin_output_file_path}")
-    print(f"Generated {len(linkedin_content_calendar)} LinkedIn posts.")
-
-    # --- Day 3: Twitter Thread Generation ---
-    print(f"\n--- Starting Twitter Thread Generation ---")
-
-    twitter_generator = TwitterThreadGenerator()
-    twitter_content_calendar = twitter_generator.generate_twitter_calendar(linkedin_content_calendar)
-
     twitter_output_file_path = os.path.join(output_dir, "twitter_calendar.json")
+
     with open(twitter_output_file_path, 'w') as f:
-        json.dump(twitter_content_calendar, f, indent=2)
+        json.dump(twitter_calendar, f, indent=2)
 
-    print(f"--- Twitter Thread Generation Complete ---")
-    print(f"Twitter calendar saved to {twitter_output_file_path}")
-    print(f"Generated {len(twitter_content_calendar)} Twitter threads.")
+    logger.info(f"Twitter calendar saved to {twitter_output_file_path}")
+    logger.info(f"Generated {len(twitter_calendar)} Twitter threads.")
+    return twitter_calendar
+
+def run_scheduling():
+    logger.info("Starting post scheduling.")
+    BUFFER_ACCESS_TOKEN = os.getenv("BUFFER_ACCESS_TOKEN")
+
+    if not BUFFER_ACCESS_TOKEN:
+        logger.error("BUFFER_ACCESS_TOKEN not found in environment variables. Please set it in your .env file.")
+        raise ValueError("BUFFER_ACCESS_TOKEN not found in environment variables. Please set it in your .env file.")
+
+    scheduler = SocialMediaScheduler(BUFFER_ACCESS_TOKEN)
+
+    # Get profiles to allow user to select
+    profiles = scheduler.get_profiles()
+    if not profiles:
+        logger.error("Could not retrieve Buffer profiles. Please check your access token and internet connection.")
+        print("Could not retrieve Buffer profiles. Please check your access token and internet connection.")
+        return
+
+    print("\nAvailable Buffer Profiles:")
+    for i, p in enumerate(profiles):
+        print(f"{i+1}. {p['service'].capitalize()} ({p['service_display_name']}): ID={p['id']}")
+
+    linkedin_profile_id = input("Enter LinkedIn Profile ID (from above list): ").strip()
+    twitter_profile_id = input("Enter Twitter Profile ID (from above list): ").strip()
+
+    if not linkedin_profile_id or not twitter_profile_id:
+        logger.warning("Profile IDs cannot be empty. Aborting scheduling.")
+        print("Profile IDs cannot be empty. Aborting scheduling.")
+        return
+
+    # Load content calendars
+    try:
+        with open(os.path.join("outputs", "content_calendar.json"), 'r') as f:
+            linkedin_calendar = json.load(f)
+        with open(os.path.join("outputs", "twitter_calendar.json"), 'r') as f:
+            twitter_calendar = json.load(f)
+        logger.info("Loaded content calendars for scheduling.")
+    except FileNotFoundError:
+        logger.error("Error: Content calendars not found. Please run content generation first.")
+        print("Error: Content calendars not found. Please run content generation first.")
+        return
+
+    # Schedule LinkedIn posts
+    linkedin_schedule_results = scheduler.schedule_content_calendar(linkedin_calendar, linkedin_profile_id)
+    logger.info("LinkedIn scheduling results: %s", json.dumps(linkedin_schedule_results, indent=2))
+    print("\n--- LinkedIn Scheduling Results ---")
+    print(json.dumps(linkedin_schedule_results, indent=2))
+
+    # Schedule Twitter threads
+    twitter_schedule_results = scheduler.schedule_twitter_threads(twitter_calendar, twitter_profile_id)
+    logger.info("Twitter scheduling results: %s", json.dumps(twitter_schedule_results, indent=2))
+    print("\n--- Twitter Scheduling Results ---")
+    print(json.dumps(twitter_schedule_results, indent=2))
+
+    logger.info("Scheduling complete.")
+    print("\n--- Scheduling Complete ---")
 
 
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        logger.error("Usage: python main.py <command> [options]")
+        print("Usage: python main.py <command> [options]")
+        print("Commands:")
+        print("  linkedin_batch [num_posts] - Generate LinkedIn posts in batch.")
+        print("  twitter_batch              - Generate Twitter threads from existing LinkedIn posts.")
+        print("  schedule_posts             - Schedule generated posts to Buffer.")
+        sys.exit(1)
 
+    command = sys.argv[1]
+
+    if command == "linkedin_batch":
+        num_posts = int(sys.argv[2]) if len(sys.argv) > 2 else None
+        run_linkedin_generation(num_posts=num_posts)
+    elif command == "twitter_batch":
+        run_twitter_generation()
+    elif command == "schedule_posts":
+        run_scheduling()
+    else:
+        logger.error(f"Unknown command: {command}")
+        print(f"Unknown command: {command}")
+        sys.exit(1)

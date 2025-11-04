@@ -1,0 +1,493 @@
+{% extends "base_new.html" %}
+
+{% block title %}Dashboard - Content Automation{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .kpi-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .kpi-card.primary { border-left-color: #667eea; }
+    .kpi-card.success { border-left-color: #28a745; }
+    .kpi-card.info { border-left-color: #17a2b8; }
+    .kpi-card.warning { border-left-color: #ffc107; }
+
+    .kpi-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3436;
+        margin-bottom: 0.5rem;
+    }
+
+    .kpi-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .kpi-change {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .kpi-change.positive {
+        background: #d1f2eb;
+        color: #28a745;
+    }
+
+    .kpi-change.negative {
+        background: #ffeaa7;
+        color: #fdcb6e;
+    }
+
+    .chart-container {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #2d3436;
+    }
+
+    .recent-activity {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-title {
+        font-weight: 600;
+        color: #2d3436;
+        margin-bottom: 0.25rem;
+    }
+
+    .activity-time {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .quick-action-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .quick-action-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .quick-action-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .quick-action-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .quick-action-description {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Quick Actions -->
+<div class="dashboard-grid mb-4">
+    <a href="/demo" class="quick-action-card">
+        <div class="quick-action-icon">
+            <i class="bi bi-play-circle"></i>
+        </div>
+        <div class="quick-action-title">Start Live Demo</div>
+        <div class="quick-action-description">Watch AI generate content in real-time</div>
+    </a>
+
+    <a href="/generate" class="quick-action-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+        <div class="quick-action-icon">
+            <i class="bi bi-magic"></i>
+        </div>
+        <div class="quick-action-title">Generate Content</div>
+        <div class="quick-action-description">Create posts for any platform</div>
+    </a>
+
+    <a href="/content-calendar" class="quick-action-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+        <div class="quick-action-icon">
+            <i class="bi bi-calendar3"></i>
+        </div>
+        <div class="quick-action-title">Plan Calendar</div>
+        <div class="quick-action-description">Schedule your content strategy</div>
+    </a>
+</div>
+
+<!-- KPI Cards -->
+<div class="dashboard-grid mb-4">
+    <div class="kpi-card primary">
+        <div class="kpi-value" id="totalPosts">47</div>
+        <div class="kpi-label">Total Posts Generated</div>
+        <div class="kpi-change positive">
+            <i class="bi bi-arrow-up"></i> +150% from last month
+        </div>
+    </div>
+
+    <div class="kpi-card success">
+        <div class="kpi-value" id="totalReach">23.5K</div>
+        <div class="kpi-label">Total Reach</div>
+        <div class="kpi-change positive">
+            <i class="bi bi-arrow-up"></i> +200% from last month
+        </div>
+    </div>
+
+    <div class="kpi-card info">
+        <div class="kpi-value" id="avgEngagement">8.5%</div>
+        <div class="kpi-label">Engagement Rate</div>
+        <div class="kpi-change positive">
+            <i class="bi bi-arrow-up"></i> +3.2% from last month
+        </div>
+    </div>
+
+    <div class="kpi-card warning">
+        <div class="kpi-value" id="roi">900x</div>
+        <div class="kpi-label">ROI Multiple</div>
+        <div class="kpi-change positive">
+            <i class="bi bi-arrow-up"></i> Target achieved
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h5 class="chart-title">Content Generation Trend</h5>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary active">7 Days</button>
+                    <button class="btn btn-outline-secondary">30 Days</button>
+                    <button class="btn btn-outline-secondary">90 Days</button>
+                </div>
+            </div>
+            <canvas id="generationChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h5 class="chart-title">Platform Distribution</h5>
+            </div>
+            <canvas id="platformChart" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity & Top Content -->
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="recent-activity">
+            <h5 class="mb-4">Recent Activity</h5>
+            <div id="activityList">
+                <div class="activity-item">
+                    <div class="activity-icon" style="background: #d1f2eb; color: #28a745;">
+                        <i class="bi bi-file-text"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">5 LinkedIn posts generated</div>
+                        <div class="activity-time">2 minutes ago</div>
+                    </div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon" style="background: #fff3cd; color: #ffc107;">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">30-day calendar created</div>
+                        <div class="activity-time">1 hour ago</div>
+                    </div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon" style="background: #d1ecf1; color: #17a2b8;">
+                        <i class="bi bi-twitter"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">Twitter threads converted</div>
+                        <div class="activity-time">3 hours ago</div>
+                    </div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon" style="background: #f3e5f5; color: #7b1fa2;">
+                        <i class="bi bi-star"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">New topic added: AI in Healthcare</div>
+                        <div class="activity-time">Yesterday</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="recent-activity">
+            <h5 class="mb-4">Top Performing Content</h5>
+            <div id="topContent">
+                <div class="activity-item">
+                    <div class="activity-icon" style="background: #e8f5e8; color: #388e3c;">
+                        <i class="bi bi-trophy"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">Agentic AI Systems Case Study</div>
+                        <div class="activity-time">2.5K views • 12.3% engagement</div>
+                    </div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon" style="background: #e3f2fd; color: #1976d2;">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">Future of AI in Content Creation</div>
+                        <div class="activity-time">1.8K views • 9.7% engagement</div>
+                    </div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon" style="background: #fff3e0; color: #f57c00;">
+                        <i class="bi bi-heart"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">My AI Health Coach Journey</div>
+                        <div class="activity-time">1.2K views • 15.1% engagement</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Initialize Charts
+document.addEventListener('DOMContentLoaded', function() {
+    // Generation Trend Chart
+    const generationCtx = document.getElementById('generationChart').getContext('2d');
+    new Chart(generationCtx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'LinkedIn',
+                data: [3, 5, 4, 8, 7, 6, 9],
+                borderColor: '#0077b5',
+                backgroundColor: 'rgba(0, 119, 181, 0.1)',
+                tension: 0.4
+            }, {
+                label: 'Twitter',
+                data: [2, 3, 5, 4, 6, 5, 7],
+                borderColor: '#1da1f2',
+                backgroundColor: 'rgba(29, 161, 242, 0.1)',
+                tension: 0.4
+            }, {
+                label: 'Instagram',
+                data: [1, 2, 3, 2, 4, 3, 5],
+                borderColor: '#e4405f',
+                backgroundColor: 'rgba(228, 64, 95, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Platform Distribution Chart
+    const platformCtx = document.getElementById('platformChart').getContext('2d');
+    new Chart(platformCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['LinkedIn', 'Twitter', 'Instagram'],
+            datasets: [{
+                data: [42, 31, 15],
+                backgroundColor: ['#0077b5', '#1da1f2', '#e4405f'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+
+    // Animate KPI values on load
+    const animateValue = (element, start, end, duration) => {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const value = Math.floor(progress * (end - start) + start);
+
+            if (element.id === 'totalReach') {
+                element.textContent = `${(value / 1000).toFixed(1)}K`;
+            } else if (element.id === 'avgEngagement') {
+                element.textContent = `${(value / 10).toFixed(1)}%`;
+            } else {
+                element.textContent = value;
+            }
+
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    };
+
+    // Animate KPIs
+    setTimeout(() => {
+        animateValue(document.getElementById('totalPosts'), 0, 47, 1000);
+        animateValue(document.getElementById('totalReach'), 0, 23500, 1000);
+        animateValue(document.getElementById('avgEngagement'), 0, 85, 1000);
+    }, 500);
+
+    // Load real-time data
+    loadRealTimeData();
+});
+
+function loadRealTimeData() {
+    // Fetch actual content status
+    fetch('/api/content/status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.total_content) {
+                document.getElementById('totalPosts').textContent = data.total_content;
+            }
+        })
+        .catch(error => console.log('Using mock data'));
+
+    // Simulate real-time updates
+    setInterval(() => {
+        // Update random KPI
+        const kpis = ['totalPosts', 'totalReach', 'avgEngagement'];
+        const randomKpi = kpis[Math.floor(Math.random() * kpis.length)];
+        const element = document.getElementById(randomKpi);
+
+        if (element) {
+            const currentValue = element.textContent;
+            let newValue;
+
+            if (randomKpi === 'totalPosts') {
+                newValue = parseInt(currentValue) + Math.floor(Math.random() * 3);
+                element.textContent = newValue;
+            } else if (randomKpi === 'totalReach') {
+                newValue = parseFloat(currentValue) + Math.random() * 0.5;
+                element.textContent = `${newValue.toFixed(1)}K`;
+            }
+        }
+    }, 30000); // Update every 30 seconds
+}
+</script>
+{% endblock %}

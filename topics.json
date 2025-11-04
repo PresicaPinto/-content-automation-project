@@ -198,5 +198,16 @@
       "Enhancing accessibility for diverse learners"
     ],
     "style": "educational"
+  },
+  {
+    "topic": "AI in student assessment and feedback",
+    "description": "Focusing on how AI is moving beyond simple grading to provide deep, actionable insights for both students and educators.",
+    "points": [],
+    "style": "educational",
+    "platforms": [
+      "linkedin"
+    ],
+    "id": 21,
+    "created_date": "2025-11-01T19:46:19.713349"
   }
 ]

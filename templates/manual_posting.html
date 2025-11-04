@@ -1,0 +1,598 @@
+{% extends "base.html" %}
+
+{% block title %}Manual Posting Workflow | Ardelis Technologies{% endblock %}
+
+{% block head %}
+    <style>
+        .post-card {
+            border-left: 4px solid #007bff;
+            transition: all 0.3s ease;
+        }
+        .post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .post-card.published {
+            border-left-color: #28a745;
+            background-color: #f8fff9;
+        }
+        .post-card.scheduled {
+            border-left-color: #ffc107;
+            background-color: #fffdf7;
+        }
+        .content-preview {
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        .action-buttons .btn {
+            margin: 2px;
+        }
+        .platform-badge {
+            font-size: 0.8em;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+        .time-indicator {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+        .copy-feedback {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .workflow-step {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+        .workflow-step:hover {
+            transform: translateY(-5px);
+        }
+        .workflow-step.active {
+            background: linear-gradient(135deg, #4c63d2 0%, #5a3d8a 100%);
+            border: 2px solid #ffffff;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        .workflow-step i {
+            font-size: 2em;
+            margin-bottom: 10px;
+            display: block;
+            color: white !important;
+        }
+        .workflow-step h6 {
+            color: white !important;
+            margin-bottom: 8px;
+        }
+        .workflow-step small {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Manual Posting Workflow</h1>
+                    <p class="text-muted mb-0">Review, copy, and publish today's content to social media</p>
+                </div>
+                <div class="d-flex gap-3">
+                    <div class="text-end">
+                        <small class="text-muted">Today's Date</small>
+                        <div class="fw-bold" id="currentDate">--</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="loadTodayPosts()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Workflow Steps -->
+        <div class="container-fluid p-4">
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="workflow-step" id="step1">
+                        <i class="bi bi-eye text-primary"></i>
+                        <h6>Step 1: Review</h6>
+                        <small class="text-muted">Read today's generated content</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="workflow-step" id="step2">
+                        <i class="bi bi-clipboard text-info"></i>
+                        <h6>Step 2: Copy</h6>
+                        <small class="text-muted">Copy content to clipboard</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="workflow-step" id="step3">
+                        <i class="bi bi-share text-warning"></i>
+                        <h6>Step 3: Post</h6>
+                        <small class="text-muted">Publish to social media</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="workflow-step" id="step4">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <h6>Step 4: Confirm</h6>
+                        <small class="text-muted">Mark as published</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="card stats-card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <h3 class="mb-1" id="totalPosts">0</h3>
+                            <p class="mb-0">Total Posts Today</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <h3 class="mb-1" id="publishedPosts">0</h3>
+                            <p class="mb-0">Published</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <h3 class="mb-1" id="pendingPosts">0</h3>
+                            <p class="mb-0">Pending</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <h3 class="mb-1" id="completionRate">0%</h3>
+                            <p class="mb-0">Completion Rate</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-outline-primary active" onclick="filterPosts('all', this)">
+                                            All Posts
+                                        </button>
+                                        <button class="btn btn-outline-success" onclick="filterPosts('published', this)">
+                                            <i class="bi bi-check-circle"></i> Published
+                                        </button>
+                                        <button class="btn btn-outline-warning" onclick="filterPosts('pending', this)">
+                                            <i class="bi bi-clock"></i> Pending
+                                        </button>
+                                        <button class="btn btn-outline-info" onclick="filterPosts('scheduled', this)">
+                                            <i class="bi bi-calendar"></i> Scheduled
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="bulkAction('copy')">
+                                        <i class="bi bi-clipboard"></i> Copy All
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="bulkAction('mark_published')">
+                                        <i class="bi bi-check-all"></i> Mark All Published
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Posts Container -->
+            <div id="postsContainer">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading posts...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading today's posts...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Copy Feedback Toast -->
+    <div id="copyFeedback" class="copy-feedback" style="display: none;">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-clipboard-check"></i> <span id="copyMessage">Content copied to clipboard!</span>
+            <button type="button" class="btn-close" onclick="hideCopyFeedback()"></button>
+        </div>
+    </div>
+
+  {% endblock %}
+
+{% block scripts %}
+    <script>
+        class ManualPostingWorkflow {
+            constructor() {
+                this.currentFilter = 'all';
+                this.posts = [];
+                this.init();
+            }
+
+            init() {
+                this.setCurrentDate();
+                this.loadTodayPosts();
+                this.setupWorkflowHighlight();
+            }
+
+            setCurrentDate() {
+                const today = new Date();
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('currentDate').textContent = today.toLocaleDateString('en-US', options);
+            }
+
+            async loadTodayPosts() {
+                try {
+                    const response = await fetch('/api/posts/today');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.posts = data.posts;
+                        this.displayPosts();
+                        this.updateStatistics();
+                    } else {
+                        this.showError('Failed to load today\'s posts: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error loading posts:', error);
+                    this.showError('Error loading posts. Please refresh the page.');
+                }
+            }
+
+            displayPosts() {
+                const container = document.getElementById('postsContainer');
+
+                if (this.posts.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="bi bi-calendar-x display-1 text-muted"></i>
+                            <h4 class="mt-3 text-muted">No posts for today</h4>
+                            <p class="text-muted">New content will appear here when it's generated.</p>
+                            <button class="btn btn-primary" onclick="window.location.href='/content-generator'">
+                                <i class="bi bi-plus-circle"></i> Generate New Content
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const filteredPosts = this.filterPostsByStatus(this.posts, this.currentFilter);
+
+                container.innerHTML = filteredPosts.map(post => this.createPostCard(post)).join('');
+            }
+
+            filterPostsByStatus(posts, status) {
+                if (status === 'all') return posts;
+                return posts.filter(post => {
+                    if (status === 'published') return post.status === 'published';
+                    if (status === 'pending') return post.status === 'generated';
+                    if (status === 'scheduled') return post.status === 'scheduled';
+                    return true;
+                });
+            }
+
+            createPostCard(post) {
+                const isPublished = post.status === 'published';
+                const isScheduled = post.status === 'scheduled';
+                const cardClass = isPublished ? 'published' : isScheduled ? 'scheduled' : '';
+
+                return `
+                    <div class="card post-card border-0 shadow-sm mb-3 ${cardClass}" data-post-id="${post.id}">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <span class="platform-badge bg-${this.getPlatformColor(post.platform)} text-white me-2">
+                                                <i class="bi ${this.getPlatformIcon(post.platform)}"></i> ${post.platform}
+                                            </span>
+                                            <span class="time-indicator">
+                                                <i class="bi bi-clock"></i> ${this.formatTime(post.scheduled_time)}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            ${isPublished ?
+                                                '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Published</span>' :
+                                                isScheduled ?
+                                                '<span class="badge bg-warning"><i class="bi bi-calendar"></i> Scheduled</span>' :
+                                                '<span class="badge bg-secondary"><i class="bi bi-clock"></i> Pending</span>'
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <h6 class="card-title mb-2">${post.topic}</h6>
+                                    <div class="content-preview mb-3">
+                                        ${formatContent(post.content)}
+                                    </div>
+
+                                    ${post.hashtags ? `
+                                        <div class="mb-2">
+                                            <small class="text-muted">Hashtags:</small><br>
+                                            <span class="text-primary">${post.hashtags}</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm btn-outline-primary w-100 mb-2" onclick="copyToClipboard('${post.id}', 'content')">
+                                            <i class="bi bi-clipboard"></i> Copy Content
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info w-100 mb-2" onclick="copyToClipboard('${post.id}', 'all')">
+                                            <i class="bi bi-clipboard-data"></i> Copy All
+                                        </button>
+                                        ${!isPublished ? `
+                                            <button class="btn btn-sm btn-success w-100 mb-2" onclick="markAsPublished('${post.id}')">
+                                                <i class="bi bi-check-circle"></i> Mark Published
+                                            </button>
+                                        ` : `
+                                            <button class="btn btn-sm btn-outline-secondary w-100 mb-2" onclick="markAsPending('${post.id}')">
+                                                <i class="bi bi-arrow-counterclockwise"></i> Undo Publish
+                                            </button>
+                                        `}
+                                        <button class="btn btn-sm btn-outline-warning w-100" onclick="editPost('${post.id}')">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getPlatformColor(platform) {
+                const colors = {
+                    'linkedin': 'primary',
+                    'twitter': 'info',
+                    'facebook': 'secondary'
+                };
+                return colors[platform.toLowerCase()] || 'secondary';
+            }
+
+            getPlatformIcon(platform) {
+                const icons = {
+                    'linkedin': 'bi-linkedin',
+                    'twitter': 'bi-twitter',
+                    'facebook': 'bi-facebook'
+                };
+                return icons[platform.toLowerCase()] || 'bi-globe';
+            }
+
+            formatTime(timeString) {
+                if (!timeString) return 'No time set';
+                const date = new Date(timeString);
+                return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            updateStatistics() {
+                const total = this.posts.length;
+                const published = this.posts.filter(p => p.status === 'published').length;
+                const pending = this.posts.filter(p => p.status === 'generated').length;
+                const completionRate = total > 0 ? Math.round((published / total) * 100) : 0;
+
+                document.getElementById('totalPosts').textContent = total;
+                document.getElementById('publishedPosts').textContent = published;
+                document.getElementById('pendingPosts').textContent = pending;
+                document.getElementById('completionRate').textContent = completionRate + '%';
+            }
+
+            setupWorkflowHighlight() {
+                // Highlight current step based on pending posts
+                const pendingCount = this.posts.filter(p => p.status === 'generated').length;
+                const step1 = document.getElementById('step1');
+                const step2 = document.getElementById('step2');
+
+                if (pendingCount > 0) {
+                    step1.classList.add('active');
+                    step2.classList.add('active');
+                }
+            }
+
+            showError(message) {
+                const container = document.getElementById('postsContainer');
+                container.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> ${message}
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize workflow
+        let workflow;
+        document.addEventListener('DOMContentLoaded', () => {
+            workflow = new ManualPostingWorkflow();
+        });
+
+        // Global functions
+        function filterPosts(status, button) {
+            workflow.currentFilter = status;
+            workflow.displayPosts();
+
+            // Update button states
+            document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+        }
+
+        async function copyToClipboard(postId, type) {
+            try {
+                const post = workflow.posts.find(p => p.id === postId);
+                if (!post) return;
+
+                let textToCopy = '';
+                if (type === 'content') {
+                    textToCopy = post.content;
+                } else if (type === 'all') {
+                    textToCopy = `${post.content}\n\n${post.hashtags || ''}`;
+                }
+
+                await navigator.clipboard.writeText(textToCopy);
+                showCopyFeedback('Content copied to clipboard!');
+
+                // Highlight workflow step 2
+                document.getElementById('step2').classList.add('active');
+
+            } catch (error) {
+                console.error('Failed to copy:', error);
+                showCopyFeedback('Failed to copy content', 'error');
+            }
+        }
+
+        async function markAsPublished(postId) {
+            try {
+                const response = await fetch('/api/posts/mark-published', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ post_id: postId })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    // Update local post status
+                    const post = workflow.posts.find(p => p.id === postId);
+                    if (post) {
+                        post.status = 'published';
+                    }
+
+                    workflow.displayPosts();
+                    workflow.updateStatistics();
+                    showCopyFeedback('Post marked as published!');
+
+                    // Highlight workflow step 4
+                    document.getElementById('step4').classList.add('active');
+                } else {
+                    showCopyFeedback('Failed to mark as published', 'error');
+                }
+            } catch (error) {
+                console.error('Error marking post as published:', error);
+                showCopyFeedback('Error marking post as published', 'error');
+            }
+        }
+
+        async function markAsPending(postId) {
+            try {
+                const response = await fetch('/api/posts/mark-pending', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ post_id: postId })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    // Update local post status
+                    const post = workflow.posts.find(p => p.id === postId);
+                    if (post) {
+                        post.status = 'generated';
+                    }
+
+                    workflow.displayPosts();
+                    workflow.updateStatistics();
+                    showCopyFeedback('Post marked as pending!');
+                } else {
+                    showCopyFeedback('Failed to mark as pending', 'error');
+                }
+            } catch (error) {
+                console.error('Error marking post as pending:', error);
+                showCopyFeedback('Error marking post as pending', 'error');
+            }
+        }
+
+        function editPost(postId) {
+            // Redirect to edit page or open edit modal
+            window.location.href = `/posts/edit/${postId}`;
+        }
+
+        function bulkAction(action) {
+            if (action === 'copy') {
+                // Copy all pending posts
+                const pendingPosts = workflow.posts.filter(p => p.status === 'generated');
+                const allContent = pendingPosts.map(p => `${p.content}\n${p.hashtags || ''}`).join('\n\n---\n\n');
+
+                navigator.clipboard.writeText(allContent).then(() => {
+                    showCopyFeedback(`${pendingPosts.length} posts copied to clipboard!`);
+                });
+            } else if (action === 'mark_published') {
+                // Mark all pending posts as published
+                const pendingPosts = workflow.posts.filter(p => p.status === 'generated');
+                let promises = pendingPosts.map(post => markAsPublished(post.id));
+
+                Promise.all(promises).then(() => {
+                    showCopyFeedback(`All ${pendingPosts.length} posts marked as published!`);
+                });
+            }
+        }
+
+        function showCopyFeedback(message, type = 'success') {
+            const feedback = document.getElementById('copyFeedback');
+            const messageElement = document.getElementById('copyMessage');
+            const alertDiv = feedback.querySelector('.alert');
+
+            messageElement.textContent = message;
+            alertDiv.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show`;
+            feedback.style.display = 'block';
+
+            setTimeout(() => {
+                hideCopyFeedback();
+            }, 3000);
+        }
+
+        function hideCopyFeedback() {
+            document.getElementById('copyFeedback').style.display = 'none';
+        }
+
+        function formatContent(content) {
+            // Format content with proper HTML for bold text, line breaks, and paragraphs
+            return content
+                // Convert **bold** to <strong>bold</strong>
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                // Convert *italic* to <em>italic</em>
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                // Convert double line breaks to paragraphs
+                .replace(/\n\s*\n/g, '</p><p>')
+                // Convert single line breaks to <br>
+                .replace(/\n/g, '<br>')
+                // Wrap in paragraph if not already
+                .replace(/^(.*)$/, '<p>$1</p>')
+                // Clean up any empty paragraphs
+                .replace(/<p><\/p>/g, '')
+                // Clean up any double <br> tags
+                .replace(/<br><br>/g, '<br>');
+        }
+
+        function loadTodayPosts() {
+            workflow.loadTodayPosts();
+        }
+    </script>
+{% endblock %}

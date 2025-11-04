@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Calendar - Interactive Preview</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .calendar-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .calendar-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .topic-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .topic-card.selected {
+            border: 2px solid #667eea;
+            background: #f8f9ff;
+        }
+
+        .style-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .style-educational { background: #e3f2fd; color: #1976d2; }
+        .style-case-study { background: #e8f5e8; color: #388e3c; }
+        .style-story { background: #fff3e0; color: #f57c00; }
+        .style-insight { background: #f3e5f5; color: #7b1fa2; }
+
+        .calendar-controls {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .fc-event {
+            border-radius: 5px;
+            border: none;
+            padding: 2px 5px;
+        }
+
+        .fc-event-linkedin { background: #0077b5; }
+        .fc-event-twitter { background: #1da1f2; }
+        .fc-event-instagram { background: #e4405f; }
+
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .stats-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stats-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .drop-zone {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .content-preview-modal {
+            max-width: 800px;
+        }
+
+        .modal-header {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-container {
+                padding: 1rem;
+            }
+
+            .topic-card {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Calendar Header -->
+    <div class="calendar-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-5 fw-bold mb-2">
+                        <i class="bi bi-calendar3"></i> Interactive Content Calendar
+                    </h1>
+                    <p class="lead mb-0">Plan and visualize your 30-day content strategy with drag-and-drop scheduling</p>
+                </div>
+                <div class="col-lg-4 text-end">
+                    <button class="btn btn-light btn-lg" id="generateCalendar">
+                        <i class="bi bi-magic"></i> Generate 30-Day Calendar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="totalPosts">0</div>
+                    <div class="stats-label">Total Posts</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="linkedInPosts">0</div>
+                    <div class="stats-label">LinkedIn Posts</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="twitterPosts">0</div>
+                    <div class="stats-label">Twitter Threads</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="instagramPosts">0</div>
+                    <div class="stats-label">Instagram Posts</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Topic Selection -->
+        <div class="calendar-container mb-4">
+            <h4 class="mb-3">
+                <i class="bi bi-collection"></i> Available Topics
+            </h4>
+            <div class="row" id="topicSelection">
+                <!-- Topics will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Main Calendar -->
+        <div class="row">
+            <div class="col-lg-9">
+                <div class="calendar-container">
+                    <div class="calendar-controls">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-primary" id="prevMonth">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-primary" id="currentMonth">
+                                        Current Month
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary" id="nextMonth">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h5 id="calendarTitle" class="mb-0">November 2025</h5>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-secondary" id="monthView">Month</button>
+                                    <button type="button" class="btn btn-outline-secondary" id="weekView">Week</button>
+                                    <button type="button" class="btn btn-outline-secondary" id="dayView">Day</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="calendar"></div>
+                </div>
+            </div>
+
+            <div class="col-lg-3">
+                <!-- Quick Actions -->
+                <div class="calendar-container mb-3">
+                    <h5 class="mb-3">
+                        <i class="bi bi-lightning"></i> Quick Actions
+                    </h5>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" id="addRandomPost">
+                            <i class="bi bi-plus-circle"></i> Add Random Post
+                        </button>
+                        <button class="btn btn-success" id="fillWeek">
+                            <i class="bi bi-calendar-week"></i> Fill This Week
+                        </button>
+                        <button class="btn btn-info" id="balancePlatforms">
+                            <i class="bi bi-balance-scale"></i> Balance Platforms
+                        </button>
+                        <button class="btn btn-warning" id="clearCalendar">
+                            <i class="bi bi-trash"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Drop Zone -->
+                <div class="calendar-container">
+                    <h5 class="mb-3">
+                        <i class="bi bi-hand-index"></i> Drag Topics Here
+                    </h5>
+                    <div class="drop-zone" id="dropZone">
+                        <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #6c757d;"></i>
+                        <p class="mt-2 mb-0">Drag topics here to schedule them</p>
+                        <small class="text-muted">or click to select a date</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Preview Modal -->
+    <div class="modal fade content-preview-modal" id="contentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-eye"></i> Content Preview
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalContent">
+                        <!-- Content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="generateContent">
+                        <i class="bi bi-magic"></i> Generate Content
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="/static/js/content_calendar.js"></script>
+</body>
+</html>

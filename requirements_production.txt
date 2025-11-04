@@ -1,0 +1,28 @@
+# Production Requirements for Ardelis Technologies
+# Web Framework
+Flask==3.0.0
+gunicorn==21.2.0
+
+# AI & API
+anthropic==0.34.0
+requests==2.31.0
+aiohttp==3.13.2
+
+# Content Generation
+python-dotenv==1.0.0
+
+# Database & Caching
+redis==5.0.1
+
+# Background Tasks
+schedule==1.2.2
+
+# Security & Validation
+pydantic==2.5.0
+
+# Development & Debugging (can be removed in production)
+pytest==7.4.3
+pytest-flask==1.3.0
+
+# Monitoring
+psutil==5.9.6

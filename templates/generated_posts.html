@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}Generated Posts | Ardelis Technologies{% endblock %}
+
+{% block head %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .platform-tab {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            background: #f8f9fa;
+        }
+        .platform-tab.active {
+            border-bottom-color: #007bff;
+            background: rgba(0, 123, 255, 0.05);
+        }
+        .platform-tab:hover {
+            background: rgba(0, 123, 255, 0.1);
+        }
+        .post-card {
+            border-left: 4px solid #007bff;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        .post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .post-card.linkedin {
+            border-left-color: #0077b5;
+        }
+        .post-card.twitter {
+            border-left-color: #000000;
+        }
+        .post-card.instagram {
+            border-left-color: #E4405F;
+        }
+        .copy-btn {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .post-card:hover .copy-btn {
+            opacity: 1;
+        }
+        .post-content {
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        .post-content p {
+            margin-bottom: 0.8rem;
+        }
+        .post-content p:last-child {
+            margin-bottom: 0;
+        }
+        .post-content strong {
+            font-weight: 600;
+            color: #ffffff;
+        }
+        .post-content em {
+            font-style: italic;
+            color: #cbd5e1;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Top Header -->
+    <header class="top-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 mb-0">Generated Posts</h1>
+                <p class="text-muted mb-0">View and manage your generated content</p>
+            </div>
+            <div class="d-flex gap-3">
+                <div class="text-end">
+                    <small class="text-muted">Total Posts</small>
+                    <div class="fw-bold" id="totalPostsCount">-</div>
+                </div>
+                <button class="btn btn-primary" onclick="goToGenerator()">
+                    <i class="fas fa-plus"></i> Generate Post
+                </button>
+                <button class="btn btn-outline-secondary" onclick="refreshPosts()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid p-4">
+        <!-- Platform Tabs -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-0">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link platform-tab active" data-platform="linkedin" onclick="switchPlatform('linkedin', this)">
+                            <i class="fab fa-linkedin"></i> LinkedIn
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link platform-tab" data-platform="twitter" onclick="switchPlatform('twitter', this)">
+                            <i class="fab fa-x-twitter"></i> X
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link platform-tab" data-platform="instagram" onclick="switchPlatform('instagram', this)">
+                            <i class="fab fa-instagram"></i> Instagram
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Posts Container -->
+        <div id="postsContainer">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading posts...</span>
+                </div>
+                <p class="mt-2 text-muted">Loading generated posts...</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        let currentPlatform = 'linkedin';
+        let postsData = {};
+
+        function switchPlatform(platform, element) {
+            currentPlatform = platform;
+
+            // Update tab styling
+            document.querySelectorAll('.platform-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            element.classList.add('active');
+
+            // Load posts for this platform
+            loadPosts(platform);
+        }
+
+        function loadPosts(platform) {
+            const container = document.getElementById('postsContainer');
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading ${platform} posts...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading ${platform} posts...</p>
+                </div>
+            `;
+
+            fetch(`/api/generated-posts/${platform}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        postsData[platform] = data.posts;
+                        displayPosts(data.posts, platform);
+                        updateTotalCount();
+                    } else {
+                        showError('Failed to load posts: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading posts:', error);
+                    showError('Failed to load posts');
+                });
+        }
+
+        function displayPosts(posts, platform) {
+            const container = document.getElementById('postsContainer');
+
+            // Filter out empty posts
+            const validPosts = posts.filter(post => post.content && post.content.trim() !== '' && post.content !== '\n');
+
+            if (validPosts.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fab fa-${platform} display-1 text-muted"></i>
+                        <h4 class="mt-3 text-muted">No ${platform} posts yet</h4>
+                        <p class="text-muted">Generate some content first!</p>
+                        <button class="btn btn-primary" onclick="window.location.href='/content-generator'">
+                            <i class="fas fa-plus"></i> Generate Content
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = validPosts.map((post, index) => `
+                <div class="card post-card ${platform}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-2">${post.topic || 'Generated Topic'}</h6>
+                                ${post.style ? `<span class="badge bg-secondary me-2">${post.style}</span>` : ''}
+                                <span class="badge bg-${platform === 'linkedin' ? 'primary' : platform === 'twitter' ? 'info' : 'secondary'}">${platform}</span>
+                            </div>
+                            <div class="copy-btn">
+                                <button class="btn btn-sm btn-outline-primary" onclick="copyPost(${index})">
+                                    <i class="fas fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                        <div class="content-display">
+                            <div class="post-content mb-2">${formatContent(post.content || 'Generated content...')}</div>
+                        </div>
+                        ${post.hashtags ? `
+                            <div class="hashtags mb-2">
+                                <small class="text-muted">Hashtags:</small><br>
+                                <span class="text-primary">${post.hashtags}</span>
+                            </div>
+                        ` : ''}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-clock"></i> ${post.created_at || new Date().toLocaleString()}
+                            </small>
+                            ${post.engagement ? `
+                                <div class="text-end">
+                                    <small class="text-muted">
+                                        <i class="fas fa-eye"></i> ${post.engagement.views || 0}
+                                        <i class="fas fa-heart ms-2"></i> ${post.engagement.likes || 0}
+                                    </small>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function copyPost(index) {
+            const posts = postsData[currentPlatform];
+            if (!posts || !posts[index]) return;
+
+            const post = posts[index];
+            const content = `${post.content || ''}\n\n${post.hashtags || ''}`;
+
+            navigator.clipboard.writeText(content)
+                .then(() => {
+                    showNotification('Post copied to clipboard!', 'success');
+                })
+                .catch(err => {
+                    showNotification('Failed to copy post', 'error');
+                });
+        }
+
+        function goToGenerator() {
+            window.location.href = '/content-generator';
+        }
+
+        function refreshPosts() {
+            loadPosts(currentPlatform);
+            showNotification('Posts refreshed', 'info');
+        }
+
+        function updateTotalCount() {
+            let totalCount = 0;
+            Object.values(postsData).forEach(posts => {
+                totalCount += posts.length;
+            });
+            document.getElementById('totalPostsCount').textContent = totalCount;
+        }
+
+        function showError(message) {
+            const container = document.getElementById('postsContainer');
+            container.innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle"></i> ${message}
+                </div>
+            `;
+        }
+
+        function formatContent(content) {
+            // Format content with proper HTML for bold text, line breaks, and paragraphs
+            return content
+                // Convert **bold** to <strong>bold</strong>
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                // Convert *italic* to <em>italic</em>
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                // Convert double line breaks to paragraphs
+                .replace(/\n\s*\n/g, '</p><p>')
+                // Convert single line breaks to <br>
+                .replace(/\n/g, '<br>')
+                // Wrap in paragraph if not already
+                .replace(/^(.*)$/, '<p>$1</p>')
+                // Clean up any empty paragraphs
+                .replace(/<p><\/p>/g, '')
+                // Clean up any double <br> tags
+                .replace(/<br><br>/g, '<br>');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-check-circle me-2"></i>
+                    ${message}
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Load posts on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPosts(currentPlatform);
+        });
+    </script>
+{% endblock %}
