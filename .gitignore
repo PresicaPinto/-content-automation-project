@@ -110,3 +110,31 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Documentation and logs (keep only essential docs)
+*.md
+!README.md
+DAILY_LOG_*
+DEMO_*
+DEMO_*
+DEMO_SCRIPT_*
+INTERN_INSTRUCTIONS*
+SCHEDULER_OPTIONS_*
+demo_followup_*
+setup_buffer*
+
+# Test files
+test_*
+*_test.py
+prepare_demo_*
+manual_posting_*
+
+# Backup files
+*_backup.*
+*_old.*
+*_working.*
+*_mod.*
+*_new.*
+
+# Demo specific files
+*/demo.*
