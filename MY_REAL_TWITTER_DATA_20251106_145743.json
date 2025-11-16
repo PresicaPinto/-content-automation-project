@@ -1,0 +1,28 @@
+{
+  "twitter": {
+    "account_name": "Presica_Pinto",
+    "account_type": "user",
+    "analytics": {
+      "data_source": "your_real_api",
+      "engagement": 0.0,
+      "followers": 0,
+      "following": 2,
+      "impressions": 0,
+      "likes": 0,
+      "posts": 0,
+      "profile_views": 0,
+      "quality_score": 0,
+      "reach": 0,
+      "replies": 0,
+      "retweets": 0,
+      "tweets": 0,
+      "verified": false
+    },
+    "client_id": "rDHHOI7jpi97n5i5HgxLqKIvw",
+    "connected": true,
+    "created_at": "2025-11-06T14:57:43.363241+00:00",
+    "last_connected": "2025-11-06T14:57:43.363241+00:00",
+    "platform": "twitter",
+    "username": "Presica_Pinto"
+  }
+}

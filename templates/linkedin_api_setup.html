@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn API Setup - Content Automation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .api-setup-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .credential-card {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .credential-card:hover {
+            border-color: #0077b5;
+            box-shadow: 0 4px 15px rgba(0,119,181,0.1);
+        }
+        .api-status {
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        .status-connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #0077b5;
+            color: white;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body style="background-color: #f8f9fa;">
+    <div class="api-setup-container">
+        <div class="text-center mb-4">
+            <i class="fab fa-linkedin fa-3x text-primary mb-3"></i>
+            <h2>LinkedIn API Integration Setup</h2>
+            <p class="text-muted">Configure your LinkedIn API credentials to fetch real analytics data</p>
+        </div>
+
+        <!-- Current API Status -->
+        <div id="apiStatus" class="api-status status-disconnected">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span id="statusText">LinkedIn API not configured</span>
+        </div>
+
+        <!-- Setup Instructions -->
+        <div class="credential-card">
+            <h5 class="mb-3">
+                <span class="step-number">1</span>
+                Get LinkedIn API Credentials
+            </h5>
+            <ol class="small">
+                <li>Go to <a href="https://www.linkedin.com/developers/apps/new" target="_blank">LinkedIn Developer Portal</a></li>
+                <li>Create a new app and select "Sign In with LinkedIn" and "Marketing Developer Platform"</li>
+                <li>Add your app's authorized redirect URLs</li>
+                <li>Get your <strong>Client ID</strong> and <strong>Client Secret</strong></li>
+            </ol>
+        </div>
+
+        <div class="credential-card">
+            <h5 class="mb-3">
+                <span class="step-number">2</span>
+                Generate Access Token
+            </h5>
+            <p class="small mb-3">Use this OAuth 2.0 flow to get your access token:</p>
+            <div class="code-block mb-3">
+                https://www.linkedin.com/oauth/v2/authorization?<br>
+                response_type=code&<br>
+                client_id=YOUR_CLIENT_ID&<br>
+                redirect_uri=YOUR_REDIRECT_URI&<br>
+                scope=r_organization_social+rw_organization_admin+r_organization_follow
+            </div>
+            <p class="small">Then exchange the authorization code for an access token.</p>
+        </div>
+
+        <!-- Configuration Form -->
+        <div class="credential-card">
+            <h5 class="mb-3">
+                <span class="step-number">3</span>
+                Configure API Credentials
+            </h5>
+            <form id="linkedinConfigForm">
+                <div class="mb-3">
+                    <label for="clientId" class="form-label">Client ID</label>
+                    <input type="text" class="form-control" id="clientId" required>
+                </div>
+                <div class="mb-3">
+                    <label for="clientSecret" class="form-label">Client Secret</label>
+                    <input type="password" class="form-control" id="clientSecret" required>
+                </div>
+                <div class="mb-3">
+                    <label for="accessToken" class="form-label">Access Token</label>
+                    <textarea class="form-control" id="accessToken" rows="3" required></textarea>
+                    <div class="form-text">Your LinkedIn OAuth 2.0 access token with organization permissions</div>
+                </div>
+                <div class="mb-3">
+                    <label for="organizationId" class="form-label">Organization ID or Company Page ID</label>
+                    <input type="text" class="form-control" id="organizationId" required>
+                    <div class="form-text">Your LinkedIn company page ID (e.g., 109619030)</div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-save me-2"></i>Save LinkedIn Configuration
+                </button>
+            </form>
+        </div>
+
+        <!-- Test Connection -->
+        <div class="credential-card" id="testCard" style="display: none;">
+            <h5 class="mb-3">
+                <i class="fas fa-plug me-2"></i>
+                Test API Connection
+            </h5>
+            <button id="testConnectionBtn" class="btn btn-success">
+                <i class="fas fa-sync-alt me-2"></i>Test LinkedIn Connection
+            </button>
+            <div id="testResult" class="mt-3"></div>
+        </div>
+
+        <!-- Demo Mode -->
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Demo Mode:</strong> If you don't have LinkedIn API credentials ready, you can use the demo mode to see realistic sample data.
+            <button class="btn btn-outline-info btn-sm ms-2" onclick="useDemoMode()">
+                Use Demo Mode
+            </button>
+        </div>
+
+        <!-- Back to Dashboard -->
+        <div class="text-center mt-4">
+            <a href="/social-media-setup" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Social Setup
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Check current LinkedIn API status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLinkedInStatus();
+        });
+
+        async function checkLinkedInStatus() {
+            try {
+                const response = await fetch('/api/social/connections');
+                const data = await response.json();
+                const linkedinConnection = data.connections.find(c => c.platform === 'linkedin');
+
+                if (linkedinConnection) {
+                    document.getElementById('apiStatus').className = 'api-status status-connected';
+                    document.getElementById('statusText').textContent = `LinkedIn Connected (${linkedinConnection.username})`;
+                    document.getElementById('testCard').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error checking LinkedIn status:', error);
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('linkedinConfigForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const config = {
+                client_id: document.getElementById('clientId').value,
+                client_secret: document.getElementById('clientSecret').value,
+                access_token: document.getElementById('accessToken').value,
+                username: document.getElementById('organizationId').value
+            };
+
+            try {
+                const response = await fetch('/api/social/linkedin/connect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('apiStatus').className = 'api-status status-connected';
+                    document.getElementById('statusText').textContent = `LinkedIn Connected (${config.username})`;
+                    document.getElementById('testCard').style.display = 'block';
+
+                    // Show success message
+                    showAlert('LinkedIn API configured successfully!', 'success');
+                } else {
+                    showAlert(`Error: ${result.error}`, 'danger');
+                }
+            } catch (error) {
+                showAlert(`Network error: ${error.message}`, 'danger');
+            }
+        });
+
+        // Test connection button
+        document.getElementById('testConnectionBtn').addEventListener('click', async function() {
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Testing...';
+
+            try {
+                const response = await fetch('/api/social/linkedin/test', {
+                    method: 'POST',
+                });
+
+                const result = await response.json();
+                const testResultDiv = document.getElementById('testResult');
+
+                if (result.success) {
+                    testResultDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Connection successful!</strong><br>
+                            Followers: ${result.analytics.followers}<br>
+                            Engagement: ${result.analytics.engagement}%
+                        </div>
+                    `;
+                } else {
+                    testResultDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Connection failed:</strong> ${result.error}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('testResult').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Network error:</strong> ${error.message}
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i>Test LinkedIn Connection';
+            }
+        });
+
+        // Demo mode function
+        async function useDemoMode() {
+            try {
+                const response = await fetch('/api/social/connections');
+                showAlert('Demo mode activated! You will see realistic sample data.', 'info');
+                setTimeout(() => {
+                    window.location.href = '/social-media-setup';
+                }, 2000);
+            } catch (error) {
+                showAlert('Error activating demo mode', 'danger');
+            }
+        }
+
+        // Utility function to show alerts
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            const container = document.querySelector('.api-setup-container');
+            container.insertBefore(alertDiv, container.firstChild);
+
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

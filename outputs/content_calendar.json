@@ -25,5 +25,23 @@
     "content": "Building an AI Health Coach has been a transformative journey blending innovation with purpose. Over the past 18 months, I\u2019ve navigated challenges like data privacy, algorithmic bias, and user trust\u2014each hurdle teaching me that ethical AI in healthcare demands rigor *and* empathy.  \n\nKey insights from the trenches:  \n\ud83d\udd39 **Industry Trend**: AI is shifting from reactive diagnostics to proactive, personalized coaching. The rise of wearables and real-time data is enabling hyper-personalized health nudges\u2014making prevention more accessible than ever.  \n\ud83d\udd39 **Business Impact**: Scalability is revolutionary. An AI coach can serve millions 24/7, democratizing care for underserved populations. But success hinges on partnerships with clinicians to ensure AI augments, not replaces, human expertise.  \n\ud83d\udd39 **Career Growth**: This project honed my skills in cross-functional collaboration (tech + healthcare) and agile problem-solving. My biggest lesson? Innovation thrives when you balance ambition with user-centric design.  \n\nThe future of health lies in AI that empowers individuals while respecting privacy. Yet, we must address accountability: Who\u2019s liable when an AI\u2019s advice fails?  \n\n**Question**: What\u2019s the *most critical* challenge you see in scaling AI-driven health solutions? I\u2019d love to hear your perspective!  \n\n#AIinHealth #HealthTech #FutureofHealth #Innovation #CareerDevelopment",
     "publish_date": "2025-11-05",
     "status": "draft"
+  },
+  {
+    "post_number": 4,
+    "topic": "ai",
+    "platform": "linkedin",
+    "prompt_type": "professional_post",
+    "content": "Quick scheduled content about ai",
+    "publish_date": "2025-12-07",
+    "status": "scheduled"
+  },
+  {
+    "post_number": 5,
+    "topic": "ai-scheduler-demo",
+    "platform": "linkedin",
+    "prompt_type": "professional_post",
+    "content": "Quick scheduled content about ai scheduler demo",
+    "publish_date": "2025-11-08",
+    "status": "scheduled"
   }
 ]

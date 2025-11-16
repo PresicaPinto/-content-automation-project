@@ -22,24 +22,39 @@ class ContentCalendar {
             this.renderTopics();
         } catch (error) {
             console.error('Failed to load topics:', error);
-            this.topics = this.getSampleTopics();
+            this.topics = [];
             this.renderTopics();
         }
     }
 
-    getSampleTopics() {
-        return [
-            { id: 1, topic: "The Future of AI in Content Creation", style: "educational", points: ["AI transformation", "Human collaboration", "Personalization"] },
-            { id: 2, topic: "How Agentic AI Systems Boost Business Efficiency", style: "case_study", points: ["85% error reduction", "$2.5M savings", "Real-time optimization"] },
-            { id: 3, topic: "My Journey Building an AI Health Coach", style: "story", points: ["Personal frustration", "AI solution", "Life transformation"] },
-            { id: 4, topic: "Understanding Large Language Models for Business", style: "educational", points: ["LLM basics", "Applications", "Limitations"] },
-            { id: 5, topic: "AI in Customer Service: Beyond Chatbots", style: "insight", points: ["Predictive analytics", "Personalization", "Automation"] },
-            { id: 6, topic: "The Evolution of AI: From Expert Systems to Generative Models", style: "educational", points: ["Historical perspective", "Current state", "Future outlook"] }
-        ];
+    async loadTopicsFromAPI() {
+        try {
+            const response = await fetch('/api/topics');
+            if (response.ok) {
+                const data = await response.json();
+                return data.topics || [];
+            }
+        } catch (error) {
+            console.warn('Failed to load topics from API:', error);
+        }
+        return [];
     }
 
     renderTopics() {
         const container = document.getElementById('topicSelection');
+
+        if (this.topics.length === 0) {
+            container.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No topics available. Please add topics to get started.
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
         container.innerHTML = this.topics.map(topic => `
             <div class="col-lg-4 col-md-6 mb-3">
                 <div class="topic-card card" data-topic-id="${topic.id}">

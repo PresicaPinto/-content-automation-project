@@ -1,0 +1,56 @@
+PRESICA PETER PINTO
+8867062407 | presica27@gmail.com | linkedin.com/in/presica24 | github.com/PresicaPinto
+
+SUMMARY
+Computer Science and Business Systems graduate with hands-on experience in full-stack development, API integration, and AI application development. Proficient in Python, JavaScript, React, and software development lifecycle concepts. Seeking to leverage technical skills and problem-solving abilities as a Software Developer at IBM Consulting.
+
+EDUCATION
+Bachelor of Engineering | Computer Science and Business Systems
+St Joseph Engineering College, Mangaluru | 2021-2025
+CGPA: 7.87/10 | No active backlogs
+
+TECHNICAL SKILLS
+Programming Languages: Python, Java, C++, JavaScript, SQL, HTML/CSS
+Web Technologies: React.js, Node.js, PHP
+Tools & Platforms: Git, Postman, VS Code, Jupyter Notebook, Firebase, Salesforce CLI
+Databases: MySQL, DBMS, Firebase
+Concepts: Software Development Life Cycle, RESTful APIs, Agile Development, Machine Learning
+
+PROJECTS
+AI Content Automation Platform | Python, React, JavaScript, SQLite
+- Developed full-stack application implementing LLM integration for content generation and scheduling
+- Designed RESTful APIs for seamless frontend-backend communication and data management
+- Applied prompt engineering techniques to enhance AI output accuracy and reliability
+- Implemented software development lifecycle practices including testing, deployment, and maintenance
+
+Sales Forecasting Application | Python, HTML, CSS, JavaScript, PHP
+- Built scalable ML application using ARIMA and Holt-Winters models for accurate sales predictions
+- Created real-time data visualization dashboard for business intelligence and decision-making
+- Integrated data analysis pipelines to process and forecast sales trends with 95% accuracy
+
+Restaurant Self-Ordering System | React.js, Firebase
+- Developed responsive web application for streamlined order placement and billing processes
+- Implemented Firebase real-time database for seamless data storage and retrieval
+- Enhanced user experience through intuitive UI/UX design and optimized performance
+
+PROFESSIONAL EXPERIENCE
+AI Intern | Ardelis, Mangalore | Sep 2024 - Present
+- Full-stack development in Linux environment, managing applications end-to-end (frontend, backend, deployment)
+- Integrated large language models (LLMs) into applications to enhance functionality and real-world usability
+- Applied prompt engineering techniques to improve AI output accuracy, reliability, and relevance
+- Developed RESTful APIs for seamless data communication between application components
+
+Software Developer Intern | NexG Automation LLP | Feb 2024 - May 2024
+- Developed and maintained full-stack web application features using React, PHP, and MySQL
+- Designed and integrated RESTful APIs to facilitate seamless data communication between frontend and backend services
+- Utilized Git for version control within an Agile development environment
+- Collaborated with cross-functional teams to deliver high-quality software solutions
+
+CERTIFICATIONS
+Google Crash Course on Python (Coursera) – Comprehensive training in scripting fundamentals, file management, and error handling
+Postman Student Expert – Proficient in API testing, automation, and working with REST APIs
+
+ACHIEVEMENTS
+Successfully delivered multiple full-stack projects demonstrating end-to-end development capabilities
+Completed professional internships gaining hands-on industry experience in software development
+Maintained strong academic performance with no active backlogs throughout engineering program

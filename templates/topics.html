@@ -72,23 +72,59 @@
             color: var(--text-secondary) !important;
         }
 
-        /* Modal */
+        /* Enhanced Modal Styles */
         .modal-content {
             background: var(--card-bg) !important;
             border: 1px solid var(--border-color) !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         .modal-header {
-            background: var(--bg-secondary) !important;
-            border-bottom: 1px solid var(--border-color) !important;
-            color: var(--text-primary) !important;
+            background: linear-gradient(135deg, #007bff, #0056b3) !important;
+            border-bottom: none !important;
+            color: white !important;
+            border-radius: 8px 8px 0 0;
         }
         .modal-body {
             background: var(--card-bg) !important;
             color: var(--text-primary) !important;
+            padding: 2rem;
         }
         .modal-footer {
             background: var(--bg-secondary) !important;
             border-top: 1px solid var(--border-color) !important;
+            padding: 1.5rem 2rem;
+        }
+
+        /* Enhanced Form Controls */
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(66, 133, 244, 0.15) !important;
+            border-color: #4285f4 !important;
+        }
+
+        /* Key Points Enhancement */
+        .key-point-item {
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Enhanced Preview Styling */
+        .preview-topic {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 {% endblock %}
@@ -181,9 +217,9 @@
     <div class="modal fade" id="addTopicModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="fas fa-plus-circle me-2"></i>Add New Content Topic
+                        <i class="fas fa-plus-circle me-2"></i>Create New Content Topic
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -191,43 +227,68 @@
                     <form id="addTopicForm">
                         <!-- Topic Name Section -->
                         <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-heading text-primary me-2"></i>Topic Name
+                            <label class="form-label fw-bold text-primary">
+                                <i class="fas fa-heading me-2"></i>Topic Name <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control form-control-lg" id="topicName"
-                                   placeholder="Enter your content topic..." required>
-                            <small class="text-muted">Example: "AI Trends in Digital Marketing"</small>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-primary text-white">
+                                    <i class="fas fa-lightbulb"></i>
+                                </span>
+                                <input type="text" class="form-control form-control-lg" id="topicName"
+                                       placeholder="Enter your brilliant topic idea..." required>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Example: "AI Trends in Digital Marketing" or "Future of Remote Work"
+                            </small>
                         </div>
 
                         <!-- Description Section -->
                         <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-align-left text-info me-2"></i>Description
+                            <label class="form-label fw-bold text-info">
+                                <i class="fas fa-align-left me-2"></i>Description
                             </label>
-                            <textarea class="form-control" id="topicDescription" rows="4"
-                                      placeholder="Describe what this topic covers and why it's valuable..."></textarea>
-                            <small class="text-muted">Optional: Brief description of the content focus</small>
+                            <div class="position-relative">
+                                <textarea class="form-control" id="topicDescription" rows="4"
+                                          placeholder="Describe what this topic covers and why it's valuable for your audience..."
+                                          style="resize: vertical; padding-right: 40px;"></textarea>
+                                <span class="position-absolute top-0 end-0 p-2 text-muted" style="cursor: pointer;" onclick="clearDescription()">
+                                    <i class="fas fa-times"></i>
+                                </span>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Optional: Brief description helps the AI understand your content focus
+                            </small>
                         </div>
 
-                        <!-- Key Points Section -->
+                        <!-- Enhanced Key Points Section -->
                         <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-list-ol text-success me-2"></i>Key Points
+                            <label class="form-label fw-bold text-success">
+                                <i class="fas fa-list-ol me-2"></i>Key Points <span class="badge bg-success ms-2" id="keyPointsCount">0</span>
                             </label>
                             <div id="keyPointsContainer">
-                                <div class="mb-2">
+                                <div class="mb-3">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" id="keyPointInput" placeholder="Enter a key point..." onkeypress="if(event.key === 'Enter') { addKeyPoint(); }">
-                                        <button class="btn btn-outline-success" type="button" onclick="addKeyPoint()">
-                                            <i class="fas fa-plus"></i> Add
+                                        <span class="input-group-text border-success text-success">
+                                            <i class="fas fa-plus-circle"></i>
+                                        </span>
+                                        <input type="text" class="form-control border-success" id="keyPointInput"
+                                               placeholder="Enter a key point..."
+                                               onkeypress="if(event.key === 'Enter') { addKeyPoint(); event.preventDefault(); }">
+                                        <button class="btn btn-success" type="button" onclick="addKeyPoint()">
+                                            <i class="fas fa-plus me-1"></i> Add Point
                                         </button>
                                     </div>
                                 </div>
-                                <div id="keyPointsList">
+                                <div id="keyPointsList" class="key-points-list">
                                     <!-- Key points will be added here dynamically -->
                                 </div>
                             </div>
-                            <small class="text-muted">Add 3-5 key points that will guide the AI content generation</small>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Add 3-5 key points to guide the AI in creating focused content
+                            </small>
                         </div>
 
                         <!-- Content Style Section -->
@@ -319,13 +380,165 @@
                             <small class="text-muted">Select platforms where this content will perform best</small>
                         </div>
 
-                        <!-- Preview Section -->
+                        <!-- Content Format Template Section -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-warning">
+                                <i class="fas fa-file-alt me-2"></i>Content Format Template <span class="text-danger">*</span>
+                            </label>
+
+                            <!-- Format Type Selection -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="format_type" id="example_based" value="example_based" checked onchange="toggleFormatSection('example')">
+                                        <label class="form-check-label" for="example_based">
+                                            <i class="fas fa-copy text-info"></i> Example-Based
+                                            <br><small>AI follows your example format</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="format_type" id="structure_based" value="structure_based" onchange="toggleFormatSection('structure')">
+                                        <label class="form-check-label" for="structure_based">
+                                            <i class="fas fa-list-ol text-primary"></i> Structure-Based
+                                            <br><small>Define content structure</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="format_type" id="style_based" value="style_based" onchange="toggleFormatSection('style')">
+                                        <label class="form-check-label" for="style_based">
+                                            <i class="fas fa-palette text-success"></i> Style-Based
+                                            <br><small>Specify writing style</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Example-Based Format Input -->
+                            <div id="exampleFormatSection" class="format-section">
+                                <div class="mb-3">
+                                    <label class="form-label text-info">
+                                        <i class="fas fa-paste me-1"></i>Provide Content Example:
+                                    </label>
+                                    <div class="position-relative">
+                                        <textarea class="form-control" rows="6" id="formatExample"
+                                                  placeholder="Paste an example of how you want the generated content to look..."
+                                                  oninput="updateTopicPreview()"></textarea>
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            AI will analyze this example and generate new content in the same format, tone, and structure
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Structure-Based Format Input -->
+                            <div id="structureFormatSection" class="format-section" style="display: none;">
+                                <div class="mb-3">
+                                    <label class="form-label text-primary">
+                                        <i class="fas fa-sitemap me-1"></i>Define Content Structure:
+                                    </label>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="structure_hook" checked>
+                                                <label class="form-check-label" for="structure_hook">
+                                                    Hook/Opening
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="structure_bullets" checked>
+                                                <label class="form-check-label" for="structure_bullets">
+                                                    Bullet Points
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="structure_data">
+                                                <label class="form-check-label" for="structure_data">
+                                                    Data/Statistics
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="structure_cta" checked>
+                                                <label class="form-check-label" for="structure_cta">
+                                                    Call to Action
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="structure_hashtags" checked>
+                                                <label class="form-check-label" for="structure_hashtags">
+                                                    Hashtags
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="structure_emojis">
+                                                <label class="form-check-label" for="structure_emojis">
+                                                    Emojis
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Style-Based Format Input -->
+                            <div id="styleFormatSection" class="format-section" style="display: none;">
+                                <div class="mb-3">
+                                    <label class="form-label text-success">
+                                        <i class="fas fa-paint-brush me-1"></i>Writing Style & Tone:
+                                    </label>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <select class="form-select" id="toneSelect">
+                                                <option value="professional">Professional</option>
+                                                <option value="casual">Casual</option>
+                                                <option value="enthusiastic">Enthusiastic</option>
+                                                <option value="authoritative">Authoritative</option>
+                                                <option value="conversational">Conversational</option>
+                                                <option value="inspirational">Inspirational</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <select class="form-select" id="lengthSelect">
+                                                <option value="short">Short (100-200 words)</option>
+                                                <option value="medium" selected>Medium (200-400 words)</option>
+                                                <option value="long">Long (400-600 words)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <label class="form-label">Style Notes (Optional):</label>
+                                        <textarea class="form-control" rows="2" id="styleNotes"
+                                                  placeholder="e.g., Use data-driven approach, include statistics, be motivational..."
+                                                  oninput="updateTopicPreview()"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Enhanced Preview Section -->
                         <div class="mb-4">
                             <label class="form-label fw-bold">
-                                <i class="fas fa-eye text-info me-2"></i>Topic Preview
+                                <i class="fas fa-eye text-info me-2"></i>Live Topic Preview
                             </label>
-                            <div class="border rounded p-3 bg-light" id="topicPreview">
-                                <p class="text-muted mb-0">Fill in the fields above to see a preview of your topic...</p>
+                            <div class="border rounded-3 p-4 bg-gradient-light shadow-sm" id="topicPreview" style="min-height: 140px; border: 2px solid #e9ecef; transition: all 0.3s ease; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-magic fa-2x mb-2 opacity-50"></i>
+                                    <p class="mb-0">Start typing to see your topic come to life...</p>
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -387,14 +600,48 @@
         function updateTopicPreview() {
             const previewContainer = document.getElementById('topicPreview');
             if (!previewContainer) {
-                // Fallback for basic modal
                 return;
             }
 
             const topicName = document.getElementById('topicName').value.trim();
             const description = document.getElementById('topicDescription').value.trim();
             const styleElement = document.querySelector('input[name="style"]:checked');
-            const style = styleElement ? styleElement.value : 'professional';
+            const style = styleElement ? styleElement.value : 'educational';
+
+            // Get format type and details
+            const formatType = document.querySelector('input[name="format_type"]:checked').value;
+            let formatInfo = '';
+
+            if (formatType === 'example_based') {
+                const exampleContent = document.getElementById('formatExample').value.trim();
+                if (exampleContent) {
+                    formatInfo = `<div class="mt-2"><span class="badge bg-info">Example Format</span> <small class="text-muted">(${exampleContent.length} chars)</small></div>`;
+                }
+            } else if (formatType === 'structure_based') {
+                const structureElements = [];
+                if (document.getElementById('structure_hook').checked) structureElements.push('Hook');
+                if (document.getElementById('structure_bullets').checked) structureElements.push('Bullets');
+                if (document.getElementById('structure_data').checked) structureElements.push('Data');
+                if (document.getElementById('structure_cta').checked) structureElements.push('CTA');
+                if (document.getElementById('structure_hashtags').checked) structureElements.push('Hashtags');
+                if (document.getElementById('structure_emojis').checked) structureElements.push('Emojis');
+
+                if (structureElements.length > 0) {
+                    formatInfo = `<div class="mt-2"><span class="badge bg-primary">Structure:</span> <small>${structureElements.join(', ')}</small></div>`;
+                }
+            } else if (formatType === 'style_based') {
+                const tone = document.getElementById('toneSelect').value;
+                const length = document.getElementById('lengthSelect').value;
+                const styleNotes = document.getElementById('styleNotes').value.trim();
+
+                formatInfo = `<div class="mt-2">
+                    <span class="badge bg-success">${tone} tone</span>
+                    <span class="badge bg-secondary">${length}</span>`;
+                if (styleNotes) {
+                    formatInfo += ` <small class="text-muted">• Custom notes</small>`;
+                }
+                formatInfo += `</div>`;
+            }
 
             if (topicName) {
                 let previewHTML = `
@@ -415,15 +662,75 @@
                 }
 
                 previewHTML += `
-                    <div class="preview-style">
-                        <strong>Style:</strong> <span class="badge bg-primary">${style}</span>
+                    <div class="preview-style mb-2">
+                        <strong>Content Style:</strong> <span class="badge bg-primary">${style}</span>
+                    </div>
+                    <div class="preview-format">
+                        <strong>Format Type:</strong> <span class="badge bg-warning">${formatType.replace('_', ' ').toUpperCase()}</span>
+                        ${formatInfo}
                     </div>
                 </div>`;
 
                 previewContainer.innerHTML = previewHTML;
             } else {
-                previewContainer.innerHTML = '<p class="text-muted mb-0">Enter a topic name to see preview...</p>';
+                previewContainer.innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-magic fa-2x mb-2 opacity-50"></i>
+                        <p class="mb-0">Start typing to see your topic come to life...</p>
+                    </div>`;
             }
+        }
+
+        function toggleFormatSection(formatType) {
+            // Hide all format sections
+            document.getElementById('exampleFormatSection').style.display = 'none';
+            document.getElementById('structureFormatSection').style.display = 'none';
+            document.getElementById('styleFormatSection').style.display = 'none';
+
+            // Show selected format section
+            if (formatType === 'example') {
+                document.getElementById('exampleFormatSection').style.display = 'block';
+            } else if (formatType === 'structure') {
+                document.getElementById('structureFormatSection').style.display = 'block';
+            } else if (formatType === 'style') {
+                document.getElementById('styleFormatSection').style.display = 'block';
+            }
+
+            // Update preview
+            updateTopicPreview();
+        }
+
+        function clearDescription() {
+            document.getElementById('topicDescription').value = '';
+            updateTopicPreview();
+        }
+
+        function getFormatData() {
+            const formatType = document.querySelector('input[name="format_type"]:checked').value;
+            let formatData = {
+                type: formatType
+            };
+
+            if (formatType === 'example_based') {
+                formatData.example = document.getElementById('formatExample').value.trim();
+            } else if (formatType === 'structure_based') {
+                formatData.structure = {
+                    hook: document.getElementById('structure_hook').checked,
+                    bullets: document.getElementById('structure_bullets').checked,
+                    data: document.getElementById('structure_data').checked,
+                    cta: document.getElementById('structure_cta').checked,
+                    hashtags: document.getElementById('structure_hashtags').checked,
+                    emojis: document.getElementById('structure_emojis').checked
+                };
+            } else if (formatType === 'style_based') {
+                formatData.style = {
+                    tone: document.getElementById('toneSelect').value,
+                    length: document.getElementById('lengthSelect').value,
+                    notes: document.getElementById('styleNotes').value.trim()
+                };
+            }
+
+            return formatData;
         }
 
         function loadTopics() {
@@ -579,6 +886,13 @@
                 return;
             }
 
+            // Validate format template
+            const formatData = getFormatData();
+            if (formatData.type === 'example_based' && !formatData.example) {
+                showNotification('Please provide content example for example-based format', 'error');
+                return;
+            }
+
             // Get selected style
             const styleElement = document.querySelector('input[name="style"]:checked');
             const style = styleElement ? styleElement.value : 'educational';
@@ -595,7 +909,8 @@
                 description: description,
                 points: points,
                 style: style,
-                platforms: platforms.length > 0 ? platforms : ['linkedin'] // Default to LinkedIn
+                platforms: platforms.length > 0 ? platforms : ['linkedin'], // Default to LinkedIn
+                format_template: formatData // Add format template data
             };
 
             fetch('/api/topics/add', {
@@ -618,7 +933,7 @@
                     // Reload topics
                     loadTopics();
 
-                    showNotification('Topic added successfully!', 'success');
+                    showNotification('Topic with format template added successfully!', 'success');
                 } else {
                     showNotification('Failed to add topic: ' + (data.message || 'Unknown error'), 'error');
                 }

@@ -1,852 +1,1055 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+#!/usr/bin/env python3
+"""
+Enhanced Real-Time Dashboard
+Integrates with real-time analytics engine for live social media monitoring
+"""
+
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask_socketio import SocketIO, emit
 import json
-import os
-from datetime import datetime, timedelta
 import sqlite3
-import logging
-import subprocess
+from datetime import datetime, timedelta
 import threading
 import time
+import logging
+from pathlib import Path
 
-app = Flask(__name__)
+# Import our modules
+from real_time_analytics import real_time_engine, start_real_time_analytics
+from linkedin_real_api import linkedin_real_api
+from twitter_real_api import twitter_real_api
+from social_media_analytics import SocialMediaAnalyticsManager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class TopicManager:
-    """Manage topics for content generation"""
+app = Flask(__name__)
+app.secret_key = 'your-secret-key-here'
+socketio = SocketIO(app, cors_allowed_origins="*")
 
-    def __init__(self, topics_file='topics.json'):
-        self.topics_file = topics_file
-        self.load_topics()
+# Configuration
+MONITORING_CONFIG = {
+    'platforms': ['twitter', 'linkedin'],
+    'entities': {
+        'twitter': 'elonmusk',  # Example - can be made configurable
+        'linkedin': '1441'      # Example LinkedIn company ID
+    },
+    'update_interval': 60  # seconds
+}
 
-    def load_topics(self):
-        """Load topics from file"""
-        try:
-            with open(self.topics_file, 'r') as f:
-                self.topics = json.load(f)
-        except FileNotFoundError:
-            self.topics = []
-            self.save_topics()
-
-    def save_topics(self):
-        """Save topics to file"""
-        with open(self.topics_file, 'w') as f:
-            json.dump(self.topics, f, indent=2)
-
-    def add_topic(self, topic_data):
-        """Add a new topic"""
-        topic_data['id'] = len(self.topics) + 1
-        topic_data['created_date'] = datetime.now().isoformat()
-        topic_data['status'] = 'pending'
-        self.topics.append(topic_data)
-        self.save_topics()
-        return topic_data
-
-    def get_topics(self):
-        """Get all topics"""
-        return self.topics
-
-    def update_topic_status(self, topic_id, status):
-        """Update topic status"""
-        for topic in self.topics:
-            if topic.get('id') == topic_id:
-                topic['status'] = status
-                if status == 'completed':
-                    topic['completed_date'] = datetime.now().isoformat()
-                self.save_topics()
-                return True
-        return False
-
-class ContentGenerator:
-    """Handle content generation"""
+class EnhancedDashboard:
+    """Enhanced dashboard with real-time capabilities"""
 
     def __init__(self):
-        self.generation_status = 'idle'
-        self.generation_progress = 0
+        self.is_monitoring = False
+        self.current_config = MONITORING_CONFIG
+        self.social_manager = SocialMediaAnalyticsManager()
 
-    def generate_content(self, num_posts=5):
-        """Generate content from topics"""
+    def start_monitoring(self):
+        """Start real-time monitoring"""
+        if not self.is_monitoring:
+            logger.info("Starting enhanced dashboard monitoring...")
+
+            # Start real-time analytics
+            self.analytics_engine = start_real_time_analytics(
+                platforms=self.current_config['platforms'],
+                entities=self.current_config['entities']
+            )
+
+            self.is_monitoring = True
+
+            # Start background thread for Socket.IO updates
+            self.start_socketio_updates()
+
+            logger.info("Enhanced dashboard monitoring started")
+
+    def start_socketio_updates(self):
+        """Start background thread to push updates via Socket.IO"""
+        def update_loop():
+            while self.is_monitoring:
+                try:
+                    # Get latest analytics
+                    summary = self.analytics_engine.get_analytics_summary()
+
+                    # Get recent alerts
+                    alerts = self.analytics_engine.get_recent_alerts(limit=5)
+
+                    # Emit updates to all connected clients
+                    socketio.emit('analytics_update', {
+                        'summary': summary,
+                        'alerts': alerts,
+                        'timestamp': datetime.now().isoformat()
+                    })
+
+                    time.sleep(30)  # Update every 30 seconds
+
+                except Exception as e:
+                    logger.error(f"Error in Socket.IO update loop: {e}")
+                    time.sleep(10)
+
+        thread = threading.Thread(target=update_loop, daemon=True)
+        thread.start()
+
+    def stop_monitoring(self):
+        """Stop real-time monitoring"""
+        if self.is_monitoring:
+            logger.info("Stopping enhanced dashboard monitoring...")
+            self.is_monitoring = False
+            if hasattr(self, 'analytics_engine'):
+                self.analytics_engine.stop()
+
+    def get_historical_data(self, platform: str, metric: str, hours: int = 24):
+        """Get historical data for charts"""
         try:
-            # Run content generation
-            result = subprocess.run([
-                'python', 'main.py', 'linkedin_batch', str(num_posts)
-            ], capture_output=True, text=True, cwd='.')
+            return self.analytics_engine.get_historical_metrics(platform, metric, hours)
+        except:
+            return []
 
-            if result.returncode == 0:
-                return {'success': True, 'message': 'Content generated successfully!'}
-            else:
-                return {'success': False, 'message': result.stderr}
+    def get_trending_analysis(self):
+        """Get trending analysis across platforms"""
+        try:
+            summary = self.analytics_engine.get_analytics_summary()
+            trends = {}
 
+            for platform, metrics in summary.items():
+                platform_trends = []
+                for metric_name, metric_data in metrics.items():
+                    if metric_data.get('trend') != 'stable':
+                        platform_trends.append({
+                            'metric': metric_name,
+                            'trend': metric_data['trend'],
+                            'change_percent': metric_data['change_percent'],
+                            'value': metric_data['value']
+                        })
+
+                if platform_trends:
+                    trends[platform] = sorted(platform_trends,
+                                             key=lambda x: abs(x['change_percent']),
+                                             reverse=True)
+
+            return trends
         except Exception as e:
-            return {'success': False, 'message': str(e)}
+            logger.error(f"Error getting trending analysis: {e}")
+            return {}
 
-class MetricsDatabase:
-    """Database handler for metrics"""
+    def get_performance_insights(self):
+        """Generate performance insights and recommendations"""
+        try:
+            insights = []
+            summary = self.analytics_engine.get_analytics_summary()
 
-    def __init__(self, db_path="outputs/metrics.db"):
-        self.db_path = db_path
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
-        self.init_database()
+            for platform, metrics in summary.items():
+                # Engagement analysis
+                if 'engagement' in metrics:
+                    engagement = metrics['engagement']['value']
+                    if engagement > 5.0:
+                        insights.append({
+                            'type': 'success',
+                            'platform': platform,
+                            'message': f"Excellent engagement rate of {engagement}%",
+                            'recommendation': "Keep up the great content strategy!"
+                        })
+                    elif engagement < 2.0:
+                        insights.append({
+                            'type': 'warning',
+                            'platform': platform,
+                            'message': f"Low engagement rate of {engagement}%",
+                            'recommendation': "Consider using more engaging content formats"
+                        })
 
-    def init_database(self):
-        """Initialize database"""
-        with sqlite3.connect(self.db_path) as conn:
-            conn.execute('''
-                CREATE TABLE IF NOT EXISTS metrics (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    date TEXT NOT NULL,
-                    platform TEXT NOT NULL,
-                    post_number INTEGER,
-                    topic TEXT,
-                    views INTEGER DEFAULT 0,
-                    likes INTEGER DEFAULT 0,
-                    comments INTEGER DEFAULT 0,
-                    shares INTEGER DEFAULT 0,
-                    engagement_rate REAL DEFAULT 0.0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            ''')
-            conn.commit()
+                # Follower growth
+                if 'followers' in metrics:
+                    followers = metrics['followers']
+                    change = followers.get('change_percent', 0)
+                    if change > 10:
+                        insights.append({
+                            'type': 'success',
+                            'platform': platform,
+                            'message': f"Strong follower growth of {change}%",
+                            'recommendation': "Analyze what content drove this growth"
+                        })
+                    elif change < -5:
+                        insights.append({
+                            'type': 'alert',
+                            'platform': platform,
+                            'message': f"Followers decreased by {abs(change)}%",
+                            'recommendation': "Review recent content and engagement patterns"
+                        })
 
-    def get_metrics_summary(self, days=30):
-        """Get metrics summary"""
-        with sqlite3.connect(self.db_path) as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.execute('''
-                SELECT platform, COUNT(*) as total_posts,
-                       SUM(views) as total_views, SUM(likes) as total_likes,
-                       AVG(engagement_rate) as avg_engagement
-                FROM metrics
-                WHERE date >= date('now', '-{} days')
-                GROUP BY platform
-            '''.format(days))
-            return [dict(row) for row in cursor.fetchall()]
+            return sorted(insights, key=lambda x: x['type'] == 'alert', reverse=True)
+        except Exception as e:
+            logger.error(f"Error generating insights: {e}")
+            return []
 
-# Initialize managers
-topic_manager = TopicManager()
-content_generator = ContentGenerator()
-metrics_db = MetricsDatabase()
+# Create dashboard instance
+dashboard = EnhancedDashboard()
 
 @app.route('/')
-def dashboard():
-    """Main dashboard with topic management"""
+def index():
+    """Main dashboard page"""
     return render_template('enhanced_dashboard.html')
 
-@app.route('/api/topics')
-def get_topics():
-    """Get all topics"""
-    return jsonify(topic_manager.get_topics())
-
-@app.route('/api/topics/add', methods=['POST'])
-def add_topic():
-    """Add a new topic"""
+@app.route('/api/analytics/summary')
+def get_analytics_summary():
+    """Get current analytics summary"""
     try:
-        data = request.json
-        required_fields = ['topic', 'points', 'style']
-
-        if not all(field in data for field in required_fields):
-            return jsonify({'success': False, 'message': 'Missing required fields'})
-
-        topic = topic_manager.add_topic(data)
-        return jsonify({'success': True, 'topic': topic})
-
+        summary = dashboard.analytics_engine.get_analytics_summary() if dashboard.is_monitoring else {}
+        return jsonify({
+            'success': True,
+            'data': summary,
+            'monitoring': dashboard.is_monitoring,
+            'timestamp': datetime.now().isoformat()
+        })
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)})
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
-@app.route('/api/topics/<int:topic_id>/generate', methods=['POST'])
-def generate_content_for_topic(topic_id):
-    """Generate content for specific topic"""
+@app.route('/api/analytics/history/<platform>/<metric>')
+def get_analytics_history(platform, metric):
+    """Get historical analytics data"""
     try:
-        # Update topic status
-        topic_manager.update_topic_status(topic_id, 'generating')
-
-        # Generate content
-        result = content_generator.generate_content(3)
-
-        if result['success']:
-            topic_manager.update_topic_status(topic_id, 'completed')
-            return jsonify({'success': True, 'message': 'Content generated successfully!'})
-        else:
-            topic_manager.update_topic_status(topic_id, 'failed')
-            return jsonify({'success': False, 'message': result['message']})
-
+        hours = int(request.args.get('hours', 24))
+        history = dashboard.get_historical_data(platform, metric, hours)
+        return jsonify({
+            'success': True,
+            'data': history,
+            'platform': platform,
+            'metric': metric,
+            'hours': hours
+        })
     except Exception as e:
-        topic_manager.update_topic_status(topic_id, 'failed')
-        return jsonify({'success': False, 'message': str(e)})
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
-@app.route('/api/generate-batch', methods=['POST'])
-def generate_batch_content():
-    """Generate content for multiple topics"""
+@app.route('/api/alerts')
+def get_alerts():
+    """Get recent alerts"""
     try:
-        data = request.json
-        num_posts = data.get('num_posts', 5)
-
-        # Generate content
-        result = content_generator.generate_content(num_posts)
-
-        return jsonify(result)
-
+        platform = request.args.get('platform')
+        limit = int(request.args.get('limit', 10))
+        alerts = dashboard.analytics_engine.get_recent_alerts(platform, limit) if dashboard.is_monitoring else []
+        return jsonify({
+            'success': True,
+            'data': alerts,
+            'count': len(alerts)
+        })
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)})
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
-@app.route('/api/metrics/summary')
-def get_metrics_summary():
-    """Get metrics summary"""
-    data = metrics_db.get_metrics_summary()
-    return jsonify(data)
+@app.route('/api/insights')
+def get_insights():
+    """Get performance insights"""
+    try:
+        insights = dashboard.get_performance_insights()
+        trends = dashboard.get_trending_analysis()
+        return jsonify({
+            'success': True,
+            'insights': insights,
+            'trends': trends,
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
-@app.route('/api/content/status')
-def get_content_status():
-    """Get content generation status"""
-    # Check if content files exist
-    linkedin_exists = os.path.exists('outputs/content_calendar.json')
-    twitter_exists = os.path.exists('outputs/twitter_calendar.json')
+@app.route('/api/monitoring/start', methods=['POST'])
+def start_monitoring():
+    """Start real-time monitoring"""
+    try:
+        data = request.get_json() or {}
 
-    if linkedin_exists:
-        with open('outputs/content_calendar.json', 'r') as f:
-            linkedin_posts = json.load(f)
+        # Update configuration if provided
+        if data:
+            dashboard.current_config.update(data)
+
+        dashboard.start_monitoring()
+
+        return jsonify({
+            'success': True,
+            'message': 'Real-time monitoring started',
+            'config': dashboard.current_config
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/monitoring/stop', methods=['POST'])
+def stop_monitoring():
+    """Stop real-time monitoring"""
+    try:
+        dashboard.stop_monitoring()
+        return jsonify({
+            'success': True,
+            'message': 'Real-time monitoring stopped'
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/config', methods=['GET', 'POST'])
+def config():
+    """Get or update configuration"""
+    if request.method == 'GET':
+        return jsonify({
+            'success': True,
+            'config': dashboard.current_config,
+            'monitoring': dashboard.is_monitoring
+        })
     else:
-        linkedin_posts = []
+        try:
+            data = request.get_json()
+            dashboard.current_config.update(data)
+            return jsonify({
+                'success': True,
+                'message': 'Configuration updated',
+                'config': dashboard.current_config
+            })
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
 
-    if twitter_exists:
-        with open('outputs/twitter_calendar.json', 'r') as f:
-            twitter_posts = json.load(f)
-    else:
-        twitter_posts = []
-
-    return jsonify({
-        'linkedin_posts': len(linkedin_posts),
-        'twitter_posts': len(twitter_posts),
-        'last_generated': os.path.getmtime('outputs/content_calendar.json') if linkedin_exists else None
+# Socket.IO events
+@socketio.on('connect')
+def handle_connect():
+    """Handle client connection"""
+    logger.info(f"Client connected: {request.sid}")
+    emit('connected', {
+        'message': 'Connected to enhanced dashboard',
+        'monitoring': dashboard.is_monitoring
     })
 
+@socketio.on('disconnect')
+def handle_disconnect():
+    """Handle client disconnection"""
+    logger.info(f"Client disconnected: {request.sid}")
+
+@socketio.on('request_update')
+def handle_request_update():
+    """Handle manual update request"""
+    try:
+        summary = dashboard.analytics_engine.get_analytics_summary() if dashboard.is_monitoring else {}
+        alerts = dashboard.analytics_engine.get_recent_alerts(limit=5) if dashboard.is_monitoring else []
+
+        emit('analytics_update', {
+            'summary': summary,
+            'alerts': alerts,
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        emit('error', {'message': str(e)})
+
+@socketio.on('subscribe_platform')
+def handle_subscribe_platform(data):
+    """Handle platform subscription"""
+    platform = data.get('platform')
+    logger.info(f"Client {request.sid} subscribed to {platform}")
+    emit('subscribed', {'platform': platform})
+
 # Create enhanced dashboard template
-dashboard_template = """
+def create_enhanced_template():
+    """Create the enhanced dashboard HTML template"""
+    template_content = '''
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Content Automation Control Center</title>
+    <title>Enhanced Real-Time Analytics Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8fafc;
-            color: #334155;
+        .metric-card {
+            transition: all 0.3s ease;
         }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1rem;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .tab {
-            padding: 1rem 2rem;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            color: #64748b;
-            transition: all 0.3s;
-        }
-
-        .tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .action-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-
-        .action-card:hover {
+        .metric-card:hover {
             transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
+        .trend-up { color: #10b981; }
+        .trend-down { color: #ef4444; }
+        .trend-stable { color: #6b7280; }
+        .pulse-dot {
+            animation: pulse 2s infinite;
         }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
-
-        .btn-primary:hover {
-            background: #5a6fd8;
-            transform: translateY(-1px);
+        .alert-item {
+            animation: slideIn 0.3s ease-out;
         }
-
-        .btn-success {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #64748b;
-            color: white;
-        }
-
-        .topics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .topic-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border-left: 4px solid #667eea;
-        }
-
-        .topic-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: #1e293b;
-        }
-
-        .topic-points {
-            margin-bottom: 1rem;
-        }
-
-        .topic-point {
-            padding: 0.25rem 0;
-            color: #64748b;
-            font-size: 0.9rem;
-        }
-
-        .topic-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .topic-style {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            background: #f1f5f9;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        .topic-status {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        .status-pending { background: #fef3c7; color: #92400e; }
-        .status-generating { background: #dbeafe; color: #1e40af; }
-        .status-completed { background: #d1fae5; color: #065f46; }
-        .status-failed { background: #fee2e2; color: #991b1b; }
-
-        .add-topic-form {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #374151;
-        }
-
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 1rem;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #667eea;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            color: #64748b;
-            font-size: 0.9rem;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: white;
-            margin: 5% auto;
-            padding: 2rem;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-        }
-
-        .notification {
-            position: fixed;
-            top: 2rem;
-            right: 2rem;
-            padding: 1rem 1.5rem;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            border-left: 4px solid #10b981;
-            z-index: 1001;
-            display: none;
-        }
-
-        .notification.error {
-            border-left-color: #ef4444;
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
-<body>
-    <div class="header">
-        <h1>🚀 Content Automation Control Center</h1>
-        <p>Generate content, manage topics, and track performance - all in one place</p>
-    </div>
-
-    <div class="container">
-        <div class="tabs">
-            <button class="tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
-            <button class="tab" onclick="showTab('topics')">📝 Topics</button>
-            <button class="tab" onclick="showTab('generate')">⚡ Generate</button>
-            <button class="tab" onclick="showTab('metrics')">📈 Metrics</button>
-        </div>
-
-        <!-- Dashboard Tab -->
-        <div id="dashboard" class="tab-content active">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number" id="linkedin-count">-</div>
-                    <div class="stat-label">LinkedIn Posts</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="twitter-count">-</div>
-                    <div class="stat-label">Twitter Threads</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="topics-count">-</div>
-                    <div class="stat-label">Topics Available</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="status-indicator">✅</div>
-                    <div class="stat-label">System Status</div>
-                </div>
-            </div>
-
-            <div class="quick-actions">
-                <div class="action-card">
-                    <h3>⚡ Quick Generate</h3>
-                    <p>Generate 5 posts immediately</p>
-                    <button class="btn btn-primary" onclick="quickGenerate()">Generate Now</button>
-                </div>
-                <div class="action-card">
-                    <h3>📝 Add Topic</h3>
-                    <p>Add a new topic for content generation</p>
-                    <button class="btn btn-secondary" onclick="showAddTopic()">Add Topic</button>
-                </div>
-                <div class="action-card">
-                    <h3>📊 View Content</h3>
-                    <p>Check generated content</p>
-                    <button class="btn btn-secondary" onclick="viewContent()">View Content</button>
-                </div>
-                <div class="action-card">
-                    <h3>🚀 Start Scheduler</h3>
-                    <p>Launch the posting scheduler</p>
-                    <button class="btn btn-success" onclick="startScheduler()">Start Scheduler</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Topics Tab -->
-        <div id="topics" class="tab-content">
-            <div class="add-topic-form">
-                <h3>➕ Add New Topic</h3>
-                <form id="addTopicForm">
-                    <div class="form-group">
-                        <label>Topic Title</label>
-                        <input type="text" id="topicTitle" required>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-chart-line text-blue-600 text-2xl"></i>
+                    <h1 class="text-2xl font-bold text-gray-900">Enhanced Real-Time Analytics</h1>
+                    <div id="connection-status" class="flex items-center">
+                        <span class="pulse-dot w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
+                        <span class="text-sm text-gray-600">Connecting...</span>
                     </div>
-                    <div class="form-group">
-                        <label>Key Points (one per line)</label>
-                        <textarea id="topicPoints" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Style</label>
-                        <select id="topicStyle">
-                            <option value="educational">Educational</option>
-                            <option value="case_study">Case Study</option>
-                            <option value="story">Story</option>
-                            <option value="insight">Insight</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Add Topic</button>
-                </form>
-            </div>
-
-            <h3>📋 Available Topics</h3>
-            <div class="topics-grid" id="topicsGrid">
-                <div class="loading">Loading topics...</div>
-            </div>
-        </div>
-
-        <!-- Generate Tab -->
-        <div id="generate" class="tab-content">
-            <div class="action-card">
-                <h3>🚀 Batch Content Generation</h3>
-                <p>Generate multiple posts at once from your topic pool</p>
-                <div class="form-group">
-                    <label>Number of posts to generate:</label>
-                    <input type="number" id="batchCount" value="10" min="1" max="50">
                 </div>
-                <button class="btn btn-primary" onclick="generateBatch()">Generate Content</button>
-            </div>
-
-            <div id="generationStatus" style="display: none;">
-                <h3>⏳ Generation Progress</h3>
-                <div class="stat-card">
-                    <div class="stat-number" id="progressIndicator">0%</div>
-                    <div class="stat-label">Progress</div>
+                <div class="flex items-center space-x-4">
+                    <button id="toggle-monitoring" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-play mr-2"></i>Start Monitoring
+                    </button>
+                    <button id="config-btn" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
+                        <i class="fas fa-cog"></i>
+                    </button>
                 </div>
             </div>
         </div>
+    </header>
 
-        <!-- Metrics Tab -->
-        <div id="metrics" class="tab-content">
-            <h3>📈 Performance Metrics</h3>
-            <div class="stats-grid" id="metricsGrid">
-                <div class="loading">Loading metrics...</div>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="metric-card bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Followers</p>
+                        <p id="total-followers" class="text-2xl font-bold text-gray-900">-</p>
+                    </div>
+                    <div class="bg-blue-100 rounded-full p-3">
+                        <i class="fas fa-users text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Avg Engagement</p>
+                        <p id="avg-engagement" class="text-2xl font-bold text-gray-900">-</p>
+                    </div>
+                    <div class="bg-green-100 rounded-full p-3">
+                        <i class="fas fa-heart text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Impressions</p>
+                        <p id="total-impressions" class="text-2xl font-bold text-gray-900">-</p>
+                    </div>
+                    <div class="bg-purple-100 rounded-full p-3">
+                        <i class="fas fa-eye text-purple-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Active Alerts</p>
+                        <p id="active-alerts" class="text-2xl font-bold text-gray-900">0</p>
+                    </div>
+                    <div class="bg-red-100 rounded-full p-3">
+                        <i class="fas fa-exclamation-triangle text-red-600"></i>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Notification -->
-    <div id="notification" class="notification">
-        <span id="notificationText"></span>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Real-time Metrics -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Platform Metrics -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-900">Real-Time Metrics</h2>
+                    </div>
+                    <div class="p-6">
+                        <div id="platform-metrics" class="space-y-6">
+                            <p class="text-gray-500 text-center py-8">Start monitoring to see real-time metrics</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-lg font-semibold text-gray-900">Performance Trends</h2>
+                            <select id="chart-metric" class="border border-gray-300 rounded px-3 py-1 text-sm">
+                                <option value="followers">Followers</option>
+                                <option value="engagement">Engagement</option>
+                                <option value="impressions">Impressions</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <canvas id="trends-chart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Alerts -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-900">Recent Alerts</h2>
+                    </div>
+                    <div class="p-6">
+                        <div id="alerts-list" class="space-y-3">
+                            <p class="text-gray-500 text-center py-4">No recent alerts</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insights -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-900">Performance Insights</h2>
+                    </div>
+                    <div class="p-6">
+                        <div id="insights-list" class="space-y-3">
+                            <p class="text-gray-500 text-center py-4">Start monitoring for insights</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trending Analysis -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-900">Trending Now</h2>
+                    </div>
+                    <div class="p-6">
+                        <div id="trending-list" class="space-y-3">
+                            <p class="text-gray-500 text-center py-4">No trending data</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Configuration Modal -->
+    <div id="config-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Configuration</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Twitter Username</label>
+                        <input type="text" id="twitter-username" class="w-full border border-gray-300 rounded px-3 py-2"
+                               placeholder="e.g., elonmusk" value="elonmusk">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">LinkedIn Company ID</label>
+                        <input type="text" id="linkedin-id" class="w-full border border-gray-300 rounded px-3 py-2"
+                               placeholder="e.g., 1441" value="1441">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Update Interval (seconds)</label>
+                        <input type="number" id="update-interval" class="w-full border border-gray-300 rounded px-3 py-2"
+                               value="60" min="30" max="300">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button id="cancel-config" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+                        Cancel
+                    </button>
+                    <button id="save-config" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        let currentTopics = [];
+        // Global variables
+        let socket;
+        let monitoring = false;
+        let chart = null;
 
-        function showTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
+        // Initialize Socket.IO
+        function initializeSocket() {
+            socket = io();
 
-            // Show selected tab
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-
-            // Load tab-specific data
-            if (tabName === 'topics') loadTopics();
-            if (tabName === 'metrics') loadMetrics();
-            if (tabName === 'dashboard') loadDashboard();
-        }
-
-        function showNotification(message, isError = false) {
-            const notification = document.getElementById('notification');
-            const notificationText = document.getElementById('notificationText');
-
-            notificationText.textContent = message;
-            notification.className = isError ? 'notification error' : 'notification';
-            notification.style.display = 'block';
-
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
-        }
-
-        async function loadDashboard() {
-            // Load content status
-            const response = await fetch('/api/content/status');
-            const data = await response.json();
-
-            document.getElementById('linkedin-count').textContent = data.linkedin_posts;
-            document.getElementById('twitter-count').textContent = data.twitter_posts;
-
-            // Load topics count
-            const topicsResponse = await fetch('/api/topics');
-            const topics = await topicsResponse.json();
-            document.getElementById('topics-count').textContent = topics.length;
-        }
-
-        async function loadTopics() {
-            const response = await fetch('/api/topics');
-            currentTopics = await response.json();
-
-            const topicsGrid = document.getElementById('topicsGrid');
-
-            topicsGrid.innerHTML = currentTopics.map(topic => `
-                <div class="topic-card">
-                    <div class="topic-title">${topic.topic}</div>
-                    <div class="topic-points">
-                        ${topic.points.map(point => `<div class="topic-point">• ${point}</div>`).join('')}
-                    </div>
-                    <div class="topic-meta">
-                        <span class="topic-style">${topic.style}</span>
-                        <span class="topic-status status-${topic.status || 'pending'}">${topic.status || 'pending'}</span>
-                    </div>
-                    <div style="margin-top: 1rem;">
-                        <button class="btn btn-primary" onclick="generateForTopic(${topic.id || topic.topic.length})">Generate</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function loadMetrics() {
-            const response = await fetch('/api/metrics/summary');
-            const metrics = await response.json();
-
-            const metricsGrid = document.getElementById('metricsGrid');
-
-            if (metrics.length === 0) {
-                metricsGrid.innerHTML = '<div class="stat-card"><p>No metrics data available yet</p></div>';
-                return;
-            }
-
-            metricsGrid.innerHTML = metrics.map(metric => `
-                <div class="stat-card">
-                    <div class="stat-number">${metric.total_posts}</div>
-                    <div class="stat-label">${metric.platform.toUpperCase()} Posts</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${formatNumber(metric.total_views)}</div>
-                    <div class="stat-label">${metric.platform.toUpperCase()} Views</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${formatNumber(metric.total_likes)}</div>
-                    <div class="stat-label">${metric.platform.toUpperCase()} Likes</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${(metric.avg_engagement || 0).toFixed(1)}%</div>
-                    <div class="stat-label">${metric.platform.toUpperCase()} Engagement</div>
-                </div>
-            `).join('');
-        }
-
-        function formatNumber(num) {
-            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-            return num.toString();
-        }
-
-        // Add topic form handler
-        document.getElementById('addTopicForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const topicData = {
-                topic: document.getElementById('topicTitle').value,
-                points: document.getElementById('topicPoints').value.split('\\n').filter(p => p.trim()),
-                style: document.getElementById('topicStyle').value
-            };
-
-            const response = await fetch('/api/topics/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(topicData)
+            socket.on('connect', function() {
+                updateConnectionStatus(true);
+                console.log('Connected to server');
             });
 
-            const result = await response.json();
+            socket.on('disconnect', function() {
+                updateConnectionStatus(false);
+                console.log('Disconnected from server');
+            });
 
-            if (result.success) {
-                showNotification('Topic added successfully!');
-                document.getElementById('addTopicForm').reset();
-                loadTopics();
+            socket.on('analytics_update', function(data) {
+                updateDashboard(data);
+            });
+
+            socket.on('connected', function(data) {
+                console.log(data.message);
+                monitoring = data.monitoring;
+                updateMonitoringButton();
+            });
+        }
+
+        // Update connection status indicator
+        function updateConnectionStatus(connected) {
+            const status = document.getElementById('connection-status');
+            const dot = status.querySelector('.pulse-dot');
+            const text = status.querySelector('span:last-child');
+
+            if (connected) {
+                dot.classList.remove('bg-gray-400');
+                dot.classList.add('bg-green-500');
+                text.textContent = 'Connected';
+                text.classList.remove('text-gray-600');
+                text.classList.add('text-green-600');
             } else {
-                showNotification(result.message, true);
+                dot.classList.remove('bg-green-500');
+                dot.classList.add('bg-gray-400');
+                text.textContent = 'Disconnected';
+                text.classList.remove('text-green-600');
+                text.classList.add('text-gray-600');
+            }
+        }
+
+        // Update monitoring button
+        function updateMonitoringButton() {
+            const btn = document.getElementById('toggle-monitoring');
+            if (monitoring) {
+                btn.innerHTML = '<i class="fas fa-stop mr-2"></i>Stop Monitoring';
+                btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                btn.classList.add('bg-red-600', 'hover:bg-red-700');
+            } else {
+                btn.innerHTML = '<i class="fas fa-play mr-2"></i>Start Monitoring';
+                btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            }
+        }
+
+        // Toggle monitoring
+        document.getElementById('toggle-monitoring').addEventListener('click', async function() {
+            try {
+                const endpoint = monitoring ? '/api/monitoring/stop' : '/api/monitoring/start';
+                const response = await fetch(endpoint, { method: 'POST' });
+                const data = await response.json();
+
+                if (data.success) {
+                    monitoring = !monitoring;
+                    updateMonitoringButton();
+
+                    if (monitoring) {
+                        loadInitialData();
+                    }
+                }
+            } catch (error) {
+                console.error('Error toggling monitoring:', error);
             }
         });
 
-        async function quickGenerate() {
-            showNotification('Starting content generation...');
-            const response = await fetch('/api/generate-batch', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ num_posts: 5 })
-            });
+        // Load initial data
+        async function loadInitialData() {
+            try {
+                // Load analytics summary
+                const summaryResponse = await fetch('/api/analytics/summary');
+                const summaryData = await summaryResponse.json();
 
-            const result = await response.json();
+                if (summaryData.success) {
+                    updateSummaryCards(summaryData.data);
+                }
 
-            if (result.success) {
-                showNotification('Content generated successfully!');
-                loadDashboard();
-            } else {
-                showNotification(result.message, true);
+                // Load insights
+                const insightsResponse = await fetch('/api/insights');
+                const insightsData = await insightsResponse.json();
+
+                if (insightsData.success) {
+                    updateInsights(insightsData.insights);
+                    updateTrending(insightsData.trends);
+                }
+
+                // Load alerts
+                const alertsResponse = await fetch('/api/alerts');
+                const alertsData = await alertsResponse.json();
+
+                if (alertsData.success) {
+                    updateAlerts(alertsData.data);
+                }
+            } catch (error) {
+                console.error('Error loading initial data:', error);
             }
         }
 
-        async function generateBatch() {
-            const count = document.getElementById('batchCount').value;
+        // Update dashboard with new data
+        function updateDashboard(data) {
+            updateSummaryCards(data.summary);
+            updateAlerts(data.alerts);
+            updateMetrics(data.summary);
+        }
 
-            document.getElementById('generationStatus').style.display = 'block';
+        // Update summary cards
+        function updateSummaryCards(summary) {
+            let totalFollowers = 0;
+            let totalEngagement = 0;
+            let totalImpressions = 0;
+            let engagementCount = 0;
 
-            const response = await fetch('/api/generate-batch', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ num_posts: parseInt(count) })
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                showNotification(`${count} posts generated successfully!`);
-                loadDashboard();
-            } else {
-                showNotification(result.message, true);
+            for (const [platform, metrics] of Object.entries(summary)) {
+                if (metrics.followers) {
+                    totalFollowers += metrics.followers.value;
+                }
+                if (metrics.engagement) {
+                    totalEngagement += metrics.engagement.value;
+                    engagementCount++;
+                }
+                if (metrics.impressions) {
+                    totalImpressions += metrics.impressions.value;
+                }
             }
 
-            document.getElementById('generationStatus').style.display = 'none';
+            document.getElementById('total-followers').textContent = totalFollowers.toLocaleString();
+            document.getElementById('avg-engagement').textContent =
+                engagementCount > 0 ? (totalEngagement / engagementCount).toFixed(1) + '%' : '-';
+            document.getElementById('total-impressions').textContent = totalImpressions.toLocaleString();
         }
 
-        function showAddTopic() {
-            showTab('topics');
+        // Update metrics display
+        function updateMetrics(summary) {
+            const container = document.getElementById('platform-metrics');
+            container.innerHTML = '';
+
+            for (const [platform, metrics] of Object.entries(summary)) {
+                const platformDiv = document.createElement('div');
+                platformDiv.className = 'border-b border-gray-200 pb-4 last:border-b-0';
+
+                const platformTitle = document.createElement('h3');
+                platformTitle.className = 'text-lg font-medium text-gray-900 mb-4 capitalize';
+                platformTitle.innerHTML = `<i class="fab fa-${platform} mr-2"></i>${platform}`;
+                platformDiv.appendChild(platformTitle);
+
+                const metricsGrid = document.createElement('div');
+                metricsGrid.className = 'grid grid-cols-2 gap-4';
+
+                for (const [metricName, metricData] of Object.entries(metrics)) {
+                    const metricDiv = document.createElement('div');
+                    metricDiv.className = 'flex justify-between items-center';
+
+                    const trendClass = metricData.trend === 'up' ? 'trend-up' :
+                                      metricData.trend === 'down' ? 'trend-down' : 'trend-stable';
+                    const trendIcon = metricData.trend === 'up' ? 'fa-arrow-up' :
+                                     metricData.trend === 'down' ? 'fa-arrow-down' : 'fa-minus';
+
+                    metricDiv.innerHTML = `
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">${metricName.replace('_', ' ')}</p>
+                            <p class="text-lg font-semibold text-gray-900">${metricData.value.toLocaleString()}</p>
+                        </div>
+                        <div class="${trendClass} text-sm">
+                            <i class="fas ${trendIcon} mr-1"></i>
+                            ${metricData.change_percent > 0 ? '+' : ''}${metricData.change_percent}%
+                        </div>
+                    `;
+
+                    metricsGrid.appendChild(metricDiv);
+                }
+
+                platformDiv.appendChild(metricsGrid);
+                container.appendChild(platformDiv);
+            }
         }
 
-        function viewContent() {
-            showNotification('Opening content folder...');
-            // In production, this could open a modal with content preview
+        // Update alerts
+        function updateAlerts(alerts) {
+            const container = document.getElementById('alerts-list');
+            container.innerHTML = '';
+
+            document.getElementById('active-alerts').textContent = alerts.length;
+
+            if (alerts.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No recent alerts</p>';
+                return;
+            }
+
+            alerts.forEach(alert => {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert-item border-l-4 border-red-500 bg-red-50 p-3 rounded';
+
+                const alertType = alert.alert_type.replace('_', ' ');
+                const timeAgo = new Date(alert.timestamp).toLocaleString();
+
+                alertDiv.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-red-800">${alertType}</p>
+                            <p class="text-sm text-red-600">${alert.message}</p>
+                            <p class="text-xs text-red-500 mt-1">${timeAgo}</p>
+                        </div>
+                        <i class="fas fa-exclamation-circle text-red-500"></i>
+                    </div>
+                `;
+
+                container.appendChild(alertDiv);
+            });
         }
 
-        function startScheduler() {
-            showNotification('Scheduler starting... (This would start the background service)');
+        // Update insights
+        function updateInsights(insights) {
+            const container = document.getElementById('insights-list');
+            container.innerHTML = '';
+
+            if (insights.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No insights available</p>';
+                return;
+            }
+
+            insights.forEach(insight => {
+                const insightDiv = document.createElement('div');
+                const typeColors = {
+                    'success': 'border-green-500 bg-green-50 text-green-800',
+                    'warning': 'border-yellow-500 bg-yellow-50 text-yellow-800',
+                    'alert': 'border-red-500 bg-red-50 text-red-800'
+                };
+
+                const colors = typeColors[insight.type] || typeColors['success'];
+                insightDiv.className = `border-l-4 ${colors} p-3 rounded alert-item`;
+
+                const icon = insight.type === 'success' ? 'fa-check-circle' :
+                             insight.type === 'warning' ? 'fa-exclamation-triangle' : 'fa-times-circle';
+
+                insightDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <i class="fas ${icon} mr-2 mt-1"></i>
+                        <div>
+                            <p class="text-sm font-medium">${insight.message}</p>
+                            <p class="text-xs mt-1 opacity-75">${insight.recommendation}</p>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(insightDiv);
+            });
         }
 
-        function generateForTopic(topicId) {
-            showNotification(`Generating content for topic ${topicId}...`);
+        // Update trending analysis
+        function updateTrending(trends) {
+            const container = document.getElementById('trending-list');
+            container.innerHTML = '';
+
+            if (Object.keys(trends).length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No trending data</p>';
+                return;
+            }
+
+            for (const [platform, platformTrends] of Object.entries(trends)) {
+                const platformDiv = document.createElement('div');
+                platformDiv.className = 'mb-4';
+
+                const title = document.createElement('h4');
+                title.className = 'text-sm font-medium text-gray-700 mb-2 capitalize';
+                title.innerHTML = `<i class="fab fa-${platform} mr-1"></i>${platform}`;
+                platformDiv.appendChild(title);
+
+                platformTrends.slice(0, 3).forEach(trend => {
+                    const trendDiv = document.createElement('div');
+                    trendDiv.className = 'flex justify-between items-center text-sm py-1';
+
+                    const trendClass = trend.trend === 'up' ? 'trend-up' :
+                                      trend.trend === 'down' ? 'trend-down' : 'trend-stable';
+                    const trendIcon = trend.trend === 'up' ? 'fa-arrow-up' :
+                                     trend.trend === 'down' ? 'fa-arrow-down' : 'fa-minus';
+
+                    trendDiv.innerHTML = `
+                        <span class="text-gray-600">${trend.metric.replace('_', ' ')}</span>
+                        <span class="${trendClass}">
+                            <i class="fas ${trendIcon} mr-1 text-xs"></i>
+                            ${trend.change_percent > 0 ? '+' : ''}${trend.change_percent}%
+                        </span>
+                    `;
+
+                    platformDiv.appendChild(trendDiv);
+                });
+
+                container.appendChild(platformDiv);
+            }
         }
 
-        // Initialize dashboard on load
-        document.addEventListener('DOMContentLoaded', loadDashboard);
+        // Initialize chart
+        function initializeChart() {
+            const ctx = document.getElementById('trends-chart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load chart data
+        async function loadChartData() {
+            const metric = document.getElementById('chart-metric').value;
+
+            try {
+                const response = await fetch(`/api/analytics/history/twitter/${metric}?hours=24`);
+                const data = await response.json();
+
+                if (data.success) {
+                    updateChart(data.data, metric);
+                }
+            } catch (error) {
+                console.error('Error loading chart data:', error);
+            }
+        }
+
+        // Update chart
+        function updateChart(data, metric) {
+            if (!chart) return;
+
+            const labels = data.map(d => new Date(d.timestamp).toLocaleTimeString());
+            const values = data.map(d => d.value);
+
+            chart.data.labels = labels;
+            chart.data.datasets = [{
+                label: `Twitter ${metric}`,
+                data: values,
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.4
+            }];
+
+            chart.update();
+        }
+
+        // Configuration modal handlers
+        document.getElementById('config-btn').addEventListener('click', function() {
+            document.getElementById('config-modal').classList.remove('hidden');
+        });
+
+        document.getElementById('cancel-config').addEventListener('click', function() {
+            document.getElementById('config-modal').classList.add('hidden');
+        });
+
+        document.getElementById('save-config').addEventListener('click', async function() {
+            const config = {
+                platforms: ['twitter', 'linkedin'],
+                entities: {
+                    twitter: document.getElementById('twitter-username').value,
+                    linkedin: document.getElementById('linkedin-id').value
+                },
+                update_interval: parseInt(document.getElementById('update-interval').value)
+            };
+
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('config-modal').classList.add('hidden');
+
+                    // Restart monitoring if it was running
+                    if (monitoring) {
+                        await fetch('/api/monitoring/stop', { method: 'POST' });
+                        await fetch('/api/monitoring/start', { method: 'POST' });
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving configuration:', error);
+            }
+        });
+
+        // Chart metric change handler
+        document.getElementById('chart-metric').addEventListener('change', loadChartData);
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSocket();
+            initializeChart();
+
+            // Load chart data periodically
+            setInterval(loadChartData, 60000); // Every minute
+        });
     </script>
 </body>
 </html>
-"""
+    '''
 
-# Write the enhanced template
-with open('templates/enhanced_dashboard.html', 'w') as f:
-    f.write(dashboard_template)
+    # Create templates directory if it doesn't exist
+    Path('templates').mkdir(exist_ok=True)
+
+    # Write the template file
+    with open('templates/enhanced_dashboard.html', 'w') as f:
+        f.write(template_content)
+
+    logger.info("Enhanced dashboard template created")
 
 if __name__ == '__main__':
-    print("🚀 Enhanced Content Automation Dashboard")
-    print("📊 Features: Topic Management, Content Generation, Metrics")
-    print("🌐 Available at: http://localhost:5000")
-    print("\n🎯 New Features:")
-    print("   ✅ Add topics via web interface")
-    print("   ✅ Generate content from topics")
-    print("   ✅ Track topic status (pending, generating, completed)")
-    print("   ✅ Quick actions for common tasks")
-    print("   ✅ Real-time content status")
+    # Create the template
+    create_enhanced_template()
 
-    app.run(debug=False, host='0.0.0.0', port=5000)
+    # Start the enhanced dashboard
+    print("🚀 Starting Enhanced Real-Time Analytics Dashboard")
+    print("=" * 60)
+    print("📊 Dashboard URL: http://localhost:5001")
+    print("🔧 Features:")
+    print("   - Real-time social media monitoring")
+    print("   - Live metrics updates")
+    print("   - Performance insights and recommendations")
+    print("   - Trend analysis and alerts")
+    print("   - Interactive charts and visualizations")
+    print("=" * 60)
+
+    # Start monitoring automatically
+    dashboard.start_monitoring()
+
+    # Run the Flask app with Socket.IO
+    socketio.run(app, host='0.0.0.0', port=5001, debug=True, allow_unsafe_werkzeug=True)

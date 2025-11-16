@@ -172,8 +172,13 @@
         function displayPosts(posts, platform) {
             const container = document.getElementById('postsContainer');
 
-            // Filter out empty posts
-            const validPosts = posts.filter(post => post.content && post.content.trim() !== '' && post.content !== '\n');
+            // Filter out empty posts and scheduled posts
+            const validPosts = posts.filter(post =>
+                post.content &&
+                post.content.trim() !== '' &&
+                post.content !== '\n' &&
+                post.status !== 'scheduled'
+            );
 
             if (validPosts.length === 0) {
                 container.innerHTML = `
@@ -189,18 +194,25 @@
                 return;
             }
 
-            container.innerHTML = validPosts.map((post, index) => `
-                <div class="card post-card ${platform}">
+            container.innerHTML = validPosts.map((post, index) => {
+                const postIndex = posts.indexOf(post); // Get original index for operations
+                const postId = post.id || `${platform}_${postIndex}`;
+
+                return `
+                <div class="card post-card ${platform}" data-post-id="${postId}" data-original-index="${postIndex}">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="flex-grow-1">
-                                <h6 class="mb-2">${post.topic || 'Generated Topic'}</h6>
+                                <h6 class="mb-2">${post.topic || post.title || 'Generated Topic'}</h6>
                                 ${post.style ? `<span class="badge bg-secondary me-2">${post.style}</span>` : ''}
                                 <span class="badge bg-${platform === 'linkedin' ? 'primary' : platform === 'twitter' ? 'info' : 'secondary'}">${platform}</span>
                             </div>
-                            <div class="copy-btn">
-                                <button class="btn btn-sm btn-outline-primary" onclick="copyPost(${index})">
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary" onclick="copyPost(${postIndex})">
                                     <i class="fas fa-copy"></i> Copy
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deletePost('${postId}', ${postIndex})">
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </div>
@@ -215,7 +227,8 @@
                         ` : ''}
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">
-                                <i class="fas fa-clock"></i> ${post.created_at || new Date().toLocaleString()}
+                                <i class="fas fa-calendar"></i>
+                                Created: ${formatIndianDateTime(post.created_at)}
                             </small>
                             ${post.engagement ? `
                                 <div class="text-end">
@@ -228,7 +241,7 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function copyPost(index) {
@@ -245,6 +258,32 @@
                 .catch(err => {
                     showNotification('Failed to copy post', 'error');
                 });
+        }
+
+        async function deletePost(postId, index) {
+            if (confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+                try {
+                    const response = await fetch(`/api/posts/${postId}/delete`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Remove from local data
+                        postsData[currentPlatform].splice(index, 1);
+                        displayPosts(postsData[currentPlatform], currentPlatform);
+                        updateTotalCount();
+                        showNotification('Post deleted successfully!', 'success');
+                    } else {
+                        showNotification('Failed to delete post: ' + result.error, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error deleting post:', error);
+                    showNotification('Error deleting post', 'error');
+                }
+            }
         }
 
         function goToGenerator() {
@@ -290,6 +329,35 @@
                 .replace(/<p><\/p>/g, '')
                 // Clean up any double <br> tags
                 .replace(/<br><br>/g, '<br>');
+        }
+
+        function formatIndianDateTime(dateString) {
+            if (!dateString) return 'N/A';
+
+            try {
+                const date = new Date(dateString);
+                // Convert to Indian Standard Time (UTC+5:30)
+                const indianTime = new Date(date.toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+
+                // Format: DD/MM/YYYY, H:MM:SS am/pm
+                const day = indianTime.getDate().toString().padStart(2, '0');
+                const month = (indianTime.getMonth() + 1).toString().padStart(2, '0');
+                const year = indianTime.getFullYear();
+
+                let hours = indianTime.getHours();
+                const minutes = indianTime.getMinutes().toString().padStart(2, '0');
+                const seconds = indianTime.getSeconds().toString().padStart(2, '0');
+                const ampm = hours >= 12 ? 'pm' : 'am';
+
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                hours = hours.toString();
+
+                return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds} ${ampm}`;
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return dateString;
+            }
         }
 
         function showNotification(message, type = 'info') {

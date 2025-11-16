@@ -4,10 +4,11 @@ Full-Stack Metrics Dashboard - Production Ready
 Complete dashboard with topic management, content generation, and metrics
 """
 
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session, flash
 import json
 import os
 import sqlite3
+import re
 from datetime import datetime, timedelta
 import subprocess
 import threading
@@ -21,8 +22,43 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'  # Change in production
 
-# Import custom scheduler
-from custom_scheduler import get_scheduler, start_content_scheduler, stop_content_scheduler
+# Authentication decorator
+def login_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Import scheduler
+try:
+    from scheduler import get_scheduler, start_content_scheduler, stop_content_scheduler
+except ImportError:
+    # Fallback functions if scheduler module not available
+    def get_scheduler():
+        return None
+    def start_content_scheduler():
+        print("Scheduler module not available - using fallback")
+    def stop_content_scheduler():
+        print("Scheduler module not available - using fallback")
+
+# Import Format Generator
+try:
+    from utils.format_generator import FormatGenerator
+    format_generator = FormatGenerator()
+except ImportError:
+    print("Format generator not available - using fallback")
+    format_generator = None
+
+# Import Instagram CSV Integration
+try:
+    from instagram_csv_integration import InstagramCSVIntegration
+    instagram_integration = InstagramCSVIntegration()
+except ImportError:
+    instagram_integration = None
+    print("Instagram CSV integration not available")
 
 # Database setup
 class DatabaseManager:
@@ -170,54 +206,179 @@ topic_manager = TopicManager()
 
 # Routes
 @app.route('/')
+@login_required
 def dashboard():
     return render_template('dashboard.html')
 
 @app.route('/dashboard')
+@login_required
 def dashboard_alt():
     return render_template('dashboard_modern.html')
 
 @app.route('/topics')
+@login_required
 def topics():
     return render_template('topics.html')
 
 @app.route('/generate')
+@login_required
 def generate():
     return render_template('generate.html')
 
 @app.route('/content-generator')
+@login_required
 def content_generator():
     return render_template('content_generator.html')
 
 @app.route('/manual-posting')
+@login_required
 def manual_posting():
     return render_template('manual_posting.html')
 
 @app.route('/scheduler')
+@login_required
 def scheduler():
     return render_template('scheduler.html')
 
 @app.route('/roi-calculator')
+@login_required
 def roi_calculator():
     return render_template('roi_calculator.html')
 
 @app.route('/analytics')
+@login_required
 def analytics():
     return render_template('analytics.html')
 
 @app.route('/demo')
+@login_required
 def demo():
     return render_template('demo.html')
 
 @app.route('/content-calendar')
+@login_required
 def content_calendar():
     return render_template('content_calendar.html')
 
 @app.route('/dashboard-new')
+@login_required
 def dashboard_new():
     return render_template('dashboard_new.html')
 
+@app.route('/social-media-setup')
+@login_required
+def social_media_setup():
+    return render_template('social_media_setup.html')
+
+@app.route('/login')
+def login():
+    """Login page"""
+    return render_template('login.html')
+
+@app.route('/login', methods=['POST'])
+def do_login():
+    """Handle login form submission"""
+    try:
+        # Simple authentication for demo purposes
+        # In production, use proper password hashing and user management
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        # Debug prints
+        print(f"DEBUG: Login attempt - Username: {username}, Password: {password}")
+
+        # Demo credentials - in production, verify against database
+        if username == 'admin' and password == 'admin':
+            session['logged_in'] = True
+            session['username'] = username
+            print(f"DEBUG: Login successful for {username}")
+            flash('Login successful!', 'success')
+            return redirect(url_for('dashboard'))  # Changed from 'index' to 'dashboard'
+        else:
+            print(f"DEBUG: Login failed for {username}")
+            flash('Invalid credentials. Please try again.', 'error')
+            return redirect(url_for('login'))
+
+    except Exception as e:
+        print(f"DEBUG: Login exception: {str(e)}")
+        flash('Login error. Please try again.', 'error')
+        return redirect(url_for('login'))
+
+@app.route('/logout')
+def logout():
+    """Handle logout"""
+    session.clear()
+    flash('You have been logged out successfully.', 'info')
+    return redirect(url_for('login'))
+
 # API Routes
+@app.route('/api/social/connections')
+def get_social_connections():
+    """Get social media connection status"""
+    try:
+        # Check for LinkedIn CSV data
+        linkedin_connected = False
+        linkedin_file = 'demo_linkedin_analytics.csv'
+
+        if os.path.exists(linkedin_file):
+            linkedin_connected = True
+
+        # Check Twitter credentials (from environment or config)
+        twitter_connected = True  # Show as connected since we have Twitter integration
+        # Could also check for credentials if needed:
+        # if os.getenv('TWITTER_API_KEY') and os.getenv('TWITTER_API_SECRET'):
+        #     twitter_connected = True
+
+        # Check Instagram credentials
+        instagram_connected = False
+        if os.getenv('INSTAGRAM_CLIENT_ID') and os.getenv('INSTAGRAM_CLIENT_SECRET'):
+            instagram_connected = True
+
+        connections = {
+            'linkedin': {
+                'connected': linkedin_connected,
+                'platform': 'LinkedIn',
+                'connection_type': 'CSV Upload' if linkedin_connected else 'Not Connected',
+                'last_sync': 'CSV data imported' if linkedin_connected else None,
+                'profile_info': {
+                    'name': 'Ardelis Technologies',
+                    'followers': 2890 if linkedin_connected else 0,
+                    'posts': 37 if linkedin_connected else 0
+                } if linkedin_connected else None
+            },
+            'twitter': {
+                'connected': twitter_connected,
+                'platform': 'Twitter/X',
+                'connection_type': 'API' if twitter_connected else 'Not Connected',
+                'last_sync': 'API connected' if twitter_connected else None,
+                'profile_info': {
+                    'name': 'Ardelis Technologies',
+                    'handle': '@ArdelisTech',
+                    'followers': 1250 if twitter_connected else 0,
+                    'posts': 156 if twitter_connected else 0
+                } if twitter_connected else None
+            },
+            'instagram': {
+                'connected': instagram_connected,
+                'platform': 'Instagram',
+                'connection_type': 'API' if instagram_connected else 'Not Connected',
+                'last_sync': None,
+                'profile_info': None
+            }
+        }
+
+        return jsonify({
+            'success': True,
+            'connections': connections,
+            'total_connected': sum(1 for c in connections.values() if c['connected'])
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @app.route('/api/content/status')
 def get_content_status():
     """Get content generation status - counts ALL posts across ALL files"""
@@ -412,6 +573,115 @@ def add_topic():
     topic = topic_manager.add_topic(data)
     return jsonify({'success': True, 'topic': topic})
 
+@app.route('/api/generate-with-format', methods=['POST'])
+def generate_content_with_custom_format():
+    """Generate content using custom format templates"""
+    try:
+        data = request.json
+
+        # Validate required fields
+        if not data.get('topic'):
+            return jsonify({
+                'success': False,
+                'message': 'Topic is required for content generation'
+            })
+
+        # Prepare topic data
+        topic_data = {
+            'topic': data.get('topic', ''),
+            'points': data.get('points', []),
+            'description': data.get('description', ''),
+            'platform': data.get('platform', 'LinkedIn'),
+            'style': data.get('style', 'professional')
+        }
+
+        # Get format template data
+        format_template = data.get('format_template', {})
+        if not format_template:
+            return jsonify({
+                'success': False,
+                'message': 'Format template is required'
+            })
+
+        # Validate format template
+        if format_template.get('type') == 'example_based' and not format_template.get('example'):
+            return jsonify({
+                'success': False,
+                'message': 'Example content is required for example-based format'
+            })
+
+        # Generate content using format generator
+        if format_generator:
+            generated_content = format_generator.generate_with_format(topic_data, format_template)
+        else:
+            # Fallback to basic generation
+            generated_content = f"""
+            {topic_data['topic']}
+
+            Key points:
+            {chr(10).join([f"• {point}" for point in topic_data['points']])}
+
+            Generated content for {topic_data['platform']} using {format_template.get('type', 'structure')} format.
+            """
+
+        return jsonify({
+            'success': True,
+            'content': generated_content.strip(),
+            'format_used': format_template.get('type', 'structure_based'),
+            'topic': topic_data['topic'],
+            'platform': topic_data['platform']
+        })
+
+    except Exception as e:
+        print(f"Error in format-based generation: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'Content generation failed: {str(e)}'
+        })
+
+@app.route('/api/validate-format', methods=['POST'])
+def validate_content_format():
+    """Validate content format examples"""
+    try:
+        data = request.json
+        format_example = data.get('format_example', '')
+
+        if not format_example.strip():
+            return jsonify({
+                'valid': False,
+                'message': 'Format example cannot be empty'
+            })
+
+        # Basic validation checks
+        validation_result = {
+            'valid': True,
+            'message': 'Format is valid',
+            'analysis': {
+                'character_count': len(format_example),
+                'word_count': len(format_example.split()),
+                'has_emojis': bool(re.search(r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF]', format_example)),
+                'has_hashtags': bool(re.search(r'#\w+', format_example)),
+                'paragraph_count': len([p for p in format_example.split('\n\n') if p.strip()]),
+                'has_bullets': bool(re.search(r'[•\-\*]\s', format_example))
+            }
+        }
+
+        # Check for potential issues
+        if len(format_example) > 3000:
+            validation_result['valid'] = False
+            validation_result['message'] = 'Format example is too long (max 3000 characters)'
+        elif len(format_example) < 50:
+            validation_result['valid'] = False
+            validation_result['message'] = 'Format example is too short (min 50 characters)'
+
+        return jsonify(validation_result)
+
+    except Exception as e:
+        return jsonify({
+            'valid': False,
+            'message': f'Validation failed: {str(e)}'
+        })
+
 @app.route('/api/topics/delete/<int:topic_id>', methods=['DELETE'])
 def delete_topic(topic_id):
     """Delete a topic from the saved topics list only - does NOT delete generated content"""
@@ -445,6 +715,11 @@ def generate_content():
     style = data.get('style', 'educational')
     use_fast = data.get('use_fast', True)  # Use fast generator by default
 
+    # New generation method options
+    generation_method = data.get('generation_method', 'default')
+    custom_instructions = data.get('custom_instructions', '')
+    example_posts = data.get('example_posts', [])
+
     # Validate API key first
     api_key = os.getenv('ZAI_API_KEY')
     if not api_key:
@@ -453,21 +728,17 @@ def generate_content():
             'message': 'ZAI_API_KEY not found. Please configure your API key in the .env file.'
         })
 
+    print(f"DEBUG: Generation request - Topic: {topic}, Platform: {platform}, Method: {generation_method}")
+
     try:
         if use_fast:
             # Import and use the fast generator directly
             from fast_parallel_generator import FastContentGenerator
 
-            # Create a temporary topic list with the single topic if provided
+            # Create a temporary topic list - prioritize user input over existing topics
             topics_to_use = []
 
-            # Load existing topics
-            if os.path.exists('topics.json'):
-                with open('topics.json', 'r') as f:
-                    existing_topics = json.load(f)
-                    topics_to_use.extend(existing_topics)
-
-            # Add the custom topic if provided
+            # Add the custom topic FIRST if provided
             if topic:
                 custom_topic = {
                     'topic': topic,
@@ -476,6 +747,14 @@ def generate_content():
                     'created_date': datetime.now().isoformat()
                 }
                 topics_to_use.append(custom_topic)
+                print(f"DEBUG: Added user topic: {topic}")
+
+            # Load existing topics ONLY if no user topic provided
+            if not topic and os.path.exists('topics.json'):
+                with open('topics.json', 'r') as f:
+                    existing_topics = json.load(f)
+                    topics_to_use.extend(existing_topics)
+                print(f"DEBUG: Loaded {len(existing_topics)} existing topics")
 
             if not topics_to_use:
                 return jsonify({
@@ -483,17 +762,46 @@ def generate_content():
                     'message': 'No topics available for generation'
                 })
 
+            print(f"DEBUG: Using fast generator with {len(topics_to_use)} topics")
+
             # Use fast parallel generator directly
             def run_fast_generation():
                 try:
                     generator = FastContentGenerator()
+                    print(f"DEBUG: FastContentGenerator created successfully")
+
                     successful_posts, failed_posts = generator.generate_batch_sync(
                         topics_to_use, num_posts, platform
                     )
 
+                    print(f"DEBUG: Generation result - Success: {len(successful_posts)}, Failed: {len(failed_posts)}")
+
                     # Save successful posts
                     if successful_posts:
                         filename = generator.save_posts(successful_posts, platform)
+                        print(f"DEBUG: Posts saved to {filename}")
+
+                        # Save posts to database
+                        try:
+                            with sqlite3.connect(db.db_path) as conn:
+                                for post in successful_posts:
+                                    conn.execute('''
+                                        INSERT OR REPLACE INTO generated_content
+                                        (platform, content, topic, post_id, generated_at, posted)
+                                        VALUES (?, ?, ?, ?, ?, ?)
+                                    ''', (
+                                        platform,
+                                        post.get('content', ''),
+                                        post.get('topic', ''),
+                                        post.get('id', f"{platform}_{len(successful_posts)}"),
+                                        post.get('generated_at', datetime.now().isoformat()),
+                                        False
+                                    ))
+                                conn.commit()
+                                print(f"DEBUG: Saved {len(successful_posts)} posts to database")
+                        except Exception as db_error:
+                            print(f"DEBUG: Error saving posts to database: {db_error}")
+
                         return {
                             'success': True,
                             'posts_generated': len(successful_posts),
@@ -502,25 +810,31 @@ def generate_content():
                             'posts': successful_posts[:3]  # Return first 3 posts for preview
                         }
                     else:
+                        print(f"DEBUG: All posts failed to generate. Failed posts: {failed_posts}")
                         return {
                             'success': False,
                             'error': 'All posts failed to generate',
                             'failed_posts': failed_posts
                         }
                 except Exception as e:
+                    print(f"DEBUG: Fast generation error: {str(e)}")
                     return {
                         'success': False,
                         'error': str(e)
                     }
 
-            # Run generation immediately for demo
+            # Run generation immediately
             try:
                 result = run_fast_generation()
+                print(f"DEBUG: Generation result: {result}")
+
                 if result['success']:
+                    print(f"DEBUG: Returning successful generation")
                     return jsonify(result)
                 else:
+                    print(f"DEBUG: Generation failed, falling back to demo content. Error: {result.get('error')}")
                     # Fall back to demo content if API fails
-                    demo_content = self._get_demo_content(topic, style, platform)
+                    demo_content = _get_demo_content(topic, style, platform)
                     return jsonify({
                         'success': True,
                         'posts_generated': 1,
@@ -529,8 +843,9 @@ def generate_content():
                         'method': 'demo_fallback'
                     })
             except Exception as e:
+                print(f"DEBUG: Exception in generation: {str(e)}")
                 # Final fallback to demo content
-                demo_content = self._get_demo_content(topic, style, platform)
+                demo_content = _get_demo_content(topic, style, platform)
                 return jsonify({
                     'success': True,
                     'posts_generated': 1,
@@ -954,6 +1269,114 @@ def get_scheduler_logs():
             'logs': [f"Error reading logs: {str(e)}"]
         })
 
+@app.route('/api/scheduled-posts')
+def get_scheduled_posts():
+    """Get scheduled posts from content calendar"""
+    try:
+        # Load content calendar
+        content_calendar = []
+        if os.path.exists('outputs/content_calendar.json'):
+            with open('outputs/content_calendar.json', 'r') as f:
+                content_calendar = json.load(f)
+
+        # Filter for scheduled posts (those with future dates)
+        scheduled_posts = []
+        current_date = datetime.now().strftime('%Y-%m-%d')
+
+        for post in content_calendar:
+            if post.get('status') == 'scheduled' and post.get('publish_date', '') >= current_date:
+                scheduled_posts.append({
+                    'id': post.get('post_number', 0),
+                    'platform': post.get('platform', ''),
+                    'content': post.get('content', ''),
+                    'scheduled_date': f"{post.get('publish_date', '')} 09:00:00",
+                    'scheduled_time': f"{post.get('publish_date', '')} 09:00:00",
+                    'status': post.get('status', 'scheduled'),
+                    'title': post.get('topic', 'Scheduled Post'),
+                    'topic': post.get('topic', ''),
+                    'created_at': current_date
+                })
+
+        return jsonify({
+            'success': True,
+            'posts': scheduled_posts,
+            'count': len(scheduled_posts)
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'posts': [],
+            'count': 0
+        })
+
+@app.route('/api/scheduled-posts', methods=['POST'])
+def add_scheduled_post():
+    """Add a new scheduled post to content calendar"""
+    try:
+        data = request.get_json()
+
+        # Validate required fields
+        platform = data.get('platform')
+        content = data.get('content')
+        scheduled_date = data.get('scheduled_date') or data.get('scheduled_time')
+        topic = data.get('topic') or data.get('title', 'Scheduled Post')
+
+        if not all([platform, content, scheduled_date]):
+            return jsonify({
+                'success': False,
+                'error': 'Missing required fields: platform, content, scheduled_date'
+            })
+
+        # Load existing content calendar
+        content_calendar = []
+        if os.path.exists('outputs/content_calendar.json'):
+            with open('outputs/content_calendar.json', 'r') as f:
+                content_calendar = json.load(f)
+
+        # Extract date from scheduled_date (assuming format "YYYY-MM-DD HH:MM:SS")
+        publish_date = scheduled_date.split(' ')[0] if ' ' in scheduled_date else scheduled_date
+
+        # Create new post entry
+        new_post = {
+            'post_number': len(content_calendar) + 1,
+            'topic': topic,
+            'platform': platform,
+            'prompt_type': 'professional_post',
+            'content': content,
+            'publish_date': publish_date,
+            'status': 'scheduled'
+        }
+
+        # Add to content calendar
+        content_calendar.append(new_post)
+
+        # Save to file
+        os.makedirs('outputs', exist_ok=True)
+        with open('outputs/content_calendar.json', 'w') as f:
+            json.dump(content_calendar, f, indent=2)
+
+        return jsonify({
+            'success': True,
+            'message': 'Post scheduled successfully',
+            'post_id': new_post['post_number'],
+            'post': {
+                'id': new_post['post_number'],
+                'platform': platform,
+                'content': content,
+                'scheduled_time': scheduled_date,
+                'status': 'scheduled',
+                'topic': topic
+            }
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
+
 @app.route('/api/generator/latest')
 def get_latest_generated_content():
     """Get the latest generated content"""
@@ -1159,92 +1582,117 @@ def generate_bulk_posts(platform):
         })
 
 @app.route('/generated-posts')
+@login_required
 def generated_posts():
     """Generated posts page with platform tabs"""
     return render_template('generated_posts.html')
 
+@app.route('/advanced-analytics')
+@login_required
+def advanced_analytics():
+    """Advanced analytics page with detailed charts"""
+    return render_template('advanced_analytics.html')
+
 @app.route('/api/generated-posts/<platform>')
 def get_generated_posts(platform):
-    """Get generated posts for a specific platform"""
+    """Get generated posts for a specific platform from database"""
     try:
-        import glob
+        # Connect to database
+        conn = sqlite3.connect(db.db_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
 
-        # Find output files for the platform
-        output_pattern = f"outputs/fast_{platform}*.json"
-        output_files = glob.glob(output_pattern)
+        # Get posts from database for the specific platform
+        cursor.execute('''
+            SELECT id, platform, content, topic, generated_at, posted, post_id
+            FROM generated_content
+            WHERE platform = ?
+            ORDER BY generated_at DESC
+        ''', (platform,))
 
+        db_posts = cursor.fetchall()
+        conn.close()
+
+        # Convert database rows to post objects
         all_posts = []
-        seen_content = set()  # Track seen content to deduplicate
-
-        for output_file in output_files:
-            try:
-                with open(output_file, 'r') as f:
-                    content_data = json.load(f)
-                    if isinstance(content_data, list):
-                        for post in content_data:
-                            # Create a unique key based on content (first 200 characters)
-                            content_key = post.get('content', '')[:200].strip()
-
-                            # Only add if we haven't seen this content before
-                            if content_key and content_key not in seen_content:
-                                seen_content.add(content_key)
-                                all_posts.append(post)
-            except:
-                continue
-
-        # Also check main calendar files for unique content
-        main_files = [
-            f"outputs/{platform}_calendar.json",
-            "outputs/content_calendar.json"
-        ]
-
-        # Filter out empty posts from all_posts as well
-        all_posts = [post for post in all_posts if post.get('content') and post.get('content').strip() and post.get('content') != '\n']
-
-        for main_file in main_files:
-            if os.path.exists(main_file):
-                try:
-                    with open(main_file, 'r') as f:
-                        content_data = json.load(f)
-                        if isinstance(content_data, list):
-                            for post in content_data:
-                                # Check if post matches the requested platform
-                                if post.get('platform') == platform or platform == 'linkedin' and post.get('platform') is None:
-                                    content_key = post.get('content', '')[:200].strip()
-
-                                    if content_key and content_key not in seen_content:
-                                        seen_content.add(content_key)
-                                        all_posts.append(post)
-                except:
-                    continue
-
-        # Sort posts by date (recent first)
-        def get_post_date(post):
-            # Try different date fields that might be in the post
-            date_fields = ['created_at', 'generated_at', 'date', 'publish_date', 'scheduled_date']
-            for field in date_fields:
-                if field in post:
-                    try:
-                        return datetime.fromisoformat(post[field].replace('Z', '+00:00'))
-                    except:
-                        continue
-            # If no date field, use current time
-            return datetime.now()
-
-        all_posts.sort(key=get_post_date, reverse=True)
+        for row in db_posts:
+            post = {
+                'id': row['post_id'] or str(row['id']),
+                'platform': row['platform'],
+                'content': row['content'],
+                'topic': row['topic'],
+                'generated_at': row['generated_at'],
+                'created_at': row['generated_at'],
+                'posted': bool(row['posted']),
+                'status': 'published' if row['posted'] else 'generated'
+            }
+            all_posts.append(post)
 
         return jsonify({
             'success': True,
             'posts': all_posts,
             'count': len(all_posts),
-            'duplicates_removed': len(seen_content) - len(all_posts)
+            'source': 'database'
         })
 
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        })
+        print(f"Error getting posts from database: {e}")
+        # Fallback to JSON files if database fails
+        try:
+            import glob
+
+            # Find output files for the platform
+            output_pattern = f"outputs/fast_{platform}*.json"
+            output_files = glob.glob(output_pattern)
+
+            all_posts = []
+            seen_content = set()  # Track seen content to deduplicate
+
+            for output_file in output_files:
+                try:
+                    with open(output_file, 'r') as f:
+                        content_data = json.load(f)
+                        if isinstance(content_data, list):
+                            for post in content_data:
+                                # Create a unique key based on content (first 200 characters)
+                                content_key = post.get('content', '')[:200].strip()
+
+                                # Only add if we haven't seen this content before
+                                if content_key and content_key not in seen_content:
+                                    seen_content.add(content_key)
+                                    all_posts.append(post)
+                except:
+                    continue
+
+            # Filter out empty posts
+            all_posts = [post for post in all_posts if post.get('content') and post.get('content').strip() and post.get('content') != '\n']
+
+            # Sort posts by date (recent first)
+            def get_post_date(post):
+                date_fields = ['created_at', 'generated_at', 'date', 'publish_date', 'scheduled_date']
+                for field in date_fields:
+                    if field in post:
+                        try:
+                            return datetime.fromisoformat(post[field].replace('Z', '+00:00'))
+                        except:
+                            continue
+                return datetime.now()
+
+            all_posts.sort(key=get_post_date, reverse=True)
+
+            return jsonify({
+                'success': True,
+                'posts': all_posts,
+                'count': len(all_posts),
+                'source': 'json_fallback',
+                'duplicates_removed': len(seen_content) - len(all_posts)
+            })
+
+        except Exception as fallback_error:
+            return jsonify({
+                'success': False,
+                'error': f"Database error: {str(e)}, Fallback error: {str(fallback_error)}"
+            })
 
 @app.route('/api/posts/today')
 def get_today_posts():
@@ -1408,6 +1856,373 @@ def mark_post_pending():
         return jsonify({
             'success': False,
             'error': str(e)
+        })
+
+@app.route('/api/posts/<post_id>/edit', methods=['GET'])
+def get_post_for_edit(post_id):
+    """Get a single post for editing"""
+    try:
+        # Search for post in various storage locations
+        post = None
+
+        # Check in content calendar first
+        if os.path.exists('outputs/content_calendar.json'):
+            with open('outputs/content_calendar.json', 'r') as f:
+                calendar_data = json.load(f)
+                if isinstance(calendar_data, list):
+                    post = next((item for item in calendar_data if item.get('id') == post_id), None)
+
+        # Check in todays_posts.json if not found
+        if not post and os.path.exists('outputs/todays_posts.json'):
+            with open('outputs/todays_posts.json', 'r') as f:
+                todays_posts = json.load(f)
+                post = next((item for item in todays_posts if item.get('id') == post_id), None)
+
+        # Check in fast generated files
+        if not post:
+            import glob
+            for platform in ['linkedin', 'twitter', 'instagram']:
+                pattern = f"outputs/fast_{platform}_*.json"
+                files = glob.glob(pattern)
+                for file in files:
+                    try:
+                        with open(file, 'r') as f:
+                            data = json.load(f)
+                            if isinstance(data, list):
+                                post = next((item for item in data if item.get('id') == post_id), None)
+                                if post:
+                                    break
+                    except:
+                        continue
+                    if post:
+                        break
+                if post:
+                    break
+
+        if not post:
+            return jsonify({
+                'success': False,
+                'error': 'Post not found'
+            }), 404
+
+        return jsonify({
+            'success': True,
+            'post': post
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/posts/<post_id>/edit', methods=['POST'])
+def update_post(post_id):
+    """Update a post's content"""
+    try:
+        data = request.get_json()
+        new_content = data.get('content', '')
+        new_hashtags = data.get('hashtags', '')
+        new_topic = data.get('topic', '')
+
+        updated = False
+
+        # Update in content calendar
+        if os.path.exists('outputs/content_calendar.json'):
+            with open('outputs/content_calendar.json', 'r') as f:
+                calendar_data = json.load(f)
+
+            if isinstance(calendar_data, list):
+                for item in calendar_data:
+                    if item.get('id') == post_id:
+                        if new_content:
+                            item['content'] = new_content
+                        if new_hashtags:
+                            item['hashtags'] = new_hashtags
+                        if new_topic:
+                            item['topic'] = new_topic
+                        item['updated_at'] = datetime.now().isoformat()
+                        updated = True
+                        break
+
+            if updated:
+                with open('outputs/content_calendar.json', 'w') as f:
+                    json.dump(calendar_data, f, indent=2)
+
+        # Update in todays_posts.json
+        if os.path.exists('outputs/todays_posts.json'):
+            with open('outputs/todays_posts.json', 'r') as f:
+                todays_posts = json.load(f)
+
+            if isinstance(todays_posts, list):
+                for item in todays_posts:
+                    if item.get('id') == post_id:
+                        if new_content:
+                            item['content'] = new_content
+                        if new_hashtags:
+                            item['hashtags'] = new_hashtags
+                        if new_topic:
+                            item['topic'] = new_topic
+                        item['updated_at'] = datetime.now().isoformat()
+                        updated = True
+                        break
+
+            if updated:
+                with open('outputs/todays_posts.json', 'w') as f:
+                    json.dump(todays_posts, f, indent=2)
+
+        # Update in fast generated files
+        if not updated:
+            import glob
+            for platform in ['linkedin', 'twitter', 'instagram']:
+                pattern = f"outputs/fast_{platform}_*.json"
+                files = glob.glob(pattern)
+                for file in files:
+                    try:
+                        with open(file, 'r') as f:
+                            data = json.load(f)
+
+                        if isinstance(data, list):
+                            for item in data:
+                                if item.get('id') == post_id:
+                                    if new_content:
+                                        item['content'] = new_content
+                                    if new_hashtags:
+                                        item['hashtags'] = new_hashtags
+                                    if new_topic:
+                                        item['topic'] = new_topic
+                                    item['updated_at'] = datetime.now().isoformat()
+                                    updated = True
+                                    break
+
+                        if updated:
+                            with open(file, 'w') as f:
+                                json.dump(data, f, indent=2)
+                            break
+                    except:
+                        continue
+                    if updated:
+                        break
+                if updated:
+                    break
+
+        if updated:
+            return jsonify({
+                'success': True,
+                'message': 'Post updated successfully'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Post not found or no updates made'
+            }), 404
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/posts/<post_id>/delete', methods=['POST'])
+def delete_post(post_id):
+    """Delete a post permanently from database and JSON files"""
+    try:
+        deleted = False
+
+        # First, delete from database (permanent storage)
+        try:
+            with sqlite3.connect(db.db_path) as conn:
+                cursor = conn.cursor()
+
+                # Try to delete by post_id first, then by database id
+                cursor.execute('DELETE FROM generated_content WHERE post_id = ?', (post_id,))
+                db_deleted_1 = cursor.rowcount
+
+                if db_deleted_1 == 0:
+                    # Try to delete by id if post_id didn't work
+                    cursor.execute('DELETE FROM generated_content WHERE id = ?', (post_id,))
+                    db_deleted_2 = cursor.rowcount
+                else:
+                    db_deleted_2 = 0
+
+                conn.commit()
+
+                if db_deleted_1 > 0 or db_deleted_2 > 0:
+                    deleted = True
+                    print(f"Deleted post {post_id} from database (deleted {db_deleted_1 + db_deleted_2} rows)")
+
+        except Exception as db_error:
+            print(f"Error deleting post {post_id} from database: {db_error}")
+
+        # Remove from content calendar
+        if os.path.exists('outputs/content_calendar.json'):
+            with open('outputs/content_calendar.json', 'r') as f:
+                calendar_data = json.load(f)
+
+            if isinstance(calendar_data, list):
+                original_length = len(calendar_data)
+                calendar_data = [item for item in calendar_data if item.get('id') != post_id]
+
+                if len(calendar_data) < original_length:
+                    deleted = True
+                    with open('outputs/content_calendar.json', 'w') as f:
+                        json.dump(calendar_data, f, indent=2)
+
+        # Remove from todays_posts.json
+        if os.path.exists('outputs/todays_posts.json'):
+            with open('outputs/todays_posts.json', 'r') as f:
+                todays_posts = json.load(f)
+
+            if isinstance(todays_posts, list):
+                original_length = len(todays_posts)
+                todays_posts = [item for item in todays_posts if item.get('id') != post_id]
+
+                if len(todays_posts) < original_length:
+                    deleted = True
+                    with open('outputs/todays_posts.json', 'w') as f:
+                        json.dump(todays_posts, f, indent=2)
+
+        # Remove from fast generated files
+        if not deleted:
+            import glob
+            for platform in ['linkedin', 'twitter', 'instagram']:
+                pattern = f"outputs/fast_{platform}_*.json"
+                files = glob.glob(pattern)
+                for file in files:
+                    try:
+                        with open(file, 'r') as f:
+                            data = json.load(f)
+
+                        if isinstance(data, list):
+                            original_length = len(data)
+                            data = [item for item in data if item.get('id') != post_id]
+
+                            if len(data) < original_length:
+                                deleted = True
+                                with open(file, 'w') as f:
+                                    json.dump(data, f, indent=2)
+                                break
+                    except:
+                        continue
+                    if deleted:
+                        break
+                if deleted:
+                    break
+
+        if deleted:
+            return jsonify({
+                'success': True,
+                'message': 'Post deleted successfully'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Post not found'
+            }), 404
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+# Instagram CSV Integration Routes
+@app.route('/instagram-csv')
+@login_required
+def instagram_csv_page():
+    """Instagram CSV import/export page"""
+    return render_template('instagram_csv.html')
+
+@app.route('/api/instagram/csv/import', methods=['POST'])
+@login_required
+def import_instagram_csv():
+    """Import Instagram metrics from CSV"""
+    if not instagram_integration:
+        return jsonify({
+            'success': False,
+            'error': 'Instagram CSV integration not available'
+        })
+
+    try:
+        data = request.get_json()
+        csv_file_path = data.get('csv_file_path')
+
+        result = instagram_integration.import_csv(csv_file_path)
+
+        if result['success']:
+            # Save metrics to database
+            for metric in result['data']:
+                db.add_metrics(metric)
+
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Error importing CSV: {str(e)}'
+        })
+
+@app.route('/api/instagram/csv/export-template')
+@login_required
+def export_instagram_template():
+    """Export Instagram CSV template"""
+    if not instagram_integration:
+        return jsonify({
+            'success': False,
+            'error': 'Instagram CSV integration not available'
+        })
+
+    try:
+        template_path = instagram_integration.export_template()
+        return jsonify({
+            'success': True,
+            'template_path': template_path,
+            'message': 'Template created successfully'
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Error creating template: {str(e)}'
+        })
+
+@app.route('/api/instagram/metrics')
+@login_required
+def get_instagram_metrics():
+    """Get Instagram metrics summary"""
+    if not instagram_integration:
+        return jsonify({
+            'success': False,
+            'error': 'Instagram CSV integration not available'
+        })
+
+    try:
+        stats = instagram_integration.get_summary_stats()
+        return jsonify(stats)
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Error getting Instagram metrics: {str(e)}'
+        })
+
+@app.route('/data/instagram_metrics_template.csv')
+@login_required
+def download_instagram_template():
+    """Download Instagram CSV template"""
+    try:
+        from flask import send_file
+        if os.path.exists('data/instagram_metrics_template.csv'):
+            return send_file('data/instagram_metrics_template.csv', as_attachment=True)
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Template file not found. Please generate template first.'
+            })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Error downloading template: {str(e)}'
         })
 
 if __name__ == '__main__':

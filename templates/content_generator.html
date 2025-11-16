@@ -4,12 +4,846 @@
 
 {% block head %}
     <style>
-        /* Dark theme styles matching dashboard.css */
-        .generation-card {
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            background: var(--card-bg) !important;
+        /* Modern Professional Design System */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --sidebar-width: 280px;
+            --header-height: 80px;
+            --border-radius-modern: 16px;
+            --shadow-modern: 0 10px 30px rgba(0,0,0,0.1);
+            --shadow-hover: 0 20px 40px rgba(0,0,0,0.15);
+
+            /* Light Theme Variables */
+            --card-bg: #ffffff;
+            --darker-color: #f8f9fa;
+            --card-border: #e9ecef;
+            --text-primary: #212529;
+            --text-muted: #6c757d;
+            --primary-color: #667eea;
         }
+
+        /* Modern Header */
+        .modern-header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--card-border);
+            padding: 1.5rem 2rem;
+            margin: -2rem -2rem 2rem -2rem;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 100%;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .header-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-gradient);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-modern);
+        }
+
+        .header-text h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .action-stats {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: var(--darker-color);
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-generate {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary-light {
+            background: var(--darker-color);
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+            padding: 0.75rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary-light:hover {
+            background: var(--card-border);
+            transform: translateY(-1px);
+        }
+
+        /* Modern Layout */
+        .modern-layout {
+            display: flex;
+            min-height: calc(100vh - var(--header-height));
+            position: relative;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--card-bg);
+            border-right: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: calc(100vh - var(--header-height));
+            top: var(--header-height);
+            left: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-modern);
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1.5rem 0;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-items {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            color: var(--text-primary);
+            background: var(--darker-color);
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--primary-gradient);
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .btn-generate-large {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: var(--border-radius-modern);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-modern);
+        }
+
+        .btn-generate-large:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            padding: 1.5rem;
+            background: var(--darker-color);
+            border-radius: var(--border-radius-modern);
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-number {
+            background: var(--primary-gradient);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .step-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .step.active .step-label {
+            color: var(--text-primary);
+        }
+
+        .step-connector {
+            width: 60px;
+            height: 2px;
+            background: var(--card-border);
+        }
+
+        /* Content Sections */
+        .content-sections {
+            flex: 1;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-header {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title i {
+            color: var(--primary-color);
+        }
+
+        .section-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .setting-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--border-radius-modern);
+            padding: 2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .setting-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Form Elements Modern Styling */
+        .form-group-modern {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label-modern {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .form-label-modern i {
+            color: var(--primary-color);
+            font-size: 0.875rem;
+        }
+
+        .form-control-modern,
+        .form-select-modern {
+            background: var(--darker-color);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .form-control-modern:focus,
+        .form-select-modern:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: var(--card-bg);
+        }
+
+        .form-control-modern::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Platform Selection Modern */
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .platform-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--darker-color);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .platform-item:hover {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .platform-item.selected {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .platform-item input[type="checkbox"] {
+            margin-right: 0.75rem;
+        }
+
+        .platform-item label {
+            cursor: pointer;
+            color: var(--text-primary);
+            font-weight: 500;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Style Options Modern */
+        .style-options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .style-option-card {
+            padding: 1rem;
+            background: var(--darker-color);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .style-option-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .style-option-card.selected {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .style-option-card input[type="radio"] {
+            margin-right: 0.75rem;
+        }
+
+        .style-option-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .style-option-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* Number Input Modern */
+        .number-input-modern {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .number-input-modern input[type="number"] {
+            background: var(--darker-color);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            width: 120px;
+            text-align: center;
+        }
+
+        /* Voice Input Modern */
+        .voice-input-card {
+            background: var(--darker-color);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .voice-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .voice-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .voice-button.recording {
+            background: var(--warning-gradient);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(240, 147, 251, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(240, 147, 251, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(240, 147, 251, 0); }
+        }
+
+        .voice-transcript {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .modern-layout {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                top: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .progress-steps {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .step-connector {
+                width: 2px;
+                height: 30px;
+            }
+        }
+
+        /* Dark mode for accordions */
+        .accordion-item {
+            background: var(--card-bg) !important;
+            border: 1px solid var(--card-border) !important;
+        }
+
+        .accordion-button {
+            background: var(--card-bg) !important;
+            color: var(--text-primary) !important;
+            border: none !important;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background: var(--darker-color) !important;
+            color: var(--text-primary) !important;
+            box-shadow: none !important;
+        }
+
+        .accordion-button:focus {
+            box-shadow: none !important;
+            border-color: var(--card-border) !important;
+        }
+
+        .accordion-button::after {
+            filter: invert(1);
+        }
+
+        .accordion-body {
+            background: var(--card-bg) !important;
+            color: var(--text-primary) !important;
+            border-top: 1px solid var(--card-border) !important;
+        }
+
+        /* Dark mode for custom formats section */
+        .border.rounded.p-3.bg-light {
+            background: var(--darker-color) !important;
+            border: 1px solid var(--card-border) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        /* Dark mode for form elements in accordions */
+        .accordion .form-control,
+        .accordion .form-select {
+            background: var(--darker-color) !important;
+            border: 1px solid var(--card-border) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .accordion .form-control:focus,
+        .accordion .form-select:focus {
+            background: var(--darker-color) !important;
+            border-color: var(--primary-color) !important;
+            color: var(--text-primary) !important;
+            box-shadow: 0 0 0 0.2rem rgba(249, 115, 22, 0.25) !important;
+        }
+
+        .accordion .form-control::placeholder {
+            color: var(--text-muted) !important;
+        }
+
+        /* Dark mode for buttons in accordions */
+        .accordion .btn-outline-primary {
+            border-color: var(--primary-color) !important;
+            color: var(--primary-color) !important;
+        }
+
+        .accordion .btn-outline-primary:hover {
+            background: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        .accordion .btn-outline-info {
+            border-color: #17a2b8 !important;
+            color: #17a2b8 !important;
+        }
+
+        .accordion .btn-outline-info:hover {
+            background: #17a2b8 !important;
+            border-color: #17a2b8 !important;
+            color: white !important;
+        }
+
+        .accordion .btn-outline-success {
+            border-color: #28a745 !important;
+            color: #28a745 !important;
+        }
+
+        .accordion .btn-outline-success:hover {
+            background: #28a745 !important;
+            border-color: #28a745 !important;
+            color: white !important;
+        }
+
+        /* Dark mode for Add Topic Modal */
+        .modal-content {
+            background: var(--card-bg) !important;
+            border: 1px solid var(--card-border) !important;
+        }
+
+        .modal-header.bg-primary {
+            background: var(--primary-color) !important;
+            border-bottom: 1px solid var(--card-border) !important;
+        }
+
+        .modal-header .modal-title {
+            color: white !important;
+        }
+
+        .modal-body {
+            background: var(--card-bg) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .modal .form-label {
+            color: var(--text-primary) !important;
+        }
+
+        .modal .form-control, .modal .form-select {
+            background: var(--darker-color) !important;
+            border: 1px solid var(--card-border) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .modal .form-control:focus, .modal .form-select:focus {
+            background: var(--darker-color) !important;
+            border-color: var(--primary-color) !important;
+            color: var(--text-primary) !important;
+            box-shadow: 0 0 0 0.2rem rgba(249, 115, 22, 0.25) !important;
+        }
+
+        .modal .form-control::placeholder {
+            color: var(--text-muted) !important;
+        }
+
+        .modal .form-text {
+            color: var(--text-muted) !important;
+        }
+
+        .modal .form-check {
+            color: var(--text-primary) !important;
+        }
+
+        .modal .form-check-input {
+            background-color: var(--darker-color) !important;
+            border-color: var(--card-border) !important;
+        }
+
+        .modal .form-check-input:checked {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .modal .btn-close {
+            filter: invert(1);
+        }
+
+        .modal .btn-close-white {
+            filter: invert(1);
+        }
+
+        /* Dark mode for key points in modal */
+        .bg-light {
+            background: var(--darker-color) !important;
+            color: var(--text-primary) !important;
+        }
+
         .generation-card:hover {
             border-color: var(--primary-color);
             transform: translateY(-2px);
@@ -38,6 +872,174 @@
         .generated-content em {
             color: var(--text-secondary) !important;
             font-style: italic;
+        }
+
+        /* Content Generation Method Styles */
+        .method-selection {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .method-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .method-option {
+            flex: 1;
+            position: relative;
+        }
+
+        .method-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .method-label {
+            display: block;
+            padding: 1.5rem;
+            background: var(--darker-color);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            height: 100%;
+        }
+
+        .method-option input[type="radio"]:checked + .method-label {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .method-label:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .method-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .method-icon {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+
+        .method-desc {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .method-input {
+            margin-top: 1.5rem;
+        }
+
+        .sub-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-textarea-modern {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .form-textarea-modern:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .instruction-examples {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--darker-color);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .example-post {
+            position: relative;
+            padding: 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+        }
+
+        .example-post-text {
+            border: 1px solid var(--card-border) !important;
+            background: var(--darker-color) !important;
+            font-size: 0.875rem;
+        }
+
+        /* Enhanced Glowing Generate Button */
+        .generate-btn-modern {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 15px 40px;
+            font-weight: 600;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .generate-btn-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .generate-btn-modern:hover::before {
+            left: 100%;
+        }
+
+        .generate-btn-modern:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4), 0 0 20px rgba(102, 126, 234, 0.3);
+            }
+            to {
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4), 0 0 30px rgba(102, 126, 234, 0.6);
+            }
+        }
+
+        .generate-btn-modern:active {
+            transform: translateY(0) scale(0.98);
         }
 
         /* Style options with dark theme */
@@ -199,6 +1201,267 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
+        /* Responsive Styles for Content Settings */
+        @media (max-width: 768px) {
+            /* Generator Form Card */
+            .card.border-0.shadow-sm {
+                border-radius: 12px !important;
+                margin-bottom: 1rem;
+            }
+
+            /* Generation Method Cards */
+            .row.g-3 > .col-md-6 {
+                margin-bottom: 1rem;
+            }
+
+            .card.border-2 {
+                border: 2px solid var(--card-border) !important;
+                border-radius: 12px !important;
+                transition: all 0.3s ease;
+            }
+
+            .card.border-2:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            }
+
+            /* Method Cards Specific */
+            .method-card {
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .method-card:hover {
+                border-color: var(--primary-color) !important;
+            }
+
+            .form-check-input:checked + .form-check-label {
+                color: var(--primary-color) !important;
+            }
+
+            .method-card .form-check-input:checked {
+                background-color: var(--primary-color) !important;
+                border-color: var(--primary-color) !important;
+            }
+
+            /* Button Groups Mobile */
+            .d-grid.gap-2.d-md-flex {
+                gap: 0.5rem !important;
+            }
+
+            .btn.flex-fill {
+                min-width: 0 !important;
+                flex: 1 !important;
+            }
+
+            /* Accordion Responsive */
+            .accordion-button {
+                padding: 1rem !important;
+                font-size: 0.95rem !important;
+            }
+
+            .accordion-button:not(.collapsed) {
+                background: var(--darker-color) !important;
+                color: var(--text-primary) !important;
+            }
+
+            .accordion-body {
+                padding: 1rem !important;
+            }
+
+            /* Form Controls Mobile */
+            .form-control, .form-select {
+                font-size: 0.95rem !important;
+                padding: 0.75rem !important;
+                border-radius: 8px !important;
+            }
+
+            .form-control::placeholder {
+                font-size: 0.9rem !important;
+            }
+
+            /* Textareas Mobile */
+            textarea.form-control {
+                min-height: 100px !important;
+                resize: vertical;
+            }
+
+            #customInstructions {
+                min-height: 150px !important;
+            }
+
+            #exampleContent {
+                min-height: 120px !important;
+            }
+
+            /* Buttons Mobile */
+            .btn {
+                font-size: 0.9rem !important;
+                padding: 0.6rem 1rem !important;
+                border-radius: 8px !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .btn-sm {
+                font-size: 0.8rem !important;
+                padding: 0.5rem 0.8rem !important;
+            }
+
+            /* Generation Method Cards Mobile */
+            .display-4 {
+                font-size: 2.5rem !important;
+                margin-bottom: 1rem !important;
+            }
+
+            .card-body {
+                padding: 1.25rem !important;
+            }
+
+            /* Examples Section Mobile */
+            .border.rounded.p-3.mb-3.bg-light {
+                padding: 1rem !important;
+                border-radius: 12px !important;
+            }
+
+            .content-preview.small {
+                font-size: 0.85rem !important;
+                line-height: 1.4 !important;
+            }
+
+            /* Advanced Settings Mobile */
+            .row.g-3 > .col-md-4 {
+                margin-bottom: 1rem;
+            }
+
+            /* Form Check Mobile */
+            .form-check {
+                margin-bottom: 0.5rem;
+            }
+
+            .form-check-input {
+                margin-right: 0.5rem;
+            }
+
+            /* Cards in Examples */
+            .card.border-secondary {
+                border-radius: 12px !important;
+                margin-bottom: 0.75rem;
+            }
+
+            .card-body {
+                padding: 1rem !important;
+            }
+
+            /* Template Selection Mobile */
+            .form-select.form-select-sm.d-inline-block.w-auto {
+                width: 100% !important;
+                margin-top: 0.5rem !important;
+                display: block !important;
+            }
+
+            /* Example Input Fields Mobile */
+            #exampleTopic, #exampleHashtags {
+                font-size: 0.9rem !important;
+            }
+
+            /* Info Messages Mobile */
+            .text-info {
+                font-size: 0.85rem !important;
+                line-height: 1.4 !important;
+            }
+
+            /* Small text adjustments */
+            .small.text-muted {
+                font-size: 0.8rem !important;
+                line-height: 1.3 !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            /* Extra Small Screens */
+            .container-fluid.p-4 {
+                padding: 1rem !important;
+            }
+
+            .card-body {
+                padding: 1rem !important;
+            }
+
+            .accordion-button {
+                padding: 0.75rem 1rem !important;
+                font-size: 0.9rem !important;
+            }
+
+            .accordion-body {
+                padding: 0.75rem 1rem !important;
+            }
+
+            /* Form controls for very small screens */
+            .form-control, .form-select {
+                font-size: 0.9rem !important;
+                padding: 0.6rem !important;
+            }
+
+            /* Buttons for very small screens */
+            .btn {
+                font-size: 0.85rem !important;
+                padding: 0.5rem 0.8rem !important;
+                margin-bottom: 0.5rem !important;
+                width: 100% !important;
+            }
+
+            .btn-group .btn {
+                width: auto !important;
+                margin-bottom: 0 !important;
+            }
+
+            /* Examples cards for very small screens */
+            .card.border-secondary {
+                margin-bottom: 0.5rem;
+            }
+
+            /* Remove unnecessary spacing */
+            .mb-4 {
+                margin-bottom: 1rem !important;
+            }
+
+            .mb-3 {
+                margin-bottom: 0.75rem !important;
+            }
+
+            /* Method Cards for very small screens */
+            .method-card .card-body {
+                padding: 0.75rem !important;
+            }
+
+            .method-card .display-4 {
+                font-size: 1.75rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+
+            .method-card h6 {
+                font-size: 0.9rem !important;
+            }
+
+            .method-card .small.text-muted {
+                font-size: 0.75rem !important;
+                line-height: 1.3 !important;
+            }
+
+            /* Template dropdown for mobile */
+            #instructionTemplate {
+                margin-top: 0.5rem !important;
+                font-size: 0.85rem !important;
+            }
+
+            /* Button text for very small screens */
+            .btn i {
+                margin-right: 0.25rem !important;
+            }
+        }
+
         /* Header spacing improvements */
         .top-header h1 {
             font-weight: 600;
@@ -213,269 +1476,1200 @@
 {% endblock %}
 
 {% block content %}
-    <!-- Top Header -->
-    <header class="top-header">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <div>
-                    <h1 class="h3 mb-0">Content Generator</h1>
-                    <p class="text-muted mb-0">Generate single or multiple posts for your social media platforms</p>
-                </div>
+    <!-- Simple Clean Header -->
+    <div class="simple-header">
+        <div class="header-top">
+            <div class="header-title">
+                <h1>✨ Content Generator</h1>
+                <p>Create engaging social media content in seconds</p>
             </div>
-            <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                <div class="d-flex gap-2 justify-content-md-end justify-content-start">
-                    <button class="btn btn-primary btn-sm-md" onclick="startGeneration()">
-                        <i class="fas fa-magic me-2"></i>Generate Content
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm-md" onclick="refreshTopics()">
-                        <i class="fas fa-sync-alt me-1"></i>Refresh
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
+          </div>
+    </div>
 
-    <div class="container-fluid p-4">
-        <div class="row g-4">
-            <!-- Generator Form -->
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0">
-                        <h5 class="mb-0">Content Settings</h5>
-                    </div>
-                    <div class="card-body">
-                        <form id="generatorForm">
-                            <!-- Generation Mode Selection -->
-                            <div class="mb-4">
-                                <label class="form-label">
-                                    <i class="fas fa-cog me-2"></i>Generation Mode
+    <!-- Two-Column Layout for Desktop -->
+    <div class="content-wrapper">
+        <div class="main-layout">
+            <!-- Left Column: Settings -->
+            <div class="settings-column">
+                    <!-- Basic Settings Section -->
+                    <div class="settings-section">
+  
+                        <div class="settings-grid">
+                            <div class="setting-card">
+                                <form id="generatorForm">
+                            <!-- Topic Input -->
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-pencil-alt"></i>
+                                    Topic
                                 </label>
-                                <div class="btn-group w-100" role="group">
-                                    <input type="radio" class="btn-check" name="generationMode" id="singleMode" value="single" checked>
-                                    <label class="btn btn-outline-primary" for="singleMode">
-                                        <i class="fas fa-pencil-alt me-1"></i> Single
-                                    </label>
-
-                                    <input type="radio" class="btn-check" name="generationMode" id="batchMode" value="batch">
-                                    <label class="btn btn-outline-success" for="batchMode">
-                                        <i class="fas fa-layer-group me-1"></i> Batch
-                                    </label>
-                                </div>
+                                <input type="text" class="form-control-modern" id="topicInput" placeholder="Enter your content topic...">
                             </div>
 
-                            <!-- Single Topic Input -->
-                            <div class="mb-3" id="singleTopicSection">
-                                <label class="form-label">
-                                    <i class="fas fa-tag me-2"></i>Topic
+                            <!-- Style Selection -->
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-palette"></i>
+                                    Style
                                 </label>
-                                <input type="text" class="form-control" id="topicInput" placeholder="Enter topic...">
-                            </div>
-
-                            <!-- Batch Topic Selection -->
-                            <div class="mb-3" id="batchTopicSection" style="display: none;">
-                                <label class="form-label">
-                                    <i class="fas fa-list me-2"></i>Select Topics
-                                </label>
-                                <div class="border rounded p-2" style="max-height: 200px; overflow-y: auto; background: var(--darker-color);">
-                                    <div id="topicCheckboxes">
-                                        <!-- Topics will be loaded here -->
-                                    </div>
-                                </div>
-                                <div class="mt-2 d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">
-                                        <span id="selectedCount">0</span> existing topics selected
-                                    </small>
-                                    <div>
-                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAllTopics()">
-                                            Select All
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearTopicSelection()">
-                                            Clear
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Add Custom Topic Section for Batch Mode -->
-                            <div class="mb-3" id="customTopicSection" style="display: none;">
-                                <label class="form-label">
-                                    <i class="fas fa-plus-circle me-2"></i>Add Custom Topic (Optional)
-                                </label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="customTopicInput" placeholder="Enter a custom topic to include in batch generation...">
-                                    <button type="button" class="btn btn-outline-success" onclick="addCustomTopic()">
-                                        <i class="fas fa-plus"></i> Add
-                                    </button>
-                                </div>
-                                <div class="mt-2">
-                                    <div id="customTopicsList" class="d-flex flex-wrap gap-2">
-                                        <!-- Custom topics will be displayed here -->
-                                    </div>
-                                </div>
-                                <small class="text-muted">
-                                    Add additional topics that aren't in your existing list
-                                </small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-palette me-2"></i>Style
-                                </label>
-                                <div class="list-group">
-                                    <div class="list-group-item style-option active" onclick="selectStyle('educational', this)">
+                                <div class="style-options-grid">
+                                    <div class="style-option-card">
                                         <div class="d-flex align-items-center">
-                                            <i class="fas fa-graduation-cap me-2"></i>
-                                            <div>
-                                                <h6 class="mb-0">Educational</h6>
-                                                <small class="text-muted">Informative and helpful content</small>
-                                            </div>
+                                            <input type="radio" name="style" value="educational" id="styleEducational" checked>
+                                            <label for="styleEducational" class="w-100">
+                                                <div class="style-option-title">Educational</div>
+                                                <div class="style-option-desc">Informative and helpful content</div>
+                                            </label>
                                         </div>
                                     </div>
-                                    <div class="list-group-item style-option" onclick="selectStyle('promotional', this)">
+                                    <div class="style-option-card">
                                         <div class="d-flex align-items-center">
-                                            <i class="fas fa-bullhorn me-2"></i>
-                                            <div>
-                                                <h6 class="mb-0">Promotional</h6>
-                                                <small class="text-muted">Marketing and sales focused</small>
-                                            </div>
+                                            <input type="radio" name="style" value="promotional" id="stylePromotional">
+                                            <label for="stylePromotional" class="w-100">
+                                                <div class="style-option-title">Promotional</div>
+                                                <div class="style-option-desc">Marketing and sales focused</div>
+                                            </label>
                                         </div>
                                     </div>
-                                    <div class="list-group-item style-option" onclick="selectStyle('industry_insights', this)">
+                                    <div class="style-option-card">
                                         <div class="d-flex align-items-center">
-                                            <i class="fas fa-chart-line me-2"></i>
-                                            <div>
-                                                <h6 class="mb-0">Industry Insights</h6>
-                                                <small class="text-muted">Trends and analysis</small>
-                                            </div>
+                                            <input type="radio" name="style" value="industry_insights" id="styleIndustry">
+                                            <label for="styleIndustry" class="w-100">
+                                                <div class="style-option-title">Industry Insights</div>
+                                                <div class="style-option-desc">Trends and analysis</div>
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-share-alt me-2"></i>Platforms
+                            <!-- Platform Selection -->
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-share-alt"></i>
+                                    Platforms
                                 </label>
-                                <div class="platform-selection">
-                                    <!-- Quick select buttons -->
-                                    <div class="btn-group w-100 mb-2" role="group">
-                                        <button type="button" class="btn btn-outline-primary" onclick="selectAllPlatforms()">
-                                            All Platforms
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" onclick="deselectAllPlatforms()">
-                                            None
-                                        </button>
+                                <div class="platform-grid">
+                                    <div class="platform-item">
+                                        <input type="checkbox" value="linkedin" id="linkedinCheck" checked>
+                                        <label for="linkedinCheck">
+                                            <i class="fab fa-linkedin"></i> LinkedIn
+                                        </label>
                                     </div>
-
-                                    <!-- Platform checkboxes -->
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="linkedin" id="linkedinCheck" checked>
-                                                <label class="form-check-label" for="linkedinCheck">
-                                                    <i class="fab fa-linkedin me-1"></i> LinkedIn
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="twitter" id="twitterCheck">
-                                                <label class="form-check-label" for="twitterCheck">
-                                                    <i class="fab fa-x-twitter me-1"></i> X
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="instagram" id="instagramCheck">
-                                                <label class="form-check-label" for="instagramCheck">
-                                                    <i class="fab fa-instagram me-1"></i> Instagram
-                                                </label>
-                                            </div>
-                                        </div>
+                                    <div class="platform-item">
+                                        <input type="checkbox" value="twitter" id="twitterCheck">
+                                        <label for="twitterCheck">
+                                            <i class="fab fa-x-twitter"></i> X
+                                        </label>
+                                    </div>
+                                    <div class="platform-item">
+                                        <input type="checkbox" value="instagram" id="instagramCheck">
+                                        <label for="instagramCheck">
+                                            <i class="fab fa-instagram"></i> Instagram
+                                        </label>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Batch Generation Settings -->
-                            <div class="mb-3" id="batchSettings">
-                                <label class="form-label">
-                                    <i class="fas fa-sliders-h me-2"></i>Posts per Topic
+                            <!-- Number of Posts -->
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-copy"></i>
+                                    Number of Posts
                                 </label>
-                                <select class="form-select" id="postsPerTopic">
-                                    <option value="1">1 Post per Topic</option>
-                                    <option value="3">3 Posts per Topic</option>
-                                    <option value="5">5 Posts per Topic</option>
-                                </select>
-                            </div>
-
-                            <!-- Single Generation Settings -->
-                            <div class="mb-3" id="singleSettings">
-                                <label class="form-label">
-                                    <i class="fas fa-copy me-2"></i>Number of Posts
-                                </label>
-                                <select class="form-select" id="numPostsSelect">
+                                <select class="form-select-modern" id="numPostsSelect">
                                     <option value="1">1 Post</option>
                                     <option value="3">3 Posts</option>
                                     <option value="5">5 Posts</option>
+                                    <option value="10">10 Posts</option>
                                 </select>
                             </div>
 
-                            <!-- Voice Recording Section -->
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-microphone me-2"></i>Voice Input (Optional)
+                            <!-- Voice Input -->
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-microphone"></i>
+                                    Voice Input (Optional)
                                 </label>
-                                <div class="border rounded p-3 bg-light">
-                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <small class="text-muted">Click to record your content idea</small>
-                                        <div id="recordingTime" class="badge bg-danger" style="display: none;">00:00</div>
+                                <div class="voice-input-card">
+                                    <div class="voice-button" id="recordBtn" onclick="toggleRecording()">
+                                        <i class="fas fa-microphone"></i>
                                     </div>
-                                    <div class="d-flex gap-2">
-                                        <button type="button" class="btn btn-outline-primary flex-fill" id="recordBtn" onclick="toggleRecording()">
-                                            <i class="fas fa-microphone"></i>
-                                            <span id="recordBtnText">Start Recording</span>
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" id="playBtn" onclick="playRecording()" disabled>
-                                            <i class="fas fa-play"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-outline-danger" id="clearBtn" onclick="clearRecording()" disabled>
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                    <p class="text-muted mb-3">Click to record your content idea</p>
+                                    <textarea class="voice-transcript" id="voiceTranscript" placeholder="Voice transcript will appear here..." readonly></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Advanced Settings -->
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-sliders-h"></i>
+                                    Advanced Settings
+                                </label>
+                                <div class="advanced-settings">
+                                    <div class="settings-row">
+                                        <select class="form-select-modern" id="creativityLevel">
+                                            <option value="balanced">Balanced (Recommended)</option>
+                                            <option value="conservative">Conservative</option>
+                                            <option value="creative">Creative</option>
+                                        </select>
+                                        <select class="form-select-modern" id="contentLength">
+                                            <option value="medium">Medium Length</option>
+                                            <option value="short">Short</option>
+                                            <option value="long">Long</option>
+                                        </select>
                                     </div>
-                                    <div class="mt-2">
-                                        <textarea class="form-control form-control-sm" id="voiceTranscript" rows="3" placeholder="Voice transcript will appear here..." readonly></textarea>
+                                  </div>
+                            </div>
+
+                            <!-- Custom Format Templates (Hidden by default) -->
+                            <div class="form-group-modern" style="display: none;" id="customTemplatesSection">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-cog"></i>
+                                    Custom Format Templates (Advanced)
+                                </label>
+                                <div class="template-section">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Template Instructions:</strong><br>
+                                        • Use placeholders like <code>[topic]</code>, <code>[style]</code>, <code>[hashtags]</code><br>
+                                        • Example: "🎯 [topic]<br><br>[content]<br><br>Hashtags: [hashtags]<br>#digitalmarketing #contentstrategy"
+                                    </div>
+
+                                    <div class="template-platforms">
+                                        <h6 class="mb-3">Platform Templates</h6>
+
+                                        <!-- LinkedIn Template -->
+                                        <div class="platform-template mb-4">
+                                            <label class="platform-label">
+                                                <i class="fab fa-linkedin text-primary"></i> LinkedIn Template
+                                            </label>
+                                            <textarea class="form-textarea-modern template-textarea"
+                                                    id="linkedinTemplate"
+                                                    rows="5"
+                                                    placeholder="Enter LinkedIn post template...">🚀 [topic]
+
+[content]
+
+💡 Key Takeaways:
+• [key_point_1]
+• [key_point_2]
+
+#Leadership #Innovation #[hashtags]</textarea>
+                                        </div>
+
+                                        <!-- X/Twitter Template -->
+                                        <div class="platform-template mb-4">
+                                            <label class="platform-label">
+                                                <i class="fab fa-x-twitter text-dark"></i> X (Twitter) Template
+                                            </label>
+                                            <textarea class="form-textarea-modern template-textarea"
+                                                    id="twitterTemplate"
+                                                    rows="4"
+                                                    placeholder="Enter X post template...">🎯 [topic]
+
+[content]
+
+[hashtags] #Trending #[topic]</textarea>
+                                        </div>
+
+                                        <!-- Instagram Template -->
+                                        <div class="platform-template mb-4">
+                                            <label class="platform-label">
+                                                <i class="fab fa-instagram text-danger"></i> Instagram Template
+                                            </label>
+                                            <textarea class="form-textarea-modern template-textarea"
+                                                    id="instagramTemplate"
+                                                    rows="5"
+                                                    placeholder="Enter Instagram caption template...">✨ [topic] ✨
+
+[content]
+
+📸 [call_to_action]
+
+[hashtags] #Instagram #[style] #[topic]</textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="template-actions">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetTemplates()">
+                                            <i class="fas fa-undo"></i> Reset to Default
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="previewTemplates()">
+                                            <i class="fas fa-eye"></i> Preview Templates
+                                        </button>
                                     </div>
                                 </div>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Generated Content -->
-            <div class="col-md-8">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0">
-                        <h5 class="mb-0">Generated Content</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="generatedContent">
-                            <div class="text-center py-5">
-                                <i class="fas fa-magic display-1 text-muted"></i>
-                                <h4 class="mt-3 text-muted">Ready to Generate</h4>
-                                <p class="text-muted">Fill in the form and click "Generate Content" to create professional posts</p>
+                            <!-- Content Generation Method -->
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-cogs"></i>
+                                    Content Generation Method
+                                </label>
+                                <div class="method-selection">
+                                    <div class="method-options">
+                                        <div class="method-option">
+                                            <input type="radio" name="generationMethod" id="instructionMethod" value="instructions" checked>
+                                            <label class="method-label" for="instructionMethod">
+                                                <div class="method-header">
+                                                    <i class="fas fa-keyboard method-icon"></i>
+                                                    <strong>Custom Instructions</strong>
+                                                </div>
+                                                <p class="method-desc">Provide specific instructions on how you want the content to be written</p>
+                                            </label>
+                                        </div>
+                                        <div class="method-option">
+                                            <input type="radio" name="generationMethod" id="exampleMethod" value="examples">
+                                            <label class="method-label" for="exampleMethod">
+                                                <div class="method-header">
+                                                    <i class="fas fa-copy method-icon"></i>
+                                                    <strong>Learn from Examples</strong>
+                                                </div>
+                                                <p class="method-desc">Provide existing posts and AI will generate similar content</p>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Instructions Input -->
+                                    <div id="instructionsInput" class="method-input">
+                                        <label class="sub-label">Custom Instructions</label>
+                                        <textarea class="form-textarea-modern" id="customInstructions" rows="4"
+                                                placeholder="Provide detailed instructions for content generation..."></textarea>
+                                        <div class="instruction-examples">
+                                            <small class="text-muted">
+                                                <strong>Examples:</strong>
+                                                <ul class="mb-0 mt-2">
+                                                    <li>Write in a conversational tone like you're talking to a friend</li>
+                                                    <li>Focus on practical tips and actionable advice</li>
+                                                    <li>Use storytelling to explain complex concepts</li>
+                                                    <li>Include statistics and data points to support claims</li>
+                                                    <li>Write for beginners in the field</li>
+                                                    <li>Use humor and relatable examples</li>
+                                                </ul>
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Examples Input -->
+                                    <div id="examplesInput" class="method-input" style="display: none;">
+                                        <label class="sub-label">Example Posts</label>
+                                        <div id="examplePostsContainer">
+                                            <div class="example-post mb-3">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <label class="sub-label mb-0">Example 1</label>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeExamplePost(this)">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                                <textarea class="form-textarea-modern example-post-text" rows="3"
+                                                        placeholder="Paste an example post here..."></textarea>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="addExamplePost()">
+                                            <i class="fas fa-plus me-1"></i>Add Another Example
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+
+                            <!-- Generate Button -->
+                            <div class="text-center mt-4">
+                                <button type="button" class="btn btn-primary btn-lg generate-btn-modern" onclick="startGeneration()">
+                                    <i class="fas fa-magic me-2"></i>
+                                    Generate Content
+                                </button>
+                            </div>
+                        </form>
+            <!-- Right Column: Generated Content Sidebar -->
+            <div class="generated-content-sidebar" id="generatedContentSidebar">
+                <div class="sidebar-header">
+                    <h3>📄 Generated Content</h3>
+                    <div class="content-stats">
+                        <span id="contentCount">0</span> posts
                     </div>
                 </div>
+
+                <div class="generated-content" id="generatedContent">
+                    <div class="empty-state">
+                        <i class="fas fa-sparkles"></i>
+                        <h3>Ready to Generate</h3>
+                        <p>Configure settings and click Generate</p>
+                    </div>
+                </div>
+
+                <!-- Floating Action Button for Mobile -->
+                <button class="floating-generate-btn" onclick="startGeneration()" id="floatingGenerateBtn">
+                    <i class="fas fa-magic"></i>
+                </button>
             </div>
         </div>
+    </div>
     </div>
 {% endblock %}
 
 {% block scripts %}
+<style>
+/* Fix alignment issues */
+.content-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.main-layout {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 30px;
+    align-items: start;
+}
+
+.settings-column {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+/* Form Styling */
+.form-group-modern {
+    margin-bottom: 25px;
+}
+
+.form-label-modern {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.form-label-modern i {
+    margin-right: 8px;
+    color: #667eea;
+}
+
+.form-control-modern, .form-select-modern, .form-textarea-modern {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.form-control-modern:focus, .form-select-modern:focus, .form-textarea-modern:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-textarea-modern {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+}
+
+.style-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.style-option-card {
+    padding: 15px;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.style-option-card:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.style-option-card input[type="radio"]:checked + label {
+    color: #667eea;
+}
+
+.style-option-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.style-option-desc {
+    font-size: 13px;
+    color: #6c757d;
+    margin: 0;
+}
+
+.platform-grid {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.platform-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border: 2px solid #e1e8ed;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.platform-item:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.platform-item input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.platform-item input[type="checkbox"]:checked + label {
+    color: #667eea;
+}
+
+.voice-input-card {
+    text-align: center;
+    padding: 20px;
+    border: 2px dashed #e1e8ed;
+    border-radius: 10px;
+    background: #f8f9fa;
+}
+
+.voice-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.voice-button:hover {
+    transform: scale(1.05);
+}
+
+.voice-transcript {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    background: #fff;
+    min-height: 80px;
+    resize: vertical;
+}
+
+.settings-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.generate-btn-modern {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 15px 40px;
+    font-weight: 600;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.generate-btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.floating-generate-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    font-size: 20px;
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    z-index: 1000;
+    display: none;
+}
+
+/* Beautiful Default Theme - Modern Colorful Design */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+    --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --card-bg: #ffffff;
+    --darker-color: #f8f9fa;
+    --card-border: #e9ecef;
+    --text-primary: #212529;
+    --text-muted: #6c757d;
+    --primary-color: #667eea;
+    --sidebar-width: 280px;
+    --header-height: 80px;
+    --border-radius-modern: 16px;
+    --shadow-modern: 0 10px 30px rgba(102, 126, 234, 0.15);
+    --shadow-hover: 0 20px 40px rgba(102, 126, 234, 0.25);
+}
+
+/* Beautiful Dark Theme */
+[data-theme="dark"] {
+    --primary-gradient: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+    --success-gradient: linear-gradient(135deg, #14b8a6 0%, #22c55e 100%);
+    --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    --card-bg: #0f172a;
+    --darker-color: #1e293b;
+    --card-border: #334155;
+    --text-primary: #f1f5f9;
+    --text-muted: #94a3b8;
+    --primary-color: #9333ea;
+    --header-bg: #1e293b;
+    --shadow-modern: 0 10px 30px rgba(147, 51, 234, 0.2);
+    --shadow-hover: 0 20px 40px rgba(147, 51, 234, 0.3);
+}
+
+/* Apply colorful theme */
+.settings-column,
+.generated-content-sidebar {
+    background: var(--card-bg);
+    color: var(--text-primary);
+}
+
+.form-control-modern,
+.form-select-modern,
+.form-textarea-modern {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-primary);
+}
+
+.style-option-card,
+.platform-item {
+    border-color: var(--card-border);
+    background: var(--darker-color);
+    color: var(--text-primary);
+}
+
+.style-option-card:hover,
+.platform-item:hover {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color) 0%, transparent 100%);
+}
+
+.voice-input-card {
+    background: var(--darker-color);
+    border-color: var(--card-border);
+}
+
+.voice-transcript {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-primary);
+}
+
+.sidebar-header {
+    border-bottom-color: var(--card-border);
+}
+
+.sidebar-header h3 {
+    color: var(--text-primary);
+}
+
+.empty-state {
+    color: var(--text-muted);
+}
+
+.empty-state h3 {
+    color: var(--text-primary);
+}
+
+/* Dark Theme Generated Content Sidebar */
+[data-theme="dark"] .generated-content-sidebar {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border-color: var(--card-border);
+}
+
+[data-theme="dark"] .sidebar-header {
+    border-bottom-color: var(--card-border);
+}
+
+[data-theme="dark"] .sidebar-header h3 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .content-stats {
+    background: var(--primary-gradient);
+}
+
+[data-theme="dark"] .empty-state {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .empty-state h3 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .simple-header {
+    background: var(--header-bg);
+    border-bottom-color: var(--card-border);
+}
+
+[data-theme="dark"] .header-title h1 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .header-title p {
+    color: var(--text-muted);
+}
+
+/* Header and Theme Toggle */
+.simple-header {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--card-border);
+    padding: 20px 0;
+    margin-bottom: 30px;
+}
+
+.theme-toggle {
+    background: var(--darker-color);
+    border: 2px solid var(--card-border);
+    color: var(--text-primary);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 18px;
+}
+
+.theme-toggle:hover {
+    background: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.header-top {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title h1 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header-title p {
+    margin: 5px 0 0 0;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+
+/* Template Section Styling */
+.template-section {
+    background: var(--darker-color);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--card-border);
+}
+
+.template-platforms {
+    margin-top: 15px;
+}
+
+.platform-template {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid var(--card-border);
+}
+
+.platform-label {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.platform-label i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.template-textarea {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.template-textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.template-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--card-border);
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.alert-info {
+    background: rgba(23, 162, 184, 0.1);
+    border: 1px solid rgba(23, 162, 184, 0.3);
+    color: #0c5460;
+}
+
+.alert-info i {
+    color: #17a2b8;
+}
+
+.alert strong {
+    color: #0c5460;
+}
+
+.alert code {
+    background: rgba(23, 162, 184, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.form-check-input {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.form-check-label {
+    cursor: pointer;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Content Generation Method Styling */
+.method-selection {
+    margin-top: 15px;
+}
+
+.method-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.method-option {
+    background: var(--card-bg);
+    border: 2px solid var(--card-border);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.method-option:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.method-option input[type="radio"] {
+    display: none;
+}
+
+.method-option input[type="radio"]:checked + .method-label {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color) 0%, transparent 10%);
+}
+
+.method-label {
+    display: block;
+    padding: 20px;
+    cursor: pointer;
+    border-radius: 10px;
+    border: 2px solid transparent;
+}
+
+.method-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.method-icon {
+    font-size: 20px;
+    margin-right: 10px;
+    color: var(--primary-color);
+}
+
+.method-header strong {
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.method-desc {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.method-input {
+    background: var(--darker-color);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--card-border);
+    margin-top: 15px;
+}
+
+.sub-label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.instruction-examples {
+    margin-top: 15px;
+    padding: 15px;
+    background: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+}
+
+.instruction-examples ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.instruction-examples li {
+    margin-bottom: 5px;
+    color: var(--text-muted);
+}
+
+.example-post {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid var(--card-border);
+}
+
+.example-post-text {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    border-radius: 6px;
+    padding: 10px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.example-post-text:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.generated-content-sidebar {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 20px;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.3rem;
+}
+
+.content-stats {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #dee2e6;
+    margin-bottom: 15px;
+}
+
+.empty-state h3 {
+    color: #495057;
+    margin-bottom: 10px;
+}
+
+/* Responsive fixes */
+@media (max-width: 1024px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .generated-content-sidebar {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-wrapper {
+        padding: 0 15px;
+    }
+
+    .settings-column, .generated-content-sidebar {
+        padding: 20px;
+        border-radius: 12px;
+    }
+}
+</style>
     <script>
+        // Template Functions
+        function toggleCustomTemplates() {
+            const checkbox = document.getElementById('useCustomTemplates');
+            const section = document.getElementById('customTemplatesSection');
+            section.style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function toggleTemplates() {
+            const section = document.getElementById('customTemplatesSection');
+            const currentDisplay = section.style.display;
+            section.style.display = currentDisplay === 'none' ? 'block' : 'none';
+        }
+
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            const themeIcon = document.getElementById('themeIcon');
+            themeIcon.className = newTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+
+        // Load saved theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const themeIcon = document.getElementById('themeIcon');
+            themeIcon.className = savedTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+        });
+
+        function resetTemplates() {
+            document.getElementById('linkedinTemplate').value = `🚀 [topic]
+
+[content]
+
+💡 Key Takeaways:
+• [key_point_1]
+• [key_point_2]
+
+#Leadership #Innovation #[hashtags]`;
+
+            document.getElementById('twitterTemplate').value = `🎯 [topic]
+
+[content]
+
+[hashtags] #Trending #[topic]`;
+
+            document.getElementById('instagramTemplate').value = `✨ [topic] ✨
+
+[content]
+
+📸 [call_to_action]
+
+[hashtags] #Instagram #[style] #[topic]`;
+        }
+
+        function previewTemplates() {
+            const topic = document.getElementById('topicInput').value || 'Sample Topic';
+            const content = 'This is sample content for your template preview...';
+            const hashtags = '#socialmedia #marketing';
+
+            const linkedinTemplate = document.getElementById('linkedinTemplate').value;
+            const preview = linkedinTemplate
+                .replace('[topic]', topic)
+                .replace('[content]', content)
+                .replace('[hashtags]', hashtags)
+                .replace('[key_point_1]', 'First key point')
+                .replace('[key_point_2]', 'Second key point');
+
+            alert('Template Preview (LinkedIn):\n\n' + preview);
+        }
+
+        // Example Post Functions
+        let examplePostCount = 1;
+
+        function addExamplePost() {
+            examplePostCount++;
+            const container = document.getElementById('examplePostsContainer');
+            const newExample = document.createElement('div');
+            newExample.className = 'example-post mb-3';
+            newExample.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="sub-label mb-0">Example ${examplePostCount}</label>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeExamplePost(this)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <textarea class="form-textarea-modern example-post-text" rows="3"
+                        placeholder="Paste an example post here..."></textarea>
+            `;
+            container.appendChild(newExample);
+        }
+
+        function removeExamplePost(button) {
+            const examplePost = button.closest('.example-post');
+            const container = document.getElementById('examplePostsContainer');
+            if (container.children.length > 1) {
+                examplePost.remove();
+                // Update example numbers
+                const examples = container.querySelectorAll('.example-post');
+                examples.forEach((example, index) => {
+                    const label = example.querySelector('.sub-label');
+                    label.textContent = `Example ${index + 1}`;
+                });
+            } else {
+                alert('You must have at least one example post.');
+            }
+        }
+
+        // Content Generation Method Toggle
+        function toggleGenerationMethod() {
+            const instructionMethod = document.getElementById('instructionMethod');
+            const exampleMethod = document.getElementById('exampleMethod');
+            const instructionsInput = document.getElementById('instructionsInput');
+            const examplesInput = document.getElementById('examplesInput');
+
+            if (instructionMethod.checked) {
+                instructionsInput.style.display = 'block';
+                examplesInput.style.display = 'none';
+                console.log('Switched to Custom Instructions mode');
+            } else if (exampleMethod.checked) {
+                instructionsInput.style.display = 'none';
+                examplesInput.style.display = 'block';
+                console.log('Switched to Learn from Examples mode');
+            }
+        }
+
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded - Setting up event listeners');
+
+            // Template toggle
+            const templateCheckbox = document.getElementById('useCustomTemplates');
+            if (templateCheckbox) {
+                templateCheckbox.addEventListener('change', toggleCustomTemplates);
+                console.log('Template checkbox listener added');
+            }
+
+            // Generation method toggle
+            const instructionMethod = document.getElementById('instructionMethod');
+            const exampleMethod = document.getElementById('exampleMethod');
+            const examplesInput = document.getElementById('examplesInput');
+
+            if (instructionMethod) {
+                instructionMethod.addEventListener('change', function() {
+                    console.log('Instruction method clicked');
+                    toggleGenerationMethod();
+                });
+            }
+
+            if (exampleMethod) {
+                exampleMethod.addEventListener('change', function() {
+                    console.log('Example method clicked');
+                    toggleGenerationMethod();
+                });
+            }
+
+            // Set initial state - show instructions, hide examples
+            if (examplesInput) {
+                examplesInput.style.display = 'none';
+                console.log('Examples input hidden by default');
+            }
+
+            // Test the toggle function
+            console.log('Initial state - Instruction method checked:', instructionMethod?.checked);
+            console.log('Initial state - Example method checked:', exampleMethod?.checked);
+        });
+
         let selectedStyle = 'educational';
         let availableTopics = [];
         let selectedTopics = new Set();
@@ -609,6 +2803,328 @@
             loadTopics();
             showNotification('Topics refreshed', 'info');
         }
+
+        // Topics Management Functions
+        function showTopicsManager() {
+            document.getElementById('topicsManager').style.display = 'block';
+            loadTopicsForManager();
+        }
+
+        function hideTopicsManager() {
+            document.getElementById('topicsManager').style.display = 'none';
+        }
+
+        function loadTopicsForManager() {
+            fetch('/api/topics')
+                .then(response => response.json())
+                .then(data => {
+                    renderTopicsForManager(data);
+                    updateTopicsCount(data.length);
+                })
+                .catch(error => {
+                    console.error('Error loading topics:', error);
+                    renderTopicsForManager([]);
+                    updateTopicsCount(0);
+                });
+        }
+
+        function renderTopicsForManager(topics) {
+            const container = document.getElementById('topicsList');
+
+            if (topics.length === 0) {
+                container.innerHTML = '<div class="text-muted p-3">No topics available. Add your first topic above.</div>';
+                return;
+            }
+
+            container.innerHTML = topics.map((topic, index) => `
+                <div class="topic-item mb-2 p-2 rounded" style="background: var(--card-bg); border: 1px solid var(--card-border);">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <strong class="text-primary">${topic.topic}</strong>
+                            ${topic.points && topic.points[0] ? `<br><small class="text-muted">${topic.points[0]}</small>` : ''}
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="useTopicInInput('${topic.topic}')" title="Use this topic">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteTopic(${index})" title="Delete topic">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function useTopicInInput(topicName) {
+            document.getElementById('topicInput').value = topicName;
+            showNotification(`Topic "${topicName}" loaded in input field`, 'success');
+        }
+
+        function addTopic() {
+            const input = document.getElementById('newTopicInput');
+            const topicName = input.value.trim();
+
+            if (!topicName) {
+                showNotification('Please enter a topic name', 'warning');
+                return;
+            }
+
+            fetch('/api/topics', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    topic: topicName,
+                    points: [`Content about ${topicName}`],
+                    style: selectedStyle
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    input.value = '';
+                    loadTopicsForManager();
+                    loadTopics(); // Refresh topics in batch mode
+                    showNotification('Topic added successfully!', 'success');
+                } else {
+                    showNotification(`Failed to add topic: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error adding topic:', error);
+                showNotification('Error adding topic', 'error');
+            });
+        }
+
+        function deleteTopic(index) {
+            if (!confirm('Are you sure you want to delete this topic?')) {
+                return;
+            }
+
+            fetch('/api/topics', {
+                method: 'GET' // Assuming the API has a way to identify topics by index
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data[index] && data[index].id) {
+                    // Delete topic by ID if available
+                    return fetch(`/api/topics/${data[index].id}`, {
+                        method: 'DELETE'
+                    });
+                } else {
+                    throw new Error('Topic ID not found');
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadTopicsForManager();
+                    loadTopics(); // Refresh topics in batch mode
+                    showNotification('Topic deleted successfully!', 'success');
+                } else {
+                    showNotification(`Failed to delete topic: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting topic:', error);
+                showNotification('Error deleting topic', 'error');
+            });
+        }
+
+        function updateTopicsCount(count) {
+            document.getElementById('topicsCount').textContent = count;
+        }
+
+        function openTopicsPage() {
+            // Open the Add Topic modal
+            const modal = new bootstrap.Modal(document.getElementById('addTopicModal'));
+            modal.show();
+            resetTopicModalForm();
+        }
+
+        // Add Topic Modal Functions
+        let modalKeyPoints = [];
+
+        function resetTopicModalForm() {
+            // Reset form fields
+            document.getElementById('newTopicModalName').value = '';
+            document.getElementById('newTopicModalDescription').value = '';
+            document.getElementById('newKeyPointInput').value = '';
+
+            // Reset key points
+            modalKeyPoints = [];
+            updateModalKeyPointsList();
+
+            // Reset radio buttons to default
+            const educationalStyle = document.getElementById('newEducational');
+            if (educationalStyle) educationalStyle.checked = true;
+
+            // Reset preview
+            updateModalTopicPreview();
+        }
+
+        function addModalKeyPoint() {
+            const keyPointInput = document.getElementById('newKeyPointInput');
+            const keyPoint = keyPointInput.value.trim();
+
+            if (keyPoint) {
+                modalKeyPoints.push(keyPoint);
+                updateModalKeyPointsList();
+                keyPointInput.value = '';
+                updateModalTopicPreview();
+            }
+        }
+
+        function removeModalKeyPoint(index) {
+            modalKeyPoints.splice(index, 1);
+            updateModalKeyPointsList();
+            updateModalTopicPreview();
+        }
+
+        function updateModalKeyPointsList() {
+            const container = document.getElementById('newKeyPointsList');
+
+            if (modalKeyPoints.length === 0) {
+                container.innerHTML = '<div class="text-muted p-2">No key points added yet. Add key points to enhance content generation.</div>';
+                return;
+            }
+
+            container.innerHTML = modalKeyPoints.map((point, index) => `
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded" style="background: var(--card-bg); border: 1px solid var(--card-border);">
+                    <span class="flex-grow-1">${point}</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeModalKeyPoint(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function updateModalTopicPreview() {
+            const preview = document.getElementById('newTopicPreview');
+            const topicName = document.getElementById('newTopicModalName').value;
+            const description = document.getElementById('newTopicModalDescription').value;
+            const selectedStyle = document.querySelector('input[name="newTopicStyle"]:checked')?.value || 'educational';
+
+            if (!topicName) {
+                preview.innerHTML = '<p class="text-muted mb-1">Enter topic name to see preview...</p><div class="text-muted small">Add key points to enhance the content generation...</div>';
+                return;
+            }
+
+            let styleIcon = '';
+            let styleText = '';
+            switch(selectedStyle) {
+                case 'educational':
+                    styleIcon = '<i class="fas fa-graduation-cap me-2"></i>';
+                    styleText = 'Educational';
+                    break;
+                case 'promotional':
+                    styleIcon = '<i class="fas fa-bullhorn me-2"></i>';
+                    styleText = 'Promotional';
+                    break;
+                case 'professional':
+                    styleIcon = '<i class="fas fa-briefcase me-2"></i>';
+                    styleText = 'Professional';
+                    break;
+                default:
+                    styleIcon = '<i class="fas fa-pen me-2"></i>';
+                    styleText = selectedStyle;
+            }
+
+            let keyPointsHtml = '';
+            if (modalKeyPoints.length > 0) {
+                keyPointsHtml = `
+                    <div class="mt-2">
+                        <small class="text-muted">Key Points:</small>
+                        <ul class="mb-0 ps-3">
+                            ${modalKeyPoints.map(point => `<li class="small">${point}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            let descriptionHtml = '';
+            if (description) {
+                descriptionHtml = `<p class="small text-muted mb-1">${description}</p>`;
+            }
+
+            preview.innerHTML = `
+                <div class="d-flex align-items-center mb-2">
+                    <strong class="text-primary">${topicName}</strong>
+                    <span class="ms-auto badge bg-secondary">${styleIcon}${styleText}</span>
+                </div>
+                ${descriptionHtml}
+                ${keyPointsHtml}
+                <div class="text-muted small mt-2">
+                    <i class="fas fa-info-circle me-1"></i>
+                    This topic will be available for content generation across all platforms
+                </div>
+            `;
+        }
+
+        function saveNewTopic() {
+            const topicName = document.getElementById('newTopicModalName').value.trim();
+            const description = document.getElementById('newTopicModalDescription').value.trim();
+            const selectedStyle = document.querySelector('input[name="newTopicStyle"]:checked')?.value || 'educational';
+
+            if (!topicName) {
+                showNotification('Please enter a topic name', 'warning');
+                return;
+            }
+
+            const topicData = {
+                topic: topicName,
+                description: description,
+                points: modalKeyPoints,
+                style: selectedStyle
+            };
+
+            fetch('/api/topics', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(topicData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addTopicModal'));
+                    modal.hide();
+
+                    // Reset form
+                    resetTopicModalForm();
+
+                    // Refresh topics in both manager and batch mode
+                    loadTopicsForManager();
+                    loadTopics();
+
+                    showNotification('Topic added successfully!', 'success');
+                } else {
+                    showNotification(`Failed to add topic: ${data.error || data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error adding topic:', error);
+                showNotification('Error adding topic', 'error');
+            });
+        }
+
+        // Add event listeners for real-time preview
+        document.addEventListener('DOMContentLoaded', function() {
+            // Topic name input
+            document.getElementById('newTopicModalName')?.addEventListener('input', updateModalTopicPreview);
+
+            // Description input
+            document.getElementById('newTopicModalDescription')?.addEventListener('input', updateModalTopicPreview);
+
+            // Style selection
+            document.querySelectorAll('input[name="newTopicStyle"]').forEach(radio => {
+                radio.addEventListener('change', updateModalTopicPreview);
+            });
+        });
 
         // Custom topic functions
         function addCustomTopic() {
@@ -792,19 +3308,90 @@
         }
 
         function startGeneration() {
-            const mode = document.querySelector('input[name="generationMode"]:checked').value;
-            const platforms = getSelectedPlatforms();
+            const topic = document.getElementById('topicInput')?.value;
+            const selectedPlatforms = document.querySelectorAll('.platform-item input:checked');
+            const platforms = Array.from(selectedPlatforms).map(cb => cb.value);
+            const numPosts = parseInt(document.getElementById('numPostsSelect').value);
+
+            if (!topic || topic.trim() === '') {
+                showNotification('Please enter a topic', 'warning');
+                return;
+            }
 
             if (platforms.length === 0) {
                 showNotification('Please select at least one platform', 'warning');
                 return;
             }
 
-            if (mode === 'single') {
-                generateSingleContent(platforms);
-            } else {
-                generateBatchContent(platforms);
+            // Get generation method and inputs
+            const generationMethod = document.querySelector('input[name="generationMethod"]:checked').value;
+            let customInstructions = '';
+            let examplePosts = [];
+
+            if (generationMethod === 'instructions') {
+                customInstructions = document.getElementById('customInstructions').value.trim();
+                if (!customInstructions) {
+                    showNotification('Please provide custom instructions', 'warning');
+                    return;
+                }
+            } else if (generationMethod === 'examples') {
+                const exampleTextareas = document.querySelectorAll('.example-post-text');
+                examplePosts = Array.from(exampleTextareas)
+                    .map(textarea => textarea.value.trim())
+                    .filter(text => text.length > 0);
+
+                if (examplePosts.length === 0) {
+                    showNotification('Please provide at least one example post', 'warning');
+                    return;
+                }
             }
+
+            // Show loading state
+            const container = document.getElementById('generatedContent');
+            if (container) {
+                container.innerHTML = `
+                    <div class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <h3>Generating Content...</h3>
+                        <p>Creating amazing content for ${platforms.join(', ')}</p>
+                        <small>Method: ${generationMethod === 'instructions' ? 'Custom Instructions' : 'Learning from Examples'}</small>
+                    </div>
+                `;
+            }
+
+            // Call the real backend API with generation method
+            generatePostsForMultiplePlatforms(topic, platforms, numPosts, false, {
+                method: generationMethod,
+                customInstructions: customInstructions,
+                examplePosts: examplePosts
+            });
+        }
+
+        // Generate sample posts for testing
+        function generateSamplePosts(topic, platforms) {
+            const posts = [];
+            const styles = ['Educational', 'Promotional', 'Engaging'];
+            const templates = [
+                `🚀 **${topic}: Your Complete Guide**\n\nDiscover everything you need to know about ${topic.toLowerCase()} in this comprehensive guide. We'll cover key strategies, best practices, and expert tips to help you succeed.\n\n💡 Key takeaways:\n• Why ${topic.toLowerCase()} matters now\n• Step-by-step implementation\n• Common mistakes to avoid\n• Future trends to watch\n\nReady to dive in? Let me know your thoughts below! 👇\n\n#${topic.replace(/\s+/g, '')} #Guides #ExpertTips`,
+                `🎯 **Quick Win: ${topic} in 5 Steps**\n\nWant to master ${topic.toLowerCase()} quickly? Here's your fast track to success:\n\n1️⃣ Research & Planning\n2️⃣ Core Strategy Development\n3️⃣ Implementation Framework\n4️⃣ Measurement & Optimization\n5️⃣ Scale & Refine\n\nEach step builds on the previous one - skip at your own risk! 😉\n\nWhich step are you currently on? Let me know in the comments! 👇\n\n#${topic.replace(/\s+/g, '')} #QuickTips #Strategy`,
+                `💡 **${topic}: Are You Making These Mistakes?**\n\nCommon pitfalls I see with ${topic.toLowerCase()} (and how to avoid them):\n\n❌ **Rushing the process** → Take time to plan\n❌ **Ignoring data** → Track everything that matters\n❌ **Going it alone** -> Build a support network\n❌ **Perfectionism** → Progress over perfection\n\n✅ **What's working**: Consistent effort + smart strategy\n\nHave you encountered any of these? Share your experience! 🗣️\n\n#${topic.replace(/\s+/g, '')} #Mistakes #Learning`
+            ];
+
+            platforms.forEach(platform => {
+                const template = templates[Math.floor(Math.random() * templates.length)];
+                const style = styles[Math.floor(Math.random() * styles.length)];
+                const hashtags = `#${topic.replace(/\s+/g, '')} #${platform} #${style.toLowerCase()}`;
+
+                posts.push({
+                    platform: platform,
+                    content: template,
+                    hashtags: hashtags,
+                    topic: topic,
+                    style: style
+                });
+            });
+
+            return posts;
         }
 
         function getSelectedPlatforms() {
@@ -867,7 +3454,7 @@
             generatePostsForMultipleTopics(allTopics, platforms, postsPerTopic);
         }
 
-        function generatePostsForMultiplePlatforms(topic, platforms, numPosts, isBatchMode) {
+        function generatePostsForMultiplePlatforms(topic, platforms, numPosts, isBatchMode, generationOptions = {}) {
             const container = document.getElementById('generatedContent');
             const totalPosts = platforms.length * numPosts;
 
@@ -884,16 +3471,29 @@
             `;
 
             const promises = platforms.map(platform => {
+                const requestBody = {
+                    topic: topic,
+                    style: selectedStyle,
+                    platform: platform,
+                    num_posts: numPosts,
+                    use_fast: true
+                };
+
+                // Add generation method options
+                if (generationOptions.method) {
+                    requestBody.generation_method = generationOptions.method;
+                    if (generationOptions.customInstructions) {
+                        requestBody.custom_instructions = generationOptions.customInstructions;
+                    }
+                    if (generationOptions.examplePosts) {
+                        requestBody.example_posts = generationOptions.examplePosts;
+                    }
+                }
+
                 return fetch('/api/generate/content', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        topic: topic,
-                        style: selectedStyle,
-                        platform: platform,
-                        num_posts: numPosts,
-                        use_fast: true
-                    })
+                    body: JSON.stringify(requestBody)
                 })
                 .then(response => response.json())
                 .then(data => ({ platform, data }));
@@ -1261,5 +3861,1516 @@
                 notification.remove();
             }, 3000);
         }
+
+        // Custom Format Functions
+        const formatTemplates = {
+            listicle: "📝 {number}. **{point_title}**\n{description}\n\n{key_takeaway}",
+            howto: "🔧 **How to {achieve_goal}**\n\nStep 1: {step_1}\nStep 2: {step_2}\nStep 3: {step_3}\n\n💡 Pro Tip: {pro_tip}",
+            question: "❓ **{question}**\n\n{answer}\n\n🎯 Key Insight: {insight}\n\n{call_to_action}",
+            story: "📖 **Story: {title}**\n\n{opening}\n\n{challenge}\n\n{solution}\n\n{lesson_learned}\n\n{hashtag}",
+            comparison: "⚖️ **{option_1} vs {option_2}**\n\n✅ {option_1}:\n{pros_1}\n\n❌ {option_2}:\n{pros_2}\n\n🏆 Winner: {winner}\n\n{reasoning}",
+            announcement: "📢 **Big News!** 🎉\n\n{announcement}\n\n🎯 What this means: {impact}\n\n📅 When: {timeline}\n\n{call_to_action}",
+            tutorial: "📚 **Tutorial: {topic}**\n\n🎯 Objective: {objective}\n\n📋 Materials needed:\n{materials}\n\n🔧 Step-by-step:\n{steps}\n\n✅ Result: {expected_result}",
+            case_study: "📊 **Case Study: {company}**\n\n🎯 Challenge: {challenge}\n\n💡 Solution: {solution}\n\n📈 Results: {results}\n\n🔑 Key Learning: {key_learning}"
+        };
+
+        const quickTemplates = {
+            hook_problem_solution: "🎣 **{hook}**\n\n💡 The Problem:\n{problem_description}\n\n✅ Our Solution:\n{solution_description}\n\n🚀 Result:\n{outcome}\n\n{hashtags}",
+            tip_stat_cta: "💡 **Quick Tip:** {tip}\n\n📊 Did you know?\n{statistic}\n\n👉 {call_to_action}\n\n{hashtags}",
+            question_answer_insight: "❓ **{engaging_question}**\n\n🎯 Here's what you need to know:\n{answer}\n\n💡 Key Insight:\n{insight}\n\n{call_to_action}\n\n{hashtags}"
+        };
+
+        function updateFormatTemplate() {
+            const formatType = document.getElementById('formatType');
+            if (!formatType) return;
+
+            const customInput = document.getElementById('customFormatInput');
+            const preview = document.getElementById('formatPreview');
+            const customTemplateTextarea = document.getElementById('customFormatTemplate');
+
+            if (formatType.value === 'custom') {
+                // Show custom input, hide preview
+                if (customInput) customInput.style.display = 'block';
+                if (preview) preview.style.display = 'none';
+            } else if (formatType.value && formatTemplates && formatTemplates[formatType.value]) {
+                // Show preview, hide custom input
+                if (customInput) customInput.style.display = 'none';
+                if (preview) preview.style.display = 'block';
+                const previewText = document.getElementById('formatPreviewText');
+                if (previewText) previewText.textContent = formatTemplates[formatType.value];
+
+                // Clear custom template textarea
+                if (customTemplateTextarea) customTemplateTextarea.value = '';
+            } else {
+                // Hide both
+                if (customInput) customInput.style.display = 'none';
+                if (preview) preview.style.display = 'none';
+            }
+        }
+
+        function applyQuickTemplate(templateName) {
+            const template = quickTemplates[templateName];
+            const formatType = document.getElementById('formatType');
+            const customInput = document.getElementById('customFormatInput');
+            const customTemplateTextarea = document.getElementById('customFormatTemplate');
+
+            if (template && formatType && customInput && customTemplateTextarea) {
+                formatType.value = 'custom';
+                customInput.style.display = 'block';
+                customTemplateTextarea.value = template;
+
+                // Hide preview since we're in custom mode
+                const preview = document.getElementById('formatPreview');
+                if (preview) preview.style.display = 'none';
+
+                showNotification(`Applied ${templateName.replace(/_/g, ' ')} template`, 'success');
+            }
+        }
+
+        // Structured Topic Builder Functions
+        let keyPointsList = [];
+
+        function addKeyPoint() {
+            const input = document.querySelector('#keyPointsContainer input');
+            const keyPoint = input.value.trim();
+
+            if (keyPoint) {
+                keyPointsList.push(keyPoint);
+                updateKeyPointsDisplay();
+                input.value = '';
+                showNotification('Key point added', 'success');
+            }
+        }
+
+        function removeKeyPoint(index) {
+            keyPointsList.splice(index, 1);
+            updateKeyPointsDisplay();
+        }
+
+        function updateKeyPointsDisplay() {
+            const container = document.getElementById('keyPointsList');
+
+            if (keyPointsList.length === 0) {
+                container.innerHTML = '<p class="text-muted">No key points added yet</p>';
+            } else {
+                container.innerHTML = keyPointsList.map((point, index) => `
+                    <div class="d-flex align-items-center justify-content-between bg-light p-2 rounded mb-2">
+                        <span>${point}</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeKeyPoint(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function generateStructuredTopic() {
+            const mainTopic = document.getElementById('mainTopic').value.trim();
+            const targetAudience = document.getElementById('targetAudience').value;
+            const contentGoal = document.getElementById('contentGoal').value;
+            const toneOfVoice = document.getElementById('toneOfVoice').value;
+            const callToAction = document.getElementById('callToAction').value.trim();
+
+            if (!mainTopic) {
+                showNotification('Please enter a main topic', 'error');
+                return;
+            }
+
+            // Build structured topic description
+            let topicDescription = `Topic: ${mainTopic}`;
+
+            if (targetAudience) {
+                const audienceMap = {
+                    'general': 'General Public',
+                    'professionals': 'Industry Professionals',
+                    'experts': 'Subject Matter Experts',
+                    'beginners': 'Beginners/Newcomers',
+                    'executives': 'Business Executives'
+                };
+                topicDescription += ` | Target: ${audienceMap[targetAudience] || targetAudience}`;
+            }
+
+            if (contentGoal) {
+                const goalMap = {
+                    'educate': 'Educational Content',
+                    'entertain': 'Entertaining Content',
+                    'inspire': 'Inspirational Content',
+                    'persuade': 'Persuasive Content',
+                    'inform': 'Informational Content'
+                };
+                topicDescription += ` | Goal: ${goalMap[contentGoal] || contentGoal}`;
+            }
+
+            if (toneOfVoice) {
+                topicDescription += ` | Tone: ${toneOfVoice.charAt(0).toUpperCase() + toneOfVoice.slice(1)}`;
+            }
+
+            if (keyPointsList.length > 0) {
+                topicDescription += ` | Key Points: ${keyPointsList.join(', ')}`;
+            }
+
+            if (callToAction) {
+                topicDescription += ` | CTA: ${callToAction}`;
+            }
+
+            // Add this to the custom topics list
+            const customTopicInput = document.getElementById('customTopicInput');
+            if (customTopicInput) {
+                customTopicInput.value = topicDescription;
+                addCustomTopic();
+            }
+
+            // Clear the form
+            document.getElementById('mainTopic').value = '';
+            document.getElementById('targetAudience').value = '';
+            document.getElementById('contentGoal').value = '';
+            document.getElementById('toneOfVoice').value = '';
+            document.getElementById('callToAction').value = '';
+            keyPointsList = [];
+            updateKeyPointsDisplay();
+
+            showNotification('Structured topic generated and added!', 'success');
+
+            // Close the accordion
+            const collapse = document.getElementById('topicBuilderCollapse');
+            const bsCollapse = bootstrap.Collapse.getInstance(collapse);
+            if (bsCollapse) {
+                bsCollapse.hide();
+            }
+        }
+
+        // Enhanced Content Generation Functions
+        let examplePosts = [];
+
+        function toggleGenerationMethod() {
+            const method = document.querySelector('input[name="generationMethod"]:checked').value;
+            const instructionsSection = document.getElementById('instructionsSection');
+            const examplesSection = document.getElementById('examplesSection');
+
+            if (method === 'instructions') {
+                instructionsSection.style.display = 'block';
+                examplesSection.style.display = 'none';
+            } else {
+                instructionsSection.style.display = 'none';
+                examplesSection.style.display = 'block';
+            }
+        }
+
+        function addInstructionTemplate() {
+            const templateSelect = document.getElementById('instructionTemplate');
+            if (templateSelect.style.display === 'none') {
+                templateSelect.style.display = 'block';
+            } else {
+                templateSelect.style.display = 'none';
+            }
+        }
+
+        function applyInstructionTemplate() {
+            const templateType = document.getElementById('instructionTemplate').value;
+            const instructionsField = document.getElementById('customInstructions');
+
+            const templates = {
+                professional: `Write in a professional, authoritative tone suitable for business executives and industry experts.
+
+Requirements:
+- Use industry-specific terminology appropriately
+- Include relevant statistics, research findings, or data
+- Maintain a formal but engaging style
+- Focus on actionable insights and strategic implications
+- Use clear, structured paragraphs with logical flow
+- Include 2-3 relevant hashtags at the end
+
+Example approach: Start with a compelling insight, support with evidence, and conclude with actionable takeaways.`,
+
+                casual: `Write in a casual, conversational tone like you're talking to a friend over coffee.
+
+Requirements:
+- Use simple, everyday language and avoid jargon
+- Include relatable examples and personal anecdotes
+- Use humor and wit where appropriate
+- Write in short, easy-to-read sentences
+- Use emojis occasionally (1-2 per post)
+- Include friendly, engaging hashtags
+
+Example approach: Start with a relatable problem, share personal experience, and end with an encouraging thought.`,
+
+                educational: `Write in an educational, informative style that teaches valuable concepts clearly.
+
+Requirements:
+- Break down complex topics into simple, digestible parts
+- Use analogies and metaphors to explain difficult concepts
+- Include practical examples and real-world applications
+- Structure content with clear headings or bullet points
+- Encourage learning and curiosity
+- Include educational hashtags
+
+Example approach: Introduction → Main concept explanation → Practical examples → Key takeaways → Call to action for further learning.`,
+
+                storytelling: `Write using storytelling techniques to make content engaging and memorable.
+
+Requirements:
+- Begin with a compelling hook or story
+- Use narrative structure (setup, conflict, resolution)
+- Include emotional elements and personal connections
+- Use vivid descriptions and sensory details
+- End with a meaningful lesson or insight
+- Include storytelling-related hashtags
+
+Example approach: Hook → Personal story → Lesson learned → Broader application → Call to action.`,
+
+                data_driven: `Write in an analytical, data-driven style that emphasizes facts and insights.
+
+Requirements:
+- Include specific statistics, percentages, or research findings
+- Cite credible sources or studies when possible
+- Focus on logical reasoning and evidence-based conclusions
+- Use charts or data visualizations in descriptions
+- Provide actionable insights based on data
+- Include data and analytics hashtags
+
+Example approach: Key finding → Supporting data → Analysis → Implications → Recommendations.`
+            };
+
+            if (templates[templateType]) {
+                instructionsField.value = templates[templateType];
+                showNotification(`Applied ${templateType.replace('_', ' ')} template`, 'success');
+            }
+        }
+
+        function addExample() {
+            const topic = document.getElementById('exampleTopic').value.trim();
+            const content = document.getElementById('exampleContent').value.trim();
+            const hashtags = document.getElementById('exampleHashtags').value.trim();
+
+            if (!topic || !content) {
+                showNotification('Please fill in both topic and content', 'error');
+                return;
+            }
+
+            const example = {
+                id: Date.now(),
+                topic,
+                content,
+                hashtags
+            };
+
+            examplePosts.push(example);
+            updateExamplesDisplay();
+
+            // Clear form
+            document.getElementById('exampleTopic').value = '';
+            document.getElementById('exampleContent').value = '';
+            document.getElementById('exampleHashtags').value = '';
+
+            showNotification('Example added successfully!', 'success');
+        }
+
+        function removeExample(id) {
+            examplePosts = examplePosts.filter(ex => ex.id !== id);
+            updateExamplesDisplay();
+            showNotification('Example removed', 'info');
+        }
+
+        function updateExamplesDisplay() {
+            const container = document.getElementById('examplesList');
+
+            if (examplePosts.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-inbox fa-2x mb-2"></i>
+                        <p>No examples added yet</p>
+                        <small>Add examples to teach the AI your preferred writing style</small>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = examplePosts.map((example, index) => `
+                    <div class="card border-secondary mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-subtitle mb-0">${example.topic}</h6>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeExample(${example.id})">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="content-preview small mb-2" style="max-height: 100px; overflow-y: auto;">
+                                ${example.content.substring(0, 200)}${example.content.length > 200 ? '...' : ''}
+                            </div>
+                            ${example.hashtags ? `<small class="text-muted">${example.hashtags}</small>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function loadExistingExamples() {
+            try {
+                // Load posts from generated posts endpoint
+                const platforms = ['linkedin', 'twitter', 'instagram'];
+                let allPosts = [];
+
+                for (const platform of platforms) {
+                    try {
+                        const response = await fetch(`/api/generated-posts/${platform}`);
+                        const data = await response.json();
+                        if (data.success && data.posts) {
+                            const platformPosts = data.posts
+                                .filter(post => post.content && post.content.trim() !== '')
+                                .slice(0, 3) // Take first 3 posts per platform
+                                .map(post => ({
+                                    id: Date.now() + Math.random(),
+                                    topic: post.topic || post.title || 'Example Post',
+                                    content: post.content,
+                                    hashtags: post.hashtags || ''
+                                }));
+                            allPosts = allPosts.concat(platformPosts);
+                        }
+                    } catch (err) {
+                        console.log(`Could not load ${platform} posts:`, err);
+                    }
+                }
+
+                if (allPosts.length > 0) {
+                    examplePosts = examplePosts.concat(allPosts.slice(0, 5)); // Add max 5 examples
+                    updateExamplesDisplay();
+                    showNotification(`Loaded ${allPosts.slice(0, 5).length} example posts`, 'success');
+                } else {
+                    showNotification('No existing posts found to load as examples', 'info');
+                }
+            } catch (error) {
+                console.error('Error loading examples:', error);
+                showNotification('Failed to load existing posts', 'error');
+            }
+        }
+
+        function getGenerationSettings() {
+            const method = document.querySelector('input[name="generationMethod"]:checked').value;
+            const creativity = document.getElementById('creativityLevel').value;
+            const contentLength = document.getElementById('contentLength').value;
+            const focusEngagement = document.getElementById('focusEngagement').checked;
+            const focusSEO = document.getElementById('focusSEO').checked;
+            const focusTrending = document.getElementById('focusTrending').checked;
+
+            const settings = {
+                method,
+                creativity,
+                contentLength,
+                focusAreas: {
+                    engagement: focusEngagement,
+                    seo: focusSEO,
+                    trending: focusTrending
+                }
+            };
+
+            if (method === 'instructions') {
+                settings.instructions = document.getElementById('customInstructions').value;
+            } else {
+                settings.examples = examplePosts;
+            }
+
+            return settings;
+        }
+
+        // Modern Navigation System
+        function initializeModernNavigation() {
+            // Navigation item clicks
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const section = item.dataset.section;
+                    switchSection(section);
+                });
+            });
+
+            // Initialize first section
+            switchSection('basic');
+        }
+
+        function switchSection(sectionName) {
+            // Update navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.section === sectionName) {
+                    item.classList.add('active');
+                }
+            });
+
+            // Update content sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            const targetSection = document.getElementById(`${sectionName}-section`);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+
+            // Update progress steps
+            updateProgressSteps(sectionName);
+        }
+
+        function updateProgressSteps(sectionName) {
+            const stepMap = {
+                'basic': 1,
+                'advanced': 1,
+                'formats': 1,
+                'topics': 1
+            };
+
+            const stepNumber = stepMap[sectionName] || 1;
+            const steps = document.querySelectorAll('.step');
+
+            steps.forEach((step, index) => {
+                if (index < stepNumber) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+        }
+
+        // Update content counter
+        function updateContentCount() {
+            const count = document.querySelectorAll('#generatedContent .generated-content-item').length;
+            const countElement = document.getElementById('contentCount');
+            if (countElement) {
+                countElement.textContent = count;
+            }
+        }
+
+        // Display generated content in sidebar
+        function displayGeneratedContent(posts) {
+            const container = document.getElementById('generatedContent');
+            if (!container) return;
+
+            if (!posts || posts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-sparkles"></i>
+                        <h3>Ready to Generate</h3>
+                        <p>Configure settings and click Generate</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = posts.map((post, index) => {
+                const platform = post.platform || 'linkedin';
+                const platformIcon = platform === 'linkedin' ? 'fab fa-linkedin' :
+                                   platform === 'twitter' ? 'fab fa-x-twitter' :
+                                   'fab fa-instagram';
+                const platformColor = platform === 'linkedin' ? '#0077b5' :
+                                     platform === 'twitter' ? '#000000' :
+                                     '#E4405F';
+
+                return `
+                    <div class="generated-content-item">
+                        <div class="content-item-header">
+                            <div class="content-item-platform">
+                                <i class="${platformIcon}" style="color: ${platformColor}"></i>
+                                ${platform.charAt(0).toUpperCase() + platform.slice(1)}
+                            </div>
+                            <div class="content-item-actions">
+                                <button class="btn btn-sm btn-outline-primary" onclick="copyContent(${index})" title="Copy">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-success" onclick="editContent(${index})" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="content-item-content">
+                            ${post.content || 'Generated content...'}
+                        </div>
+                        ${post.hashtags ? `
+                            <div class="content-item-hashtags">
+                                ${post.hashtags}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            updateContentCount();
+        }
+
+        // Copy content function
+        function copyContent(index) {
+            // Implementation for copying content
+            showNotification('Content copied to clipboard!', 'success');
+        }
+
+        // Edit content function
+        function editContent(index) {
+            // Implementation for editing content
+            showNotification('Edit feature coming soon!', 'info');
+        }
+
+        // Modern Form Interactions
+        function initializeModernFormElements() {
+            // Platform selection
+            const platformItems = document.querySelectorAll('.platform-item');
+            platformItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (e.target.tagName !== 'INPUT') {
+                        const checkbox = this.querySelector('input[type="checkbox"]');
+                        checkbox.checked = !checkbox.checked;
+                        this.classList.toggle('selected', checkbox.checked);
+                    }
+                });
+
+                // Initialize selected state
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                if (checkbox && checkbox.checked) {
+                    item.classList.add('selected');
+                }
+            });
+
+            // Style selection cards
+            const styleCards = document.querySelectorAll('.style-option-card');
+            styleCards.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (e.target.tagName !== 'INPUT') {
+                        const radio = this.querySelector('input[type="radio"]');
+                        radio.checked = true;
+
+                        // Remove selected from all cards
+                        styleCards.forEach(c => c.classList.remove('selected'));
+                        // Add selected to clicked card
+                        this.classList.add('selected');
+                    }
+                });
+
+                // Initialize selected state
+                const radio = card.querySelector('input[type="radio"]');
+                if (radio && radio.checked) {
+                    card.classList.add('selected');
+                }
+            });
+
+            // Platform checkbox change events
+            const platformCheckboxes = document.querySelectorAll('.platform-item input[type="checkbox"]');
+            platformCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const item = this.closest('.platform-item');
+                    item.classList.toggle('selected', this.checked);
+                });
+            });
+
+            // Style radio change events
+            const styleRadios = document.querySelectorAll('.style-option-card input[type="radio"]');
+            styleRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    styleCards.forEach(card => card.classList.remove('selected'));
+                    const selectedCard = this.closest('.style-option-card');
+                    if (this.checked) {
+                        selectedCard.classList.add('selected');
+                    }
+                });
+            });
+        }
+
+        // Theme Toggle Functionality
+        function initializeThemeToggle() {
+            // Create theme toggle button
+            const themeToggle = document.createElement('button');
+            themeToggle.className = 'theme-toggle';
+            themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            themeToggle.onclick = toggleTheme;
+
+            // Add to header
+            const headerActions = document.querySelector('.header-actions');
+            if (headerActions) {
+                headerActions.appendChild(themeToggle);
+            }
+
+            // Load saved theme
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.querySelector('.theme-toggle');
+            const themeIcon = document.getElementById('themeIcon');
+
+            if (body.classList.contains('dark-theme')) {
+                body.classList.remove('dark-theme');
+                if (themeToggle) themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                if (themeIcon) themeIcon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.add('dark-theme');
+                if (themeToggle) themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                if (themeIcon) themeIcon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Method selection functions
+        function selectMethod(method, element) {
+            // Update UI
+            document.querySelectorAll('.method-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            element.classList.add('active');
+
+            // Show/hide sections
+            const instructionsSection = document.getElementById('instructionsSection');
+            const examplesSection = document.getElementById('examplesSection');
+
+            if (method === 'instructions') {
+                instructionsSection.style.display = 'block';
+                examplesSection.style.display = 'none';
+            } else {
+                instructionsSection.style.display = 'none';
+                examplesSection.style.display = 'block';
+            }
+        }
+
+        function toggleInstructionTemplates() {
+            const templateSelect = document.getElementById('instructionTemplate');
+            if (templateSelect.style.display === 'none') {
+                templateSelect.style.display = 'block';
+            } else {
+                templateSelect.style.display = 'none';
+            }
+        }
+
+        // Simplified theme toggle initialization
+        function initializeThemeToggle() {
+            // Load saved theme
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const themeIcon = document.getElementById('themeIcon');
+
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                if (themeIcon) themeIcon.className = 'fas fa-sun';
+            }
+        }
+
+        // Add theme toggle styles
+        const themeStyles = `
+            .theme-toggle {
+                background: var(--darker-color);
+                border: 1px solid var(--card-border);
+                color: var(--text-primary);
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                margin-left: 1rem;
+            }
+
+            .theme-toggle:hover {
+                background: var(--primary-color);
+                color: white;
+                transform: scale(1.1);
+            }
+
+            .dark-theme {
+                --card-bg: #1a1a2e;
+                --darker-color: #16213e;
+                --card-border: #2d3561;
+                --text-primary: #e8e8e8;
+                --text-muted: #a8a8a8;
+                --primary-color: #667eea;
+            }
+
+            /* Simple Layout CSS */
+            .simple-header {
+                background: var(--card-bg);
+                padding: 2rem 2rem 1rem;
+                margin: -2rem -2rem 2rem -2rem;
+                border-bottom: 1px solid var(--card-border);
+            }
+
+            .header-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                max-width: 100%;
+            }
+
+            .header-title h1 {
+                font-size: 2rem;
+                font-weight: 700;
+                color: var(--text-primary);
+                margin-bottom: 0.25rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .header-title p {
+                color: var(--text-muted);
+                margin: 0;
+            }
+
+            .content-wrapper {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 0 2rem;
+            }
+
+            .main-content-area {
+                background: var(--card-bg);
+                border-radius: var(--border-radius-modern);
+                padding: 2rem;
+                box-shadow: var(--shadow-modern);
+            }
+
+            .settings-section {
+                margin-bottom: 3rem;
+            }
+
+            .section-title {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+
+            .section-title h2 {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--text-primary);
+                margin-bottom: 0.5rem;
+            }
+
+            .section-title p {
+                color: var(--text-muted);
+                margin: 0;
+            }
+
+            .settings-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            @media (min-width: 992px) {
+                .settings-grid {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+
+            .setting-card h3 {
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: var(--text-primary);
+                margin-bottom: 1.5rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .method-selection {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+                margin-top: 0.5rem;
+            }
+
+            .method-option {
+                padding: 1rem;
+                background: var(--darker-color);
+                border: 2px solid var(--card-border);
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-align: left;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .method-option:hover {
+                border-color: var(--primary-color);
+                background: rgba(102, 126, 234, 0.05);
+            }
+
+            .method-option.active {
+                border-color: var(--primary-color);
+                background: rgba(102, 126, 234, 0.1);
+            }
+
+            .method-option i {
+                font-size: 1.5rem;
+                color: var(--primary-color);
+                width: 30px;
+                text-align: center;
+            }
+
+            .method-option strong {
+                color: var(--text-primary);
+                font-size: 1rem;
+                display: block;
+                margin-bottom: 0.25rem;
+            }
+
+            .method-option p {
+                color: var(--text-muted);
+                font-size: 0.875rem;
+                margin: 0;
+            }
+
+            .method-section {
+                margin-top: 1.5rem;
+            }
+
+            .quick-templates {
+                display: flex;
+                gap: 0.5rem;
+                align-items: center;
+                margin-top: 0.5rem;
+            }
+
+            .example-input {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .settings-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+
+            .generate-section {
+                text-align: center;
+                margin: 3rem 0;
+            }
+
+            .generate-btn {
+                background: var(--primary-gradient);
+                color: white;
+                border: none;
+                padding: 1rem 3rem;
+                border-radius: 50px;
+                font-size: 1.1rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+                display: inline-flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .generate-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            }
+
+            .generated-section {
+                margin-top: 3rem;
+                padding: 2rem;
+                background: var(--darker-color);
+                border-radius: var(--border-radius-modern);
+                min-height: 200px;
+            }
+
+            .empty-state {
+                text-align: center;
+                color: var(--text-muted);
+            }
+
+            .empty-state i {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+                color: var(--primary-color);
+            }
+
+            .empty-state h3 {
+                font-size: 1.5rem;
+                margin-bottom: 0.5rem;
+                color: var(--text-primary);
+            }
+
+            .examples-list {
+                margin-top: 1rem;
+                max-height: 200px;
+                overflow-y: auto;
+            }
+
+            /* Comprehensive Responsive Design */
+
+/* Mobile First (320px - 767px) */
+@media (max-width: 767px) {
+    .simple-header {
+                padding: 1rem;
+                margin: -1rem -1rem 1rem -1rem;
+            }
+
+            .header-top {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+                text-align: center;
+            }
+
+            .header-title h1 {
+                font-size: 1.5rem;
+                justify-content: center;
+            }
+
+            .content-wrapper {
+                padding: 0 0.5rem;
+            }
+
+            .main-content-area {
+                padding: 1rem;
+                border-radius: 12px;
+            }
+
+            .settings-section {
+                margin-bottom: 2rem;
+            }
+
+            .section-title {
+                margin-bottom: 1.5rem;
+            }
+
+            .section-title h2 {
+                font-size: 1.25rem;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .setting-card {
+                padding: 1.5rem;
+                border-radius: 12px;
+            }
+
+            .setting-card h3 {
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
+            }
+
+            .form-group-modern {
+                margin-bottom: 1.25rem;
+            }
+
+            .form-label-modern {
+                font-size: 0.85rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .form-control-modern,
+            .form-select-modern {
+                padding: 0.6rem 0.75rem;
+                font-size: 0.9rem;
+            }
+
+            .style-options-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .style-option-card {
+                padding: 0.75rem;
+            }
+
+            .platform-grid {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .platform-item {
+                padding: 0.5rem;
+            }
+
+            .method-selection {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .method-option {
+                padding: 0.75rem;
+                gap: 0.75rem;
+            }
+
+            .method-option i {
+                font-size: 1.25rem;
+                width: 25px;
+            }
+
+            .method-option strong {
+                font-size: 0.9rem;
+            }
+
+            .method-option p {
+                font-size: 0.8rem;
+            }
+
+            .settings-row {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .quick-templates {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .generate-section {
+                margin: 2rem 0;
+            }
+
+            .generate-btn {
+                padding: 0.875rem 2rem;
+                font-size: 1rem;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .generated-section {
+                padding: 1.5rem;
+                margin-top: 2rem;
+            }
+
+            .empty-state i {
+                font-size: 2rem;
+            }
+
+            .empty-state h3 {
+                font-size: 1.25rem;
+            }
+
+            .voice-input-card {
+                padding: 1rem;
+            }
+
+            .voice-button {
+                width: 60px;
+                height: 60px;
+                font-size: 1.25rem;
+            }
+
+            /* Touch-friendly improvements */
+            .btn, .platform-item, .style-option-card, .method-option {
+                min-height: 44px;
+            }
+
+            /* Better spacing for touch */
+            .form-group-modern {
+                margin-bottom: 1.5rem;
+            }
+
+            /* Reduce cognitive load */
+            .method-section {
+                margin-top: 1rem;
+            }
+
+            /* Simplified navigation */
+            .theme-toggle {
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Tablet (768px - 1023px) */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .content-wrapper {
+                padding: 0 1.5rem;
+            }
+
+            .main-content-area {
+                padding: 1.5rem;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+                gap: 1.75rem;
+            }
+
+            .style-options-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+
+            .platform-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+
+            .method-selection {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .settings-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .generate-btn {
+                padding: 0.9375rem 2.5rem;
+                font-size: 1.05rem;
+            }
+
+            /* Tablet-specific improvements */
+            .header-title h1 {
+                font-size: 1.75rem;
+            }
+
+            .setting-card {
+                padding: 1.75rem;
+            }
+
+            .voice-input-card {
+                padding: 1.25rem;
+            }
+
+            .voice-button {
+                width: 70px;
+                height: 70px;
+                font-size: 1.375rem;
+            }
+        }
+
+        /* Desktop (1024px+) */
+        @media (min-width: 1024px) {
+            .content-wrapper {
+                padding: 0 2rem;
+            }
+
+            .main-content-area {
+                padding: 2rem;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+
+            .style-options-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+
+            .platform-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+
+            .method-selection {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .settings-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            /* Desktop enhancements */
+            .setting-card {
+                padding: 2rem;
+            }
+
+            .setting-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            }
+
+            .generate-btn {
+                padding: 1rem 3rem;
+                font-size: 1.1rem;
+            }
+
+            .voice-button {
+                width: 80px;
+                height: 80px;
+                font-size: 1.5rem;
+            }
+
+            /* Large Desktop (1440px+) */
+            @media (min-width: 1440px) {
+                .content-wrapper {
+                    max-width: 1400px;
+                }
+
+                .settings-grid {
+                    gap: 2.5rem;
+                }
+
+                .main-content-area {
+                    padding: 2.5rem;
+                }
+            }
+
+            /* Ultra-wide (1920px+) */
+            @media (min-width: 1920px) {
+                .content-wrapper {
+                    max-width: 1600px;
+                }
+
+                .settings-grid {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+
+                .main-layout {
+                    gap: 2.5rem;
+                }
+
+                .generated-content-sidebar {
+                    width: 450px;
+                }
+            }
+
+            /* Two-Column Layout CSS */
+            .main-layout {
+                display: flex;
+                gap: 2rem;
+                align-items: flex-start;
+            }
+
+            .settings-column {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .generated-content-sidebar {
+                width: 380px;
+                background: var(--card-bg);
+                border-radius: var(--border-radius-modern);
+                box-shadow: var(--shadow-modern);
+                position: sticky;
+                top: 2rem;
+                max-height: calc(100vh - 4rem);
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .sidebar-header {
+                padding: 1.5rem;
+                border-bottom: 1px solid var(--card-border);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .sidebar-header h3 {
+                font-size: 1.125rem;
+                font-weight: 600;
+                color: var(--text-primary);
+                margin: 0;
+            }
+
+            .content-stats {
+                background: var(--darker-color);
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                font-size: 0.875rem;
+                color: var(--text-muted);
+            }
+
+            .content-stats span {
+                font-weight: 600;
+                color: var(--primary-color);
+            }
+
+            .generated-content {
+                flex: 1;
+                padding: 1.5rem;
+                overflow-y: auto;
+            }
+
+            .floating-generate-btn {
+                display: none;
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                background: var(--primary-gradient);
+                border: none;
+                color: white;
+                font-size: 1.25rem;
+                cursor: pointer;
+                box-shadow: var(--shadow-hover);
+                z-index: 1000;
+                transition: all 0.3s ease;
+            }
+
+            .floating-generate-btn:hover {
+                transform: scale(1.1);
+                box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            }
+
+            /* Responsive adjustments for two-column layout */
+            @media (max-width: 1200px) {
+                .main-layout {
+                    flex-direction: column;
+                }
+
+                .generated-content-sidebar {
+                    width: 100%;
+                    position: static;
+                    max-height: none;
+                    margin-top: 2rem;
+                }
+
+                .floating-generate-btn {
+                    display: block;
+                }
+
+                .generate-section {
+                    display: none;
+                }
+            }
+
+            @media (max-width: 767px) {
+                .main-layout {
+                    gap: 1rem;
+                }
+
+                .generated-content-sidebar {
+                    margin-top: 1rem;
+                }
+
+                .sidebar-header {
+                    padding: 1rem;
+                }
+
+                .sidebar-header h3 {
+                    font-size: 1rem;
+                }
+
+                .generated-content {
+                    padding: 1rem;
+                }
+
+                .floating-generate-btn {
+                    width: 56px;
+                    height: 56px;
+                    font-size: 1.125rem;
+                    bottom: 1rem;
+                    right: 1rem;
+                }
+            }
+
+            /* Content preview styling */
+            .generated-content-item {
+                background: var(--darker-color);
+                border-radius: 12px;
+                padding: 1.25rem;
+                margin-bottom: 1rem;
+                border-left: 4px solid var(--primary-color);
+                transition: all 0.3s ease;
+            }
+
+            .generated-content-item:hover {
+                transform: translateX(-5px);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            }
+
+            .content-item-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 0.75rem;
+            }
+
+            .content-item-platform {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.25rem 0.75rem;
+                background: var(--card-bg);
+                border-radius: 15px;
+                font-size: 0.75rem;
+                font-weight: 500;
+            }
+
+            .content-item-actions {
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            .content-item-actions button {
+                padding: 0.25rem 0.5rem;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .content-item-content {
+                color: var(--text-primary);
+                line-height: 1.5;
+                margin-bottom: 0.75rem;
+                font-size: 0.9rem;
+            }
+
+            .content-item-hashtags {
+                color: var(--primary-color);
+                font-size: 0.8rem;
+            }
+
+            /* Loading state */
+            .loading-state {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem;
+                color: var(--text-muted);
+            }
+
+            .loading-spinner {
+                width: 40px;
+                height: 40px;
+                border: 3px solid var(--card-border);
+                border-top: 3px solid var(--primary-color);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 1rem;
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        }
+        `;
+
+        // Add theme styles to head
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = themeStyles;
+        document.head.appendChild(styleSheet);
+
+        // Initialize format template on load
+        function initializeFormatTemplate() {
+            const formatType = document.getElementById('formatType');
+            const customInput = document.getElementById('customFormatInput');
+            const preview = document.getElementById('formatPreview');
+
+            // Hide both initially
+            if (customInput) customInput.style.display = 'none';
+            if (preview) preview.style.display = 'none';
+        }
+
+        // Initialize simple interface
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeModernFormElements();
+            initializeThemeToggle();
+
+            // Update content counter
+            updateContentCount();
+
+            // Initialize examples display if function exists
+            if (typeof updateExamplesDisplay === 'function') {
+                updateExamplesDisplay();
+                examplePosts = []; // Reset example posts
+            }
+        });
     </script>
 {% endblock %}

@@ -21,18 +21,324 @@
     {% block head %}{% endblock %}
 </head>
 <body>
-    <div class="app-container">
-        <!-- Include static sidebar -->
-        {% include 'sidebar.html' %}
+    <!-- Professional Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top top-navbar" style="
+        background: linear-gradient(135deg,
+            rgba(30, 41, 59, 0.95) 0%,
+            rgba(15, 23, 42, 0.95) 50%,
+            rgba(30, 41, 59, 0.95) 100%);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        box-shadow:
+            0 4px 6px -1px rgba(0, 0, 0, 0.1),
+            0 2px 4px -1px rgba(0, 0, 0, 0.06),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        padding: 0.5rem 0;
+        z-index: 1030;
+    ">
+        <div class="container-fluid px-4" style="display: flex; align-items: center; justify-content: space-between;">
+            <!-- Enhanced Brand -->
+            <a class="navbar-brand d-flex align-items-center fw-bold me-auto" href="/" style="
+                font-size: 1.25rem;
+                letter-spacing: -0.025em;
+                margin-right: 2rem;
+                text-decoration: none;
+                transition: all 0.3s ease;
+            ">
+                <div style="
+                    width: 36px;
+                    height: 36px;
+                    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-right: 12px;
+                    box-shadow: 0 2px 4px rgba(249, 115, 22, 0.3);
+                ">
+                    <i class="fas fa-rocket" style="color: white; font-size: 0.9rem;"></i>
+                </div>
+                <span style="color: #f1f5f9; font-weight: 600;">Ardelis Technologies</span>
+            </a>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            {% block content %}{% endblock %}
-        </main>
-    </div>
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="
+                padding: 0.5rem 0.75rem;
+                border-radius: 8px;
+                background: rgba(148, 163, 184, 0.1);
+                color: #e2e8f0;
+            ">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navigation Menu -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0" style="
+                    display: flex;
+                    align-items: center;
+                    gap: 0.25rem;
+                ">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-modern {{ 'active' if request.endpoint in ['dashboard', 'dashboard_alt'] else '' }}" href="/">
+                            <i class="fas fa-home nav-icon"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                      <li class="nav-item">
+                        <a class="nav-link nav-link-modern {{ 'active' if request.endpoint == 'content_generator' else '' }}" href="/content-generator">
+                            <i class="fas fa-magic nav-icon"></i>
+                            <span>Generator</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-modern {{ 'active' if request.endpoint == 'manual_posting' else '' }}" href="/manual-posting">
+                            <i class="fas fa-paper-plane nav-icon"></i>
+                            <span>Post</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-modern {{ 'active' if request.endpoint == 'scheduler' else '' }}" href="/scheduler">
+                            <i class="fas fa-calendar-alt nav-icon"></i>
+                            <span>Scheduler</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-modern {{ 'active' if request.endpoint == 'generated_posts' else '' }}" href="/generated-posts">
+                            <i class="fas fa-folder nav-icon"></i>
+                            <span>All Posts</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-modern nav-link-special {{ 'active' if request.endpoint == 'analytics' else '' }}" href="/analytics">
+                            <i class="fas fa-chart-line nav-icon"></i>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-modern {{ 'active' if request.endpoint == 'social_media_setup' else '' }}" href="/social-media-setup">
+                            <i class="fas fa-cog nav-icon"></i>
+                            <span>Social Setup</span>
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center gap-2" style="margin-left: 1rem;">
+                    <!-- Theme Toggle -->
+                    <button class="btn-action btn-theme" onclick="toggleTheme()" title="Toggle theme">
+                        <i class="fas fa-moon" id="themeIcon"></i>
+                    </button>
+
+                    <!-- Notifications -->
+                    <button class="btn-action btn-notifications" onclick="toggleNotifications()" title="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </button>
+
+                    <!-- User Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn-action btn-user" data-bs-toggle="dropdown" title="User menu">
+                            <i class="fas fa-user-circle"></i>
+                            <span class="user-name-text">Admin</span>
+                            <i class="fas fa-chevron-down ms-1" style="font-size: 0.7rem;"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-modern">
+                            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="/settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="showLogoutModal()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content" style="margin-top: 70px;">
+        {% block content %}{% endblock %}
+    </main>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Theme Toggle Functionality
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+
+            // Add a little animation feedback
+            const themeBtn = document.querySelector('.theme-toggle-btn');
+            themeBtn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                themeBtn.style.transform = '';
+            }, 150);
+        }
+
+        function updateThemeIcon(theme) {
+            const themeIcon = document.getElementById('themeIcon');
+            if (theme === 'light') {
+                themeIcon.className = 'fas fa-sun theme-icon';
+            } else {
+                themeIcon.className = 'fas fa-moon theme-icon';
+            }
+        }
+
+        // Premium Logout Modal
+        function showLogoutModal() {
+            // Create modal if it doesn't exist
+            if (!document.getElementById('logoutModalOverlay')) {
+                createLogoutModal();
+            }
+
+            const modal = document.getElementById('logoutModalOverlay');
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+
+            // Focus trap for accessibility
+            setTimeout(() => {
+                const cancelBtn = document.getElementById('cancelLogoutBtn');
+                if (cancelBtn) cancelBtn.focus();
+            }, 100);
+        }
+
+        function hideLogoutModal() {
+            const modal = document.getElementById('logoutModalOverlay');
+            modal.classList.add('closing');
+
+            setTimeout(() => {
+                modal.classList.remove('show', 'closing');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        function confirmLogout() {
+            // Add loading state to button
+            const confirmBtn = document.getElementById('confirmLogoutBtn');
+            const originalContent = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing Out...';
+            confirmBtn.disabled = true;
+
+            // Simulate logout process with animation
+            setTimeout(() => {
+                window.location.href = '/logout';
+            }, 1500);
+        }
+
+        function createLogoutModal() {
+            const modalHTML = `
+                <div id="logoutModalOverlay" class="logout-modal-overlay" onclick="handleModalBackdropClick(event)">
+                    <div class="logout-modal" onclick="event.stopPropagation()">
+                        <div class="logout-modal-header">
+                            <div class="logout-modal-icon">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </div>
+                            <h2 class="logout-modal-title">Ready to Leave?</h2>
+                            <p class="logout-modal-subtitle">Your session will be securely ended and you'll need to login again to access your account.</p>
+                        </div>
+                        <div class="logout-modal-body">
+                            <div class="logout-features">
+                                <div class="logout-feature">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <div class="logout-feature-text">
+                                        <div class="logout-feature-title">Secure Session Termination</div>
+                                        <div class="logout-feature-desc">All active sessions will be safely terminated</div>
+                                    </div>
+                                </div>
+                                <div class="logout-feature">
+                                    <i class="fas fa-save"></i>
+                                    <div class="logout-feature-text">
+                                        <div class="logout-feature-title">Auto-Save Progress</div>
+                                        <div class="logout-feature-desc">Your work is automatically saved</div>
+                                    </div>
+                                </div>
+                                <div class="logout-feature">
+                                    <i class="fas fa-clock"></i>
+                                    <div class="logout-feature-text">
+                                        <div class="logout-feature-title">Activity Logged</div>
+                                        <div class="logout-feature-desc">Your session activity has been recorded</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="logout-modal-actions">
+                                <button class="btn-cancel-logout" id="cancelLogoutBtn" onclick="hideLogoutModal()">
+                                    <i class="fas fa-arrow-left me-2"></i>Stay Logged In
+                                </button>
+                                <button class="btn-confirm-logout" id="confirmLogoutBtn" onclick="confirmLogout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Sign Out Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            // Add keyboard event listeners
+            document.addEventListener('keydown', handleModalKeydown);
+        }
+
+        function handleModalBackdropClick(event) {
+            if (event.target === event.currentTarget) {
+                hideLogoutModal();
+            }
+        }
+
+        function handleModalKeydown(event) {
+            const modal = document.getElementById('logoutModalOverlay');
+            if (!modal || !modal.classList.contains('show')) return;
+
+            if (event.key === 'Escape') {
+                hideLogoutModal();
+            } else if (event.key === 'Tab') {
+                // Focus trap within modal
+                const focusableElements = modal.querySelectorAll(
+                    'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+
+                if (event.shiftKey) {
+                    if (document.activeElement === firstElement) {
+                        event.preventDefault();
+                        lastElement.focus();
+                    }
+                } else {
+                    if (document.activeElement === lastElement) {
+                        event.preventDefault();
+                        firstElement.focus();
+                    }
+                }
+            }
+        }
+
+        function logout() {
+            showLogoutModal();
+        }
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+        });
+
+        // Clean up modal on page unload
+        window.addEventListener('beforeunload', function() {
+            const modal = document.getElementById('logoutModalOverlay');
+            if (modal) {
+                modal.remove();
+            }
+        });
+    </script>
 
     {% block scripts %}{% endblock %}
 </body>

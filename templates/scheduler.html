@@ -1058,37 +1058,23 @@
             }
         }
 
-        function loadScheduledPosts() {
-            // Simulate loading scheduled posts
-            scheduledPosts = [
-                {
-                    id: 1,
-                    title: 'AI Transformation in Business',
-                    topic: 'ai-transformation',
-                    platform: 'linkedin',
-                    scheduled_date: '2025-11-01 09:00:00',
-                    status: 'scheduled',
-                    content: 'How AI is transforming modern business operations...'
-                },
-                {
-                    id: 2,
-                    title: 'Digital Marketing Trends 2025',
-                    topic: 'digital-marketing',
-                    platform: 'twitter',
-                    scheduled_date: '2025-11-01 14:00:00',
-                    status: 'scheduled',
-                    content: 'Top digital marketing trends to watch in 2025...'
-                },
-                {
-                    id: 3,
-                    title: 'Social Media Strategy Tips',
-                    topic: 'social-media',
-                    platform: 'facebook',
-                    scheduled_date: '2025-11-02 10:00:00',
-                    status: 'pending',
-                    content: 'Effective social media strategies for businesses...'
+        async function loadScheduledPosts() {
+            try {
+                console.log('🔄 Loading scheduled posts from database...');
+                const response = await fetch('/api/scheduled-posts');
+                const data = await response.json();
+
+                if (data.success) {
+                    scheduledPosts = data.posts;
+                    console.log(`✅ Loaded ${scheduledPosts.length} scheduled posts`);
+                } else {
+                    console.error('❌ Failed to load scheduled posts:', data.error);
+                    scheduledPosts = [];
                 }
-            ];
+            } catch (error) {
+                console.error('❌ Error loading scheduled posts:', error);
+                scheduledPosts = [];
+            }
 
             displayUpcomingPosts();
             updateCalendar();
@@ -1227,7 +1213,7 @@
             modal.show();
         }
 
-        function scheduleContent() {
+        async function scheduleContent() {
             const topic = document.getElementById('scheduleTopic').value;
             const platform = document.getElementById('schedulePlatform').value;
             const date = document.getElementById('scheduleDate').value;
@@ -1239,33 +1225,59 @@
                 return;
             }
 
-            const newPost = {
-                id: scheduledPosts.length + 1,
-                title: topic,
-                topic: topic.toLowerCase().replace(/\s+/g, '-'),
-                platform: platform,
-                scheduled_date: `${date} ${time}:00`,
-                status: 'scheduled',
-                content: content || `Content about ${topic}`
-            };
+            // Show loading state
+            const submitBtn = document.querySelector('#scheduleModal .btn-primary');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scheduling...';
+            submitBtn.disabled = true;
 
-            scheduledPosts.push(newPost);
+            try {
+                const response = await fetch('/api/scheduled-posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: topic,
+                        topic: topic.toLowerCase().replace(/\s+/g, '-'),
+                        platform: platform,
+                        scheduled_date: `${date} ${time}:00`,
+                        content: content || `Content about ${topic}`
+                    })
+                });
 
-            // Update UI
-            displayUpcomingPosts();
-            updateCalendar();
-            updateStats();
+                const data = await response.json();
 
-            // Close modal and reset form
-            const modal = bootstrap.Modal.getInstance(document.getElementById('scheduleModal'));
-            modal.hide();
-            document.getElementById('scheduleForm').reset();
+                if (data.success) {
+                    // Reload posts from database
+                    await loadScheduledPosts();
 
-            // Show success message
-            showNotification('Content scheduled successfully!', 'success');
+                    // Update UI
+                    displayUpcomingPosts();
+                    updateCalendar();
+                    updateStats();
+
+                    // Close modal and reset form
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('scheduleModal'));
+                    modal.hide();
+                    document.getElementById('scheduleForm').reset();
+
+                    // Show success message
+                    showNotification('Content scheduled successfully!', 'success');
+                } else {
+                    showNotification(`Failed to schedule: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error scheduling content:', error);
+                showNotification('Error scheduling content', 'error');
+            } finally {
+                // Restore button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
         }
 
-        function quickSchedule() {
+        async function quickSchedule() {
             const topic = document.getElementById('quickTopic').value;
             const platform = document.getElementById('quickPlatform').value;
             const date = document.getElementById('quickDate').value;
@@ -1277,33 +1289,61 @@
                 return;
             }
 
-            const newPost = {
-                id: scheduledPosts.length + 1,
-                title: topic,
-                topic: topic.toLowerCase().replace(/\s+/g, '-'),
-                platform: platform,
-                scheduled_date: `${date} ${hour}:${minute}:00`,
-                status: 'scheduled',
-                content: `Quick scheduled content about ${topic}`
-            };
+            // Show loading state
+            const submitBtn = document.querySelector('#quickScheduleForm .btn-primary');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Quick Scheduling...';
+            submitBtn.disabled = true;
 
-            scheduledPosts.push(newPost);
+            try {
+                const response = await fetch('/api/scheduled-posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: topic,
+                        topic: topic.toLowerCase().replace(/\s+/g, '-'),
+                        platform: platform,
+                        scheduled_date: `${date} ${hour}:${minute}:00`,
+                        content: `Quick scheduled content about ${topic}`
+                    })
+                });
 
-            // Update UI
-            displayUpcomingPosts();
-            updateCalendar();
-            updateStats();
+                const data = await response.json();
 
-            // Reset form
-            document.getElementById('quickScheduleForm').reset();
+                if (data.success) {
+                    // Reload posts from database
+                    await loadScheduledPosts();
 
-            // Show success message
-            showNotification('Content quick scheduled successfully!', 'success');
+                    // Update UI
+                    displayUpcomingPosts();
+                    updateCalendar();
+                    updateStats();
+
+                    // Reset form
+                    document.getElementById('quickScheduleForm').reset();
+
+                    // Show success message
+                    showNotification('Content quick scheduled successfully!', 'success');
+                } else {
+                    showNotification(`Failed to quick schedule: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error quick scheduling content:', error);
+                showNotification('Error quick scheduling content', 'error');
+            } finally {
+                // Restore button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
         }
 
         
-        function refreshScheduler() {
-            loadScheduledPosts();
+        async function refreshScheduler() {
+            await loadScheduledPosts();
+            displayUpcomingPosts();
+            updateCalendar();
             updateStats();
             showNotification('Scheduler refreshed', 'info');
         }

@@ -1,0 +1,61 @@
+{
+  "test_timestamp": "2025-11-06T14:24:18.244245",
+  "api_status": "fallback",
+  "accounts_tested": [
+    "elonmusk",
+    "nasa",
+    "twitter"
+  ],
+  "results": {
+    "elonmusk": {
+      "followers": 228688741,
+      "following": 1223,
+      "tweets": 88796,
+      "tweet_likes": 3221848,
+      "tweet_retweets": 504791,
+      "tweet_replies": 235235,
+      "tweet_impressions": 499104050,
+      "engagement_rate": 0.79,
+      "username": "elonmusk",
+      "user_id": "44196397",
+      "verified": false,
+      "profile_views": 0,
+      "last_updated": "2025-11-06T14:24:17.492764",
+      "tweets_analyzed": 20
+    },
+    "nasa": {
+      "followers": 810,
+      "following": 58,
+      "tweets": 355,
+      "tweet_likes": 1535,
+      "tweet_retweets": 1038,
+      "tweet_replies": 3093,
+      "tweet_impressions": 9052,
+      "engagement_rate": 1.9,
+      "username": "nasa",
+      "user_id": null,
+      "verified": false,
+      "profile_views": 146,
+      "last_updated": "2025-11-06T14:24:17.866608",
+      "tweets_analyzed": 20,
+      "is_fallback": true
+    },
+    "twitter": {
+      "followers": 259,
+      "following": 116,
+      "tweets": 381,
+      "tweet_likes": 1942,
+      "tweet_retweets": 1802,
+      "tweet_replies": 2125,
+      "tweet_impressions": 31767,
+      "engagement_rate": 5.3,
+      "username": "twitter",
+      "user_id": null,
+      "verified": false,
+      "profile_views": 301,
+      "last_updated": "2025-11-06T14:24:18.242555",
+      "tweets_analyzed": 20,
+      "is_fallback": true
+    }
+  }
+}

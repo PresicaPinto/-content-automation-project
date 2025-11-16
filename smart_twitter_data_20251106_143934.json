@@ -1,0 +1,50 @@
+{
+  "extraction_metadata": {
+    "timestamp": "2025-11-06T14:39:34.551938",
+    "total_accounts": 2,
+    "requests_made": 3,
+    "rate_limit_status": {
+      "remaining": 1,
+      "limit": 3,
+      "usage_percentage": 66.66666666666666
+    },
+    "extraction_method": "smart_batch_with_rate_limit_protection"
+  },
+  "accounts": {
+    "elonmusk": {
+      "username": "elonmusk",
+      "id": "44196397",
+      "verified": false,
+      "profile_image_url": "https://pbs.twimg.com/profile_images/1983681414370619392/oTT3nm5Z_normal.jpg",
+      "description": "",
+      "name": "Elon Musk",
+      "created_at": "2009-06-02T20:12:29.000Z",
+      "public_metrics": {
+        "followers_count": 228690142,
+        "following_count": 1223,
+        "tweet_count": 88796,
+        "listed_count": 165634,
+        "like_count": 181347,
+        "media_count": 4212
+      }
+    },
+    "nasa": {
+      "username": "NASA",
+      "url": "https://t.co/9NkQJKAnuU",
+      "id": "11348282",
+      "description": "Official NASA account. Exploring the universe, advancing science, and inspiring the next generation of explorers.\n\nVerification: https://t.co/8nok3NP4PW",
+      "public_metrics": {
+        "followers_count": 88069493,
+        "following_count": 158,
+        "tweet_count": 73109,
+        "listed_count": 96737,
+        "like_count": 16414,
+        "media_count": 27615
+      },
+      "profile_image_url": "https://pbs.twimg.com/profile_images/1321163587679784960/0ZxKlEKB_normal.jpg",
+      "name": "NASA",
+      "created_at": "2007-12-19T20:20:32.000Z",
+      "verified": true
+    }
+  }
+}

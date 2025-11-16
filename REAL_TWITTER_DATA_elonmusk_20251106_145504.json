@@ -1,0 +1,28 @@
+{
+  "twitter": {
+    "account_name": "elonmusk",
+    "account_type": "user",
+    "analytics": {
+      "data_source": "real_api_only",
+      "engagement": 0.0,
+      "followers": 228690979,
+      "following": 1223,
+      "impressions": 0,
+      "likes": 0,
+      "posts": 88796,
+      "profile_views": 0,
+      "quality_score": 0,
+      "reach": 228690979,
+      "replies": 0,
+      "retweets": 0,
+      "tweets": 88796,
+      "verified": false
+    },
+    "client_id": "rDHHOI7jpi97n5i5HgxLqKIvw",
+    "connected": true,
+    "created_at": "2025-11-06T14:55:04.882607+00:00",
+    "last_connected": "2025-11-06T14:55:04.882607+00:00",
+    "platform": "twitter",
+    "username": "elonmusk"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "twitter_accounts": [
+    {
+      "username": "elonmusk",
+      "display_name": "Elon Musk",
+      "description": "CEO of Tesla, SpaceX"
+    },
+    {
+      "username": "sundarpichai",
+      "display_name": "Sundar Pichai",
+      "description": "CEO of Alphabet/Google"
+    },
+    {
+      "username": "satyanadella",
+      "display_name": "Satya Nadella",
+      "description": "CEO of Microsoft"
+    }
+  ],
+  "linkedin_companies": [
+    {
+      "company_id": "1441",
+      "display_name": "Microsoft",
+      "description": "Technology company"
+    },
+    {
+      "company_id": "162479",
+      "display_name": "Google",
+      "description": "Technology company"
+    },
+    {
+      "company_id": "1035",
+      "display_name": "Tesla",
+      "description": "Electric vehicle company"
+    }
+  ],
+  "monitoring_settings": {
+    "update_interval": 60,
+    "enable_alerts": true,
+    "alert_thresholds": {
+      "engagement_spike": 50.0,
+      "follower_drop": -10.0,
+      "viral_threshold": 1000
+    }
+  }
+}

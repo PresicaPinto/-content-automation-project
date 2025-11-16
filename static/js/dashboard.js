@@ -352,59 +352,84 @@ class DashboardManager {
     }
 
     updateMetricsCharts(data) {
-        // Update performance chart with mock trending data
+        // Update performance chart with real data or show empty state
         if (this.charts.performance) {
-            const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            const linkedinData = [120, 150, 180, 140, 200, 160, 190];
-            const twitterData = [80, 100, 120, 90, 140, 110, 130];
-            const instagramData = [150, 180, 160, 190, 210, 170, 200];
+            if (data && data.performance && data.performance.length > 0) {
+                const labels = data.performance.map(p => p.label);
+                const linkedinData = data.performance.map(p => p.linkedin || 0);
+                const twitterData = data.performance.map(p => p.twitter || 0);
+                const instagramData = data.performance.map(p => p.instagram || 0);
 
-            this.charts.performance.data.labels = labels;
-            this.charts.performance.data.datasets[0].data = linkedinData;
-            this.charts.performance.data.datasets[1].data = twitterData;
+                this.charts.performance.data.labels = labels;
+                this.charts.performance.data.datasets[0].data = linkedinData;
+                this.charts.performance.data.datasets[1].data = twitterData;
 
-            // Add Instagram dataset if it doesn't exist
-            if (this.charts.performance.data.datasets.length === 2) {
-                this.charts.performance.data.datasets.push({
-                    label: 'Instagram',
-                    data: instagramData,
-                    borderColor: '#E4405F',
-                    backgroundColor: 'rgba(228, 64, 95, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                });
+                // Add Instagram dataset if it doesn't exist and has data
+                if (this.charts.performance.data.datasets.length === 2 && instagramData.some(v => v > 0)) {
+                    this.charts.performance.data.datasets.push({
+                        label: 'Instagram',
+                        data: instagramData,
+                        borderColor: '#E4405F',
+                        backgroundColor: 'rgba(228, 64, 95, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    });
+                } else if (this.charts.performance.data.datasets.length > 2) {
+                    this.charts.performance.data.datasets[2].data = instagramData;
+                }
             } else {
-                this.charts.performance.data.datasets[2].data = instagramData;
+                // Show empty state when no real data available
+                this.charts.performance.data.labels = ['No Data'];
+                this.charts.performance.data.datasets.forEach(dataset => {
+                    dataset.data = [0];
+                });
             }
 
             this.charts.performance.update();
         }
 
-        // Update engagement trend chart
+        // Update engagement trend chart with real data or show empty state
         if (this.charts.engagementTrend) {
-            const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-            const engagementData = [3.2, 3.8, 4.1, 4.5];
+            if (data && data.engagementTrend && data.engagementTrend.length > 0) {
+                const labels = data.engagementTrend.map(t => t.label);
+                const engagementData = data.engagementTrend.map(t => t.rate || 0);
 
-            this.charts.engagementTrend.data.labels = labels;
-            this.charts.engagementTrend.data.datasets[0].data = engagementData;
+                this.charts.engagementTrend.data.labels = labels;
+                this.charts.engagementTrend.data.datasets[0].data = engagementData;
+            } else {
+                // Show empty state when no real data available
+                this.charts.engagementTrend.data.labels = ['No Data'];
+                this.charts.engagementTrend.data.datasets[0].data = [0];
+            }
             this.charts.engagementTrend.update();
         }
 
-        // Update engagement by platform chart
+        // Update engagement by platform chart with real data or show empty state
         if (this.charts.engagementPlatform) {
-            this.charts.engagementPlatform.data.datasets[0].data = [85, 45, 23, 1200, 3500];
-            this.charts.engagementPlatform.data.datasets[1].data = [120, 89, 45, 2800, 5200];
+            if (data && data.engagementByPlatform && data.engagementByPlatform.length > 0) {
+                const linkedInData = data.engagementByPlatform.map(p => p.linkedin || 0);
+                const twitterData = data.engagementByPlatform.map(p => p.twitter || 0);
+                const instagramData = data.engagementByPlatform.map(p => p.instagram || 0);
 
-            // Add Instagram dataset if it doesn't exist
-            if (this.charts.engagementPlatform.data.datasets.length === 2) {
-                this.charts.engagementPlatform.data.datasets.push({
-                    label: 'Instagram',
-                    data: [95, 65, 35, 1800, 4200],
-                    borderColor: '#E4405F',
-                    backgroundColor: 'rgba(228, 64, 95, 0.2)'
-                });
+                this.charts.engagementPlatform.data.datasets[0].data = linkedInData;
+                this.charts.engagementPlatform.data.datasets[1].data = twitterData;
+
+                // Add Instagram dataset if it doesn't exist and has data
+                if (this.charts.engagementPlatform.data.datasets.length === 2 && instagramData.some(v => v > 0)) {
+                    this.charts.engagementPlatform.data.datasets.push({
+                        label: 'Instagram',
+                        data: instagramData,
+                        borderColor: '#E4405F',
+                        backgroundColor: 'rgba(228, 64, 95, 0.2)'
+                    });
+                } else if (this.charts.engagementPlatform.data.datasets.length > 2) {
+                    this.charts.engagementPlatform.data.datasets[2].data = instagramData;
+                }
             } else {
-                this.charts.engagementPlatform.data.datasets[2].data = [95, 65, 35, 1800, 4200];
+                // Show empty state when no real data available
+                this.charts.engagementPlatform.data.datasets.forEach(dataset => {
+                    dataset.data = [0, 0, 0, 0, 0];
+                });
             }
 
             this.charts.engagementPlatform.update();
