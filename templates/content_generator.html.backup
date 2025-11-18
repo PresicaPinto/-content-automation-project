@@ -3,406 +3,8 @@
 {% block title %}Content Generator | Ardelis Technologies{% endblock %}
 
 {% block head %}
-    <style>
-        /* Modern Professional Design System */
-        :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --success-gradient: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
-            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --sidebar-width: 280px;
-            --header-height: 80px;
-            --border-radius-modern: 16px;
-            --shadow-modern: 0 10px 30px rgba(0,0,0,0.1);
-            --shadow-hover: 0 20px 40px rgba(0,0,0,0.15);
-
-            /* Light Theme Variables */
-            --card-bg: #ffffff;
-            --darker-color: #f8f9fa;
-            --card-border: #e9ecef;
-            --text-primary: #212529;
-            --text-muted: #6c757d;
-            --primary-color: #667eea;
-        }
-
-        /* Modern Header */
-        .modern-header {
-            background: var(--card-bg);
-            border-bottom: 1px solid var(--card-border);
-            padding: 1.5rem 2rem;
-            margin: -2rem -2rem 2rem -2rem;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 100%;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .header-icon {
-            width: 60px;
-            height: 60px;
-            background: var(--primary-gradient);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            box-shadow: var(--shadow-modern);
-        }
-
-        .header-text h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .main-subtitle {
-            color: var(--text-muted);
-            font-size: 1rem;
-            margin: 0;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .action-stats {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0.5rem 1rem;
-            background: var(--darker-color);
-            border-radius: 12px;
-            border: 1px solid var(--card-border);
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .btn-generate {
-            background: var(--primary-gradient);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-generate:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary-light {
-            background: var(--darker-color);
-            color: var(--text-primary);
-            border: 1px solid var(--card-border);
-            padding: 0.75rem;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-secondary-light:hover {
-            background: var(--card-border);
-            transform: translateY(-1px);
-        }
-
-        /* Modern Layout */
-        .modern-layout {
-            display: flex;
-            min-height: calc(100vh - var(--header-height));
-            position: relative;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--card-bg);
-            border-right: 1px solid var(--card-border);
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            height: calc(100vh - var(--header-height));
-            top: var(--header-height);
-            left: 0;
-            z-index: 1000;
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar-header {
-            padding: 2rem 1.5rem;
-            border-bottom: 1px solid var(--card-border);
-        }
-
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .logo-icon {
-            width: 48px;
-            height: 48px;
-            background: var(--primary-gradient);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: var(--shadow-modern);
-        }
-
-        .logo-text {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin: 0;
-        }
-
-        .sidebar-nav {
-            flex: 1;
-            padding: 1.5rem 0;
-            overflow-y: auto;
-        }
-
-        .nav-section {
-            margin-bottom: 2rem;
-        }
-
-        .nav-section-title {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 0 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .nav-items {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 1.5rem;
-            color: var(--text-muted);
-            text-decoration: none;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .nav-item:hover {
-            color: var(--text-primary);
-            background: var(--darker-color);
-        }
-
-        .nav-item.active {
-            color: var(--primary-color);
-            background: rgba(102, 126, 234, 0.1);
-        }
-
-        .nav-item.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: var(--primary-gradient);
-        }
-
-        .nav-item i {
-            width: 20px;
-            text-align: center;
-        }
-
-        .sidebar-footer {
-            padding: 1.5rem;
-            border-top: 1px solid var(--card-border);
-        }
-
-        .btn-generate-large {
-            background: var(--primary-gradient);
-            color: white;
-            border: none;
-            padding: 1rem;
-            border-radius: var(--border-radius-modern);
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            width: 100%;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-modern);
-        }
-
-        .btn-generate-large:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Progress Steps */
-        .progress-steps {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 3rem;
-            padding: 1.5rem;
-            background: var(--darker-color);
-            border-radius: var(--border-radius-modern);
-        }
-
-        .step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .step-number {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--card-bg);
-            border: 2px solid var(--card-border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            color: var(--text-muted);
-            transition: all 0.3s ease;
-        }
-
-        .step.active .step-number {
-            background: var(--primary-gradient);
-            border-color: transparent;
-            color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .step-label {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .step.active .step-label {
-            color: var(--text-primary);
-        }
-
-        .step-connector {
-            width: 60px;
-            height: 2px;
-            background: var(--card-border);
-        }
-
-        /* Content Sections */
-        .content-sections {
-            flex: 1;
-        }
-
-        .content-section {
-            display: none;
-        }
-
-        .content-section.active {
-            display: block;
-            animation: fadeInUp 0.5s ease;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .section-header {
-            margin-bottom: 2rem;
-        }
-
-        .section-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .section-title i {
-            color: var(--primary-color);
-        }
-
-        .section-subtitle {
-            color: var(--text-muted);
-            font-size: 1rem;
-            margin: 0;
-        }
-
-        .settings-grid {
-            display: grid;
+    <!-- Using global dashboard.css for all styling - no local overrides -->
+{% endblock %}
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 2rem;
         }
@@ -637,7 +239,7 @@
             }
 
             .main-content {
-                margin-left: 0;
+                padding: 1rem;
             }
         }
 
@@ -874,6 +476,174 @@
             font-style: italic;
         }
 
+        /* Content Generation Method Styles */
+        .method-selection {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .method-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .method-option {
+            flex: 1;
+            position: relative;
+        }
+
+        .method-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .method-label {
+            display: block;
+            padding: 1.5rem;
+            background: var(--darker-color);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            height: 100%;
+        }
+
+        .method-option input[type="radio"]:checked + .method-label {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .method-label:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .method-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .method-icon {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+
+        .method-desc {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .method-input {
+            margin-top: 1.5rem;
+        }
+
+        .sub-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-textarea-modern {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .form-textarea-modern:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .instruction-examples {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--darker-color);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .example-post {
+            position: relative;
+            padding: 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+        }
+
+        .example-post-text {
+            border: 1px solid var(--card-border) !important;
+            background: var(--darker-color) !important;
+            font-size: 0.875rem;
+        }
+
+        /* Enhanced Glowing Generate Button */
+        .generate-btn-modern {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 15px 40px;
+            font-weight: 600;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .generate-btn-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .generate-btn-modern:hover::before {
+            left: 100%;
+        }
+
+        .generate-btn-modern:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4), 0 0 20px rgba(102, 126, 234, 0.3);
+            }
+            to {
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4), 0 0 30px rgba(102, 126, 234, 0.6);
+            }
+        }
+
+        .generate-btn-modern:active {
+            transform: translateY(0) scale(0.98);
+        }
+
         /* Style options with dark theme */
         .style-option {
             cursor: pointer;
@@ -995,17 +765,7 @@
             color: white !important;
         }
 
-        /* Enhanced Header Layout */
-        .top-header {
-            padding: 1.5rem 0 !important;
-            border-bottom: 1px solid var(--card-border) !important;
-            background: var(--card-bg) !important;
-        }
-
-        .top-header .row {
-            align-items: center !important;
-            min-height: 80px;
-        }
+        /* Enhanced Header Layout Removed - Use base.css */
 
         /* Responsive button sizing */
         .btn-sm-md {
@@ -1021,17 +781,7 @@
             }
         }
 
-        /* Button hover effects */
-        .top-header .btn {
-            transition: all 0.3s ease;
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .top-header .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
+        /* Button hover effects removed - Use base.css */
 
         /* Responsive Styles for Content Settings */
         @media (max-width: 768px) {
@@ -1294,38 +1044,56 @@
             }
         }
 
-        /* Header spacing improvements */
-        .top-header h1 {
-            font-weight: 600;
-            margin-bottom: 0.25rem !important;
+        /* Header spacing removed - Use base.css styling */
+
+        /* Override Custom Sidebar - Use Standard Navigation from base.html */
+        .sidebar,
+        .sidebar-header,
+        .sidebar-nav,
+        .sidebar-footer {
+            display: none !important;
         }
 
-        .top-header p {
-            margin-bottom: 0 !important;
-            font-size: 0.9rem;
+        .main-content,
+        .content-wrapper,
+        .main-layout {
+            margin-left: 0 !important;
+            position: static !important;
         }
+
+        /* Ensure proper layout with standard navigation */
+        body {
+            padding-top: 0 !important;
+        }
+
+        /* Use Bootstrap standard layout - no custom constraints */
     </style>
 {% endblock %}
 
 {% block content %}
-    <!-- Simple Clean Header -->
-    <div class="simple-header">
-        <div class="header-top">
-            <div class="header-title">
-                <h1>✨ Content Generator</h1>
-                <p>Create engaging social media content in seconds</p>
+        <!-- Top Header - Match Dashboard Structure -->
+        <header class="top-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">✨ Content Generator</h1>
+                    <p class="text-muted mb-0">Create engaging social media content in seconds</p>
+                </div>
+                <div class="d-flex gap-3">
+                    <div class="text-end">
+                        <small class="text-muted">Ready to Generate</small>
+                        <div class="fw-bold">AI Powered</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="resetForm()">
+                        <i class="fas fa-refresh"></i> Reset
+                    </button>
+                </div>
             </div>
-            <div class="header-actions">
-                <button class="theme-toggle" onclick="toggleTheme()">
-                    <i class="fas fa-moon" id="themeIcon"></i>
-                </button>
-            </div>
-        </div>
-    </div>
+        </header>
 
-    <!-- Two-Column Layout for Desktop -->
-    <div class="content-wrapper">
-        <div class="main-layout">
+        <!-- Main Content Area - Match Dashboard Structure -->
+        <div class="tab-content p-4">
+            <div class="tab-pane fade show active">
+                <div class="main-layout">
             <!-- Left Column: Settings -->
             <div class="settings-column">
                     <!-- Basic Settings Section -->
@@ -1436,118 +1204,189 @@
                                     <textarea class="voice-transcript" id="voiceTranscript" placeholder="Voice transcript will appear here..." readonly></textarea>
                                 </div>
                             </div>
+
+                            <!-- Advanced Settings -->
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-sliders-h"></i>
+                                    Advanced Settings
+                                </label>
+                                <div class="advanced-settings">
+                                    <div class="settings-row">
+                                        <select class="form-select-modern" id="creativityLevel">
+                                            <option value="balanced">Balanced (Recommended)</option>
+                                            <option value="conservative">Conservative</option>
+                                            <option value="creative">Creative</option>
+                                        </select>
+                                        <select class="form-select-modern" id="contentLength">
+                                            <option value="medium">Medium Length</option>
+                                            <option value="short">Short</option>
+                                            <option value="long">Long</option>
+                                        </select>
+                                    </div>
+                                  </div>
+                            </div>
+
+                            <!-- Custom Format Templates (Hidden by default) -->
+                            <div class="form-group-modern" style="display: none;" id="customTemplatesSection">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-cog"></i>
+                                    Custom Format Templates (Advanced)
+                                </label>
+                                <div class="template-section">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Template Instructions:</strong><br>
+                                        • Use placeholders like <code>[topic]</code>, <code>[style]</code>, <code>[hashtags]</code><br>
+                                        • Example: "🎯 [topic]<br><br>[content]<br><br>Hashtags: [hashtags]<br>#digitalmarketing #contentstrategy"
+                                    </div>
+
+                                    <div class="template-platforms">
+                                        <h6 class="mb-3">Platform Templates</h6>
+
+                                        <!-- LinkedIn Template -->
+                                        <div class="platform-template mb-4">
+                                            <label class="platform-label">
+                                                <i class="fab fa-linkedin text-primary"></i> LinkedIn Template
+                                            </label>
+                                            <textarea class="form-textarea-modern template-textarea"
+                                                    id="linkedinTemplate"
+                                                    rows="5"
+                                                    placeholder="Enter LinkedIn post template...">🚀 [topic]
+
+[content]
+
+💡 Key Takeaways:
+• [key_point_1]
+• [key_point_2]
+
+#Leadership #Innovation #[hashtags]</textarea>
+                                        </div>
+
+                                        <!-- X/Twitter Template -->
+                                        <div class="platform-template mb-4">
+                                            <label class="platform-label">
+                                                <i class="fab fa-x-twitter text-dark"></i> X (Twitter) Template
+                                            </label>
+                                            <textarea class="form-textarea-modern template-textarea"
+                                                    id="twitterTemplate"
+                                                    rows="4"
+                                                    placeholder="Enter X post template...">🎯 [topic]
+
+[content]
+
+[hashtags] #Trending #[topic]</textarea>
+                                        </div>
+
+                                        <!-- Instagram Template -->
+                                        <div class="platform-template mb-4">
+                                            <label class="platform-label">
+                                                <i class="fab fa-instagram text-danger"></i> Instagram Template
+                                            </label>
+                                            <textarea class="form-textarea-modern template-textarea"
+                                                    id="instagramTemplate"
+                                                    rows="5"
+                                                    placeholder="Enter Instagram caption template...">✨ [topic] ✨
+
+[content]
+
+📸 [call_to_action]
+
+[hashtags] #Instagram #[style] #[topic]</textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="template-actions">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetTemplates()">
+                                            <i class="fas fa-undo"></i> Reset to Default
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="previewTemplates()">
+                                            <i class="fas fa-eye"></i> Preview Templates
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Content Generation Method -->
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-cogs"></i>
+                                    Content Generation Method
+                                </label>
+                                <div class="method-selection">
+                                    <div class="method-options">
+                                        <div class="method-option">
+                                            <input type="radio" name="generationMethod" id="instructionMethod" value="instructions" checked>
+                                            <label class="method-label" for="instructionMethod">
+                                                <div class="method-header">
+                                                    <i class="fas fa-keyboard method-icon"></i>
+                                                    <strong>Custom Instructions</strong>
+                                                </div>
+                                                <p class="method-desc">Provide specific instructions on how you want the content to be written</p>
+                                            </label>
+                                        </div>
+                                        <div class="method-option">
+                                            <input type="radio" name="generationMethod" id="exampleMethod" value="examples">
+                                            <label class="method-label" for="exampleMethod">
+                                                <div class="method-header">
+                                                    <i class="fas fa-copy method-icon"></i>
+                                                    <strong>Learn from Examples</strong>
+                                                </div>
+                                                <p class="method-desc">Provide existing posts and AI will generate similar content</p>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Instructions Input -->
+                                    <div id="instructionsInput" class="method-input">
+                                        <label class="sub-label">Custom Instructions</label>
+                                        <textarea class="form-textarea-modern" id="customInstructions" rows="4"
+                                                placeholder="Provide detailed instructions for content generation..."></textarea>
+                                        <div class="instruction-examples">
+                                            <small class="text-muted">
+                                                <strong>Examples:</strong>
+                                                <ul class="mb-0 mt-2">
+                                                    <li>Write in a conversational tone like you're talking to a friend</li>
+                                                    <li>Focus on practical tips and actionable advice</li>
+                                                    <li>Use storytelling to explain complex concepts</li>
+                                                    <li>Include statistics and data points to support claims</li>
+                                                    <li>Write for beginners in the field</li>
+                                                    <li>Use humor and relatable examples</li>
+                                                </ul>
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Examples Input -->
+                                    <div id="examplesInput" class="method-input" style="display: none;">
+                                        <label class="sub-label">Example Posts</label>
+                                        <div id="examplePostsContainer">
+                                            <div class="example-post mb-3">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <label class="sub-label mb-0">Example 1</label>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeExamplePost(this)">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                                <textarea class="form-textarea-modern example-post-text" rows="3"
+                                                        placeholder="Paste an example post here..."></textarea>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="addExamplePost()">
+                                            <i class="fas fa-plus me-1"></i>Add Another Example
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Generate Button -->
+                            <div class="text-center mt-4">
+                                <button type="button" class="btn btn-primary btn-lg generate-btn-modern" onclick="startGeneration()">
+                                    <i class="fas fa-magic me-2"></i>
+                                    Generate Content
+                                </button>
+                            </div>
                         </form>
-                    </div>
-
-                    <!-- Advanced Settings Card -->
-                    <div class="setting-card">
-                        <h3>🧠 Advanced Generation Settings</h3>
-
-                        <!-- Generation Method Selection -->
-                        <div class="form-group-modern">
-                            <label class="form-label-modern">
-                                <i class="fas fa-brain"></i>
-                                Generation Method
-                            </label>
-                            <div class="method-selection">
-                                <div class="method-option active" onclick="selectMethod('instructions', this)">
-                                    <i class="fas fa-keyboard"></i>
-                                    <div>
-                                        <strong>Custom Instructions</strong>
-                                        <p>Provide specific instructions for content</p>
-                                    </div>
-                                </div>
-                                <div class="method-option" onclick="selectMethod('examples', this)">
-                                    <i class="fas fa-copy"></i>
-                                    <div>
-                                        <strong>Learn from Examples</strong>
-                                        <p>AI learns from your existing posts</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Instructions Section -->
-                        <div id="instructionsSection" class="method-section">
-                            <div class="form-group-modern">
-                                <label class="form-label-modern">
-                                    <i class="fas fa-edit"></i>
-                                    Custom Instructions
-                                </label>
-                                <textarea class="form-control-modern" id="customInstructions" rows="4"
-                                          placeholder="Example: Write in a professional tone with actionable tips..."></textarea>
-                                <div class="quick-templates">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleInstructionTemplates()">
-                                        <i class="fas fa-lightbulb"></i> Use Template
-                                    </button>
-                                    <select class="form-select form-select-sm" id="instructionTemplate" onchange="applyInstructionTemplate()" style="display: none;">
-                                        <option value="">Choose a template...</option>
-                                        <option value="professional">Professional & Authoritative</option>
-                                        <option value="casual">Casual & Friendly</option>
-                                        <option value="educational">Educational & Informative</option>
-                                        <option value="storytelling">Storytelling & Engaging</option>
-                                        <option value="data_driven">Data-Driven & Analytical</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Examples Section -->
-                        <div id="examplesSection" class="method-section" style="display: none;">
-                            <div class="form-group-modern">
-                                <label class="form-label-modern">
-                                    <i class="fas fa-file-alt"></i>
-                                    Example Posts
-                                </label>
-                                <div class="example-input">
-                                    <input type="text" class="form-control-modern" id="exampleTopic" placeholder="Example topic...">
-                                    <textarea class="form-control-modern" id="exampleContent" rows="3" placeholder="Paste example post content..."></textarea>
-                                    <button type="button" class="btn btn-primary btn-sm" onclick="addExample()">
-                                        <i class="fas fa-plus"></i> Add Example
-                                    </button>
-                                </div>
-                                <div id="examplesList" class="examples-list"></div>
-                            </div>
-                        </div>
-
-                        <!-- Additional Settings -->
-                        <div class="form-group-modern">
-                            <label class="form-label-modern">
-                                <i class="fas fa-sliders-h"></i>
-                                Additional Settings
-                            </label>
-                            <div class="settings-row">
-                                <select class="form-select-modern" id="creativityLevel">
-                                    <option value="balanced">Balanced (Recommended)</option>
-                                    <option value="conservative">Conservative</option>
-                                    <option value="creative">Creative</option>
-                                </select>
-                                <select class="form-select-modern" id="contentLength">
-                                    <option value="medium">Medium Length</option>
-                                    <option value="short">Short</option>
-                                    <option value="long">Long</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Generate Button -->
-                <div class="generate-section">
-                    <button class="generate-btn" onclick="startGeneration()">
-                        <i class="fas fa-magic"></i>
-                        Generate Content
-                    </button>
-                </div>
-            </div>
-
-            <!-- Generate Content Button Before Generated Content -->
-            <div class="text-center mb-4">
-                <button class="btn btn-success btn-lg generate-btn-main" onclick="startGeneration()">
-                    <i class="fas fa-magic me-2"></i>Generate Content
-                </button>
-            </div>
-
             <!-- Right Column: Generated Content Sidebar -->
             <div class="generated-content-sidebar" id="generatedContentSidebar">
                 <div class="sidebar-header">
@@ -1572,720 +1411,855 @@
             </div>
         </div>
     </div>
-                                        <i class="fas fa-pencil-alt me-1"></i> Single
-                                    </label>
-
-                                    <input type="radio" class="btn-check" name="generationMode" id="batchMode" value="batch">
-                                    <label class="btn btn-outline-success" for="batchMode">
-                                        <i class="fas fa-layer-group me-1"></i> Batch
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Single Topic Input with Topics Management -->
-                            <div class="mb-3" id="singleTopicSection">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <label class="form-label mb-0">
-                                        <i class="fas fa-tag me-2"></i>Topic
-                                    </label>
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="showTopicsManager()" title="Manage Topics">
-                                            <i class="fas fa-list"></i>
-                                            <span class="d-none d-sm-inline ms-1">Topics</span>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-success" onclick="openTopicsPage()" title="Add New Topic">
-                                            <i class="fas fa-plus"></i>
-                                            <span class="d-none d-sm-inline ms-1">New</span>
-                                        </button>
-                                    </div>
-                                </div>
-                              </div>
-
-                            <!-- Topics Management Section (Initially Hidden) -->
-                            <div class="mb-3" id="topicsManager" style="display: none;">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <label class="form-label mb-0">
-                                        <i class="fas fa-list me-2"></i>Manage Topics
-                                    </label>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="hideTopicsManager()">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                                <div class="border rounded p-3" style="background: var(--darker-color); max-height: 250px; overflow-y: auto;">
-                                    <div class="mb-3">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control" id="newTopicInput" placeholder="Add new topic..." onkeypress="if(event.key==='Enter') addTopic()">
-                                            <button type="button" class="btn btn-primary" onclick="addTopic()">
-                                                <i class="fas fa-plus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div id="topicsList" class="topics-list">
-                                        <!-- Topics will be loaded here -->
-                                    </div>
-                                </div>
-                                <div class="mt-2 text-end">
-                                    <small class="text-muted">
-                                        <span id="topicsCount">0</span> topics total
-                                    </small>
-                                </div>
-                            </div>
-
-                            <!-- Batch Topic Selection -->
-                            <div class="mb-3" id="batchTopicSection" style="display: none;">
-                                <label class="form-label">
-                                    <i class="fas fa-list me-2"></i>Select Topics
-                                </label>
-                                <div class="border rounded p-2" style="max-height: 200px; overflow-y: auto; background: var(--darker-color);">
-                                    <div id="topicCheckboxes">
-                                        <!-- Topics will be loaded here -->
-                                    </div>
-                                </div>
-                                <div class="mt-2 d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">
-                                        <span id="selectedCount">0</span> existing topics selected
-                                    </small>
-                                    <div>
-                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAllTopics()">
-                                            Select All
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearTopicSelection()">
-                                            Clear
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Add Custom Topic Section for Batch Mode -->
-                            <div class="mb-3" id="customTopicSection" style="display: none;">
-                                <label class="form-label">
-                                    <i class="fas fa-plus-circle me-2"></i>Add Custom Topic (Optional)
-                                </label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="customTopicInput" placeholder="Enter a custom topic to include in batch generation...">
-                                    <button type="button" class="btn btn-outline-success" onclick="addCustomTopic()">
-                                        <i class="fas fa-plus"></i> Add
-                                    </button>
-                                </div>
-                                <div class="mt-2">
-                                    <div id="customTopicsList" class="d-flex flex-wrap gap-2">
-                                        <!-- Custom topics will be displayed here -->
-                                    </div>
-                                </div>
-                                <small class="text-muted">
-                                    Add additional topics that aren't in your existing list
-                                </small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-palette me-2"></i>Style
-                                </label>
-                                <div class="list-group">
-                                    <div class="list-group-item style-option active" onclick="selectStyle('educational', this)">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-graduation-cap me-2"></i>
-                                            <div>
-                                                <h6 class="mb-0">Educational</h6>
-                                                <small class="text-muted">Informative and helpful content</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="list-group-item style-option" onclick="selectStyle('promotional', this)">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-bullhorn me-2"></i>
-                                            <div>
-                                                <h6 class="mb-0">Promotional</h6>
-                                                <small class="text-muted">Marketing and sales focused</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="list-group-item style-option" onclick="selectStyle('industry_insights', this)">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-chart-line me-2"></i>
-                                            <div>
-                                                <h6 class="mb-0">Industry Insights</h6>
-                                                <small class="text-muted">Trends and analysis</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-share-alt me-2"></i>Platforms
-                                </label>
-                                <div class="platform-selection">
-                                    <!-- Quick select buttons -->
-                                    <div class="btn-group w-100 mb-2" role="group">
-                                        <button type="button" class="btn btn-outline-primary" onclick="selectAllPlatforms()">
-                                            All Platforms
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" onclick="deselectAllPlatforms()">
-                                            None
-                                        </button>
-                                    </div>
-
-                                    <!-- Platform checkboxes -->
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="linkedin" id="linkedinCheck" checked>
-                                                <label class="form-check-label" for="linkedinCheck">
-                                                    <i class="fab fa-linkedin me-1"></i> LinkedIn
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="twitter" id="twitterCheck">
-                                                <label class="form-check-label" for="twitterCheck">
-                                                    <i class="fab fa-x-twitter me-1"></i> X
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="instagram" id="instagramCheck">
-                                                <label class="form-check-label" for="instagramCheck">
-                                                    <i class="fab fa-instagram me-1"></i> Instagram
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Batch Generation Settings -->
-                            <div class="mb-3" id="batchSettings">
-                                <label class="form-label">
-                                    <i class="fas fa-sliders-h me-2"></i>Posts per Topic
-                                </label>
-                                <select class="form-select" id="postsPerTopic">
-                                    <option value="1">1 Post per Topic</option>
-                                    <option value="3">3 Posts per Topic</option>
-                                    <option value="5">5 Posts per Topic</option>
-                                </select>
-                            </div>
-
-                            <!-- Single Generation Settings -->
-                            <div class="mb-3" id="singleSettings">
-                                <label class="form-label">
-                                    <i class="fas fa-copy me-2"></i>Number of Posts
-                                </label>
-                                <select class="form-select" id="numPostsSelect">
-                                    <option value="1">1 Post</option>
-                                    <option value="3">3 Posts</option>
-                                    <option value="5">5 Posts</option>
-                                </select>
-                            </div>
-
-                            <!-- Voice Recording Section -->
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-microphone me-2"></i>Voice Input (Optional)
-                                </label>
-                                <div class="border rounded p-3 bg-light">
-                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <small class="text-muted">Click to record your content idea</small>
-                                        <div id="recordingTime" class="badge bg-danger" style="display: none;">00:00</div>
-                                    </div>
-                                    <div class="d-flex gap-2">
-                                        <button type="button" class="btn btn-outline-primary flex-fill" id="recordBtn" onclick="toggleRecording()">
-                                            <i class="fas fa-microphone"></i>
-                                            <span id="recordBtnText">Start Recording</span>
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" id="playBtn" onclick="playRecording()" disabled>
-                                            <i class="fas fa-play"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-outline-danger" id="clearBtn" onclick="clearRecording()" disabled>
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                    <div class="mt-2">
-                                        <textarea class="form-control form-control-sm" id="voiceTranscript" rows="3" placeholder="Voice transcript will appear here..." readonly></textarea>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Enhanced Content Generation Settings -->
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-brain me-2"></i>Content Generation Method
-                                </label>
-                                <div class="accordion" id="contentMethodAccordion">
-                                    <div class="accordion-item border-0 shadow-sm">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#contentMethodCollapse">
-                                                <i class="fas fa-sliders-h me-2 text-info"></i>
-                                                Advanced Generation Settings
-                                            </button>
-                                        </h2>
-                                        <div id="contentMethodCollapse" class="accordion-collapse collapse show" data-bs-parent="#contentMethodAccordion">
-                                            <div class="accordion-body">
-                                                <!-- Generation Method Selection -->
-                                                <div class="mb-4">
-                                                    <label class="form-label fw-bold">How would you like to generate content?</label>
-                                                    <div class="row g-3">
-                                                        <div class="col-12 col-md-6">
-                                                            <div class="card border-2 h-100 method-card">
-                                                                <div class="card-body text-center p-3">
-                                                                    <div class="form-check">
-                                                                        <input class="form-check-input" type="radio" name="generationMethod" id="instructionMethod" value="instructions" checked>
-                                                                        <label class="form-check-label w-100 d-block" for="instructionMethod">
-                                                                            <i class="fas fa-keyboard display-4 text-primary mb-3 d-block"></i>
-                                                                            <h6 class="mb-2">Custom Instructions</h6>
-                                                                            <p class="small text-muted mb-0">Provide specific instructions on how you want the content to be written</p>
-                                                                        </label>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-12 col-md-6">
-                                                            <div class="card border-2 h-100 method-card">
-                                                                <div class="card-body text-center p-3">
-                                                                    <div class="form-check">
-                                                                        <input class="form-check-input" type="radio" name="generationMethod" id="exampleMethod" value="examples">
-                                                                        <label class="form-check-label w-100 d-block" for="exampleMethod">
-                                                                            <i class="fas fa-copy display-4 text-success mb-3 d-block"></i>
-                                                                            <h6 class="mb-2">Learn from Examples</h6>
-                                                                            <p class="small text-muted mb-0">Provide existing posts and AI will generate similar content</p>
-                                                                        </label>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Custom Instructions Section -->
-                                                <div id="instructionsSection" class="mb-4">
-                                                    <label class="form-label fw-bold">
-                                                        <i class="fas fa-edit text-primary me-2"></i>Custom Instructions
-                                                    </label>
-                                                    <textarea class="form-control" id="customInstructions" rows="6"
-                                                              placeholder="Provide detailed instructions for content generation...&#10;&#10;Examples:&#10;- Write in a conversational tone like you're talking to a friend&#10;- Focus on practical tips and actionable advice&#10;- Use storytelling to explain complex concepts&#10;- Include statistics and data points to support claims&#10;- Write for beginners in the field&#10;- Use humor and relatable examples"></textarea>
-                                                    <div class="mt-2">
-                                                        <div class="d-grid gap-2 d-md-flex">
-                                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addInstructionTemplate()">
-                                                                <i class="fas fa-lightbulb"></i> Use Template
-                                                            </button>
-                                                            <select class="form-select form-select-sm" id="instructionTemplate" onchange="applyInstructionTemplate()" style="display: none;">
-                                                                <option value="">Choose a template...</option>
-                                                                <option value="professional">Professional & Authoritative</option>
-                                                                <option value="casual">Casual & Friendly</option>
-                                                                <option value="educational">Educational & Informative</option>
-                                                                <option value="storytelling">Storytelling & Engaging</option>
-                                                                <option value="data_driven">Data-Driven & Analytical</option>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Examples Section -->
-                                                <div id="examplesSection" class="mb-4" style="display: none;">
-                                                    <label class="form-label fw-bold">
-                                                        <i class="fas fa-file-alt text-success me-2"></i>Example Posts
-                                                    </label>
-                                                    <div class="mb-3">
-                                                        <small class="text-muted">Add existing posts that you like, and the AI will generate similar content in the same style, tone, and format.</small>
-                                                    </div>
-
-                                                    <!-- Add Example Form -->
-                                                    <div class="border rounded p-3 mb-3 bg-light">
-                                                        <div class="row g-2">
-                                                            <div class="col-12">
-                                                                <input type="text" class="form-control form-control-sm" id="exampleTopic" placeholder="Example topic/title...">
-                                                            </div>
-                                                            <div class="col-12">
-                                                                <textarea class="form-control form-control-sm" id="exampleContent" rows="4" placeholder="Paste the example post content here..."></textarea>
-                                                            </div>
-                                                            <div class="col-12">
-                                                                <input type="text" class="form-control form-control-sm" id="exampleHashtags" placeholder="Example hashtags (optional)...">
-                                                            </div>
-                                                            <div class="col-12">
-                                                                <div class="d-grid gap-2 d-md-flex">
-                                                                    <button type="button" class="btn btn-sm btn-success flex-fill" onclick="addExample()">
-                                                                        <i class="fas fa-plus"></i> Add Example
-                                                                    </button>
-                                                                    <button type="button" class="btn btn-sm btn-outline-info flex-fill" onclick="loadExistingExamples()">
-                                                                        <i class="fas fa-download"></i> Load Examples
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Examples List -->
-                                                    <div id="examplesList">
-                                                        <!-- Examples will be displayed here -->
-                                                    </div>
-
-                                                    <div class="mt-3">
-                                                        <small class="text-info">
-                                                            <i class="fas fa-info-circle"></i>
-                                                            Tip: Add 2-3 diverse examples for best results. The AI will analyze style, tone, structure, and patterns.
-                                                        </small>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Advanced Settings -->
-                                                <div class="mb-3">
-                                                    <label class="form-label fw-bold">
-                                                        <i class="fas fa-cog text-warning me-2"></i>Additional Settings
-                                                    </label>
-                                                    <div class="row g-3">
-                                                        <div class="col-md-4">
-                                                            <label class="form-label">Creativity Level</label>
-                                                            <select class="form-select" id="creativityLevel">
-                                                                <option value="conservative">Conservative (Safe & Professional)</option>
-                                                                <option value="balanced" selected>Balanced (Recommended)</option>
-                                                                <option value="creative">Creative (Innovative & Bold)</option>
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-4">
-                                                            <label class="form-label">Content Length</label>
-                                                            <select class="form-select" id="contentLength">
-                                                                <option value="short">Short (Quick & Punchy)</option>
-                                                                <option value="medium" selected>Medium (Standard)</option>
-                                                                <option value="long">Long (Detailed & In-depth)</option>
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-4">
-                                                            <label class="form-label">Focus Areas</label>
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" id="focusEngagement" checked>
-                                                                <label class="form-check-label" for="focusEngagement">
-                                                                    High Engagement
-                                                                </label>
-                                                            </div>
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" id="focusSEO">
-                                                                <label class="form-check-label" for="focusSEO">
-                                                                    SEO Optimized
-                                                                </label>
-                                                            </div>
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" id="focusTrending">
-                                                                <label class="form-check-label" for="focusTrending">
-                                                                    Trending Topics
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Custom Formats Section -->
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-cog me-2"></i>Custom Format Templates
-                                </label>
-                                <div class="accordion" id="customFormatsAccordion">
-                                    <div class="accordion-item border-0 shadow-sm">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#formatsCollapse">
-                                                <i class="fas fa-magic me-2 text-primary"></i>
-                                                Use Custom Format Templates
-                                            </button>
-                                        </h2>
-                                        <div id="formatsCollapse" class="accordion-collapse collapse" data-bs-parent="#customFormatsAccordion">
-                                            <div class="accordion-body">
-                                                <!-- Format Type Selection -->
-                                                <div class="mb-3">
-                                                    <label class="form-label fw-bold">Select Format Type</label>
-                                                    <select class="form-select" id="formatType" onchange="updateFormatTemplate()">
-                                                        <option value="">Choose a format...</option>
-                                                        <option value="listicle">📝 Listicle Post</option>
-                                                        <option value="howto">🔧 How-To Guide</option>
-                                                        <option value="question">❓ Q&A Style</option>
-                                                        <option value="story">📖 Story-Based</option>
-                                                        <option value="comparison">⚖️ Comparison Post</option>
-                                                        <option value="announcement">📢 Announcement</option>
-                                                        <option value="tutorial">📚 Tutorial/Step-by-Step</option>
-                                                        <option value="case_study">📊 Case Study</option>
-                                                        <option value="custom">✏️ Custom Format</option>
-                                                    </select>
-                                                </div>
-
-                                                <!-- Custom Format Input (shown when custom is selected) -->
-                                                <div class="mb-3" id="customFormatInput" style="display: none;">
-                                                    <label class="form-label fw-bold">Create Custom Format</label>
-                                                    <textarea class="form-control" id="customFormatTemplate" rows="4"
-                                                              placeholder="Enter your custom format template...&#10;Example: &#10;Hook: {attention_grabbing_intro}&#10;Main Point: {key_message}&#10;Support: {evidence_or_example}&#10;CTA: {call_to_action}"></textarea>
-                                                    <small class="text-muted">
-                                                        Use variables like {topic}, {platform}, {style}, {hashtags} for dynamic content
-                                                    </small>
-                                                </div>
-
-                                                <!-- Format Preview -->
-                                                <div class="mb-3" id="formatPreview" style="display: none;">
-                                                    <label class="form-label fw-bold">Format Preview</label>
-                                                    <div class="border rounded p-3 bg-light">
-                                                        <div id="formatPreviewText" class="text-muted small"></div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Quick Format Templates -->
-                                                <div class="mb-3">
-                                                    <label class="form-label fw-bold">Quick Templates</label>
-                                                    <div class="row g-2">
-                                                        <div class="col-12">
-                                                            <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="applyQuickTemplate('hook_problem_solution')">
-                                                                🎣 Hook → Problem → Solution
-                                                            </button>
-                                                        </div>
-                                                        <div class="col-12">
-                                                            <button type="button" class="btn btn-outline-info btn-sm w-100" onclick="applyQuickTemplate('tip_stat_cta')">
-                                                                💡 Tip → Statistic → CTA
-                                                            </button>
-                                                        </div>
-                                                        <div class="col-12">
-                                                            <button type="button" class="btn btn-outline-success btn-sm w-100" onclick="applyQuickTemplate('question_answer_insight')">
-                                                                ❓ Question → Answer → Insight
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Structured Topic Creation Section -->
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-layer-group me-2"></i>Advanced Topic Builder
-                                </label>
-                                <div class="accordion" id="topicBuilderAccordion">
-                                    <div class="accordion-item border-0 shadow-sm">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#topicBuilderCollapse">
-                                                <i class="fas fa-tools me-2 text-warning"></i>
-                                                Build Structured Topics
-                                            </button>
-                                        </h2>
-                                        <div id="topicBuilderCollapse" class="accordion-collapse collapse" data-bs-parent="#topicBuilderAccordion">
-                                            <div class="accordion-body">
-                                                <!-- Topic Input Fields -->
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Main Topic</label>
-                                                        <input type="text" class="form-control" id="mainTopic" placeholder="e.g., AI in Healthcare">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Target Audience</label>
-                                                        <select class="form-select" id="targetAudience">
-                                                            <option value="">Select audience...</option>
-                                                            <option value="general">General Public</option>
-                                                            <option value="professionals">Professionals</option>
-                                                            <option value="experts">Industry Experts</option>
-                                                            <option value="beginners">Beginners</option>
-                                                            <option value="executives">Executives</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Content Goal</label>
-                                                        <select class="form-select" id="contentGoal">
-                                                            <option value="">Select goal...</option>
-                                                            <option value="educate">Educate</option>
-                                                            <option value="entertain">Entertain</option>
-                                                            <option value="inspire">Inspire</option>
-                                                            <option value="persuade">Persuade</option>
-                                                            <option value="inform">Inform</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Tone of Voice</label>
-                                                        <select class="form-select" id="toneOfVoice">
-                                                            <option value="">Select tone...</option>
-                                                            <option value="professional">Professional</option>
-                                                            <option value="casual">Casual</option>
-                                                            <option value="formal">Formal</option>
-                                                            <option value="friendly">Friendly</option>
-                                                            <option value="humorous">Humorous</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Key Points Input -->
-                                                <div class="mt-3">
-                                                    <label class="form-label">Key Points to Cover</label>
-                                                    <div id="keyPointsContainer">
-                                                        <div class="input-group mb-2">
-                                                            <input type="text" class="form-control" placeholder="Enter a key point...">
-                                                            <button type="button" class="btn btn-success" onclick="addKeyPoint()">
-                                                                <i class="fas fa-plus"></i> Add
-                                                            </button>
-                                                        </div>
-                                                        <div id="keyPointsList" class="mb-3">
-                                                            <!-- Key points will be listed here -->
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Call to Action -->
-                                                <div class="mt-3">
-                                                    <label class="form-label">Call to Action</label>
-                                                    <input type="text" class="form-control" id="callToAction" placeholder="e.g., Visit our website, Learn more, Sign up now">
-                                                </div>
-
-                                                <!-- Generate Structured Topic Button -->
-                                                <div class="mt-3 text-end">
-                                                    <button type="button" class="btn btn-primary" onclick="generateStructuredTopic()">
-                                                        <i class="fas fa-magic"></i> Generate Topic from Structure
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Generated Content -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0">
-                        <h5 class="mb-0">Generated Content</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="generatedContent">
-                            <div class="text-center py-5">
-                                <i class="fas fa-magic display-1 text-muted"></i>
-                                <h4 class="mt-3 text-muted">Ready to Generate</h4>
-                                <p class="text-muted">Fill in the form and click "Generate Content" to create professional posts</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Topic Modal -->
-    <div class="modal fade" id="addTopicModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">
-                        <i class="fas fa-plus-circle me-2"></i>Add New Content Topic
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addTopicForm">
-                        <!-- Topic Name Section -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-heading text-primary me-2"></i>Topic Name
-                            </label>
-                            <input type="text" class="form-control form-control-lg" id="newTopicModalName"
-                                   placeholder="Enter your content topic..." required>
-                            <small class="text-muted">Example: "AI Trends in Digital Marketing"</small>
-                        </div>
-
-                        <!-- Description Section -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-align-left text-info me-2"></i>Description
-                            </label>
-                            <textarea class="form-control" id="newTopicModalDescription" rows="4"
-                                      placeholder="Describe what this topic covers and why it's valuable..."></textarea>
-                            <small class="text-muted">Optional: Brief description of the content focus</small>
-                        </div>
-
-                        <!-- Key Points Section -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-list text-success me-2"></i>Key Points
-                            </label>
-                            <div class="input-group mb-2">
-                                <input type="text" class="form-control" id="newKeyPointInput"
-                                       placeholder="Add a key point about this topic..." onkeypress="if(event.key==='Enter') addModalKeyPoint()">
-                                <button type="button" class="btn btn-success" onclick="addModalKeyPoint()">
-                                    <i class="fas fa-plus"></i> Add
-                                </button>
-                            </div>
-                            <div id="newKeyPointsList" class="mb-3">
-                                <!-- Key points will be displayed here -->
-                            </div>
-                        </div>
-
-                        <!-- Style Selection -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-palette text-warning me-2"></i>Content Style
-                            </label>
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="newTopicStyle" id="newEducational" value="educational" checked>
-                                        <label class="form-check-label" for="newEducational">
-                                            <i class="fas fa-graduation-cap me-2"></i>Educational
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="newTopicStyle" id="newPromotional" value="promotional">
-                                        <label class="form-check-label" for="newPromotional">
-                                            <i class="fas fa-bullhorn me-2"></i>Promotional
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="newTopicStyle" id="newProfessional" value="professional">
-                                        <label class="form-check-label" for="newProfessional">
-                                            <i class="fas fa-briefcase me-2"></i>Professional
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Preview Section -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-eye text-secondary me-2"></i>Preview
-                            </label>
-                            <div class="border rounded p-3" style="background: var(--darker-color);">
-                                <h6 class="text-primary mb-2">Topic Preview</h6>
-                                <div id="newTopicPreview">
-                                    <p class="text-muted mb-1">Enter topic name to see preview...</p>
-                                    <div class="text-muted small">Add key points to enhance the content generation...</div>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
-                    <button type="button" class="btn btn-primary" onclick="saveNewTopic()">
-                        <i class="fas fa-save"></i> Add Topic
-                    </button>
-                </div>
-            </div>
-        </div>
     </div>
 {% endblock %}
 
 {% block scripts %}
+<style>
+/* REMOVED - Using global Bootstrap layout and navigation styling */
+
+.main-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+    max-width: 1000px; /* Prevent overflow */
+    margin: 0 auto;
+}
+
+/* Two-column layout only on large screens */
+@media (min-width: 1400px) {
+    .main-layout {
+        grid-template-columns: 2fr 1fr;
+        max-width: 1200px;
+    }
+}
+
+.settings-column {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+/* Form Styling */
+.form-group-modern {
+    margin-bottom: 25px;
+}
+
+.form-label-modern {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.form-label-modern i {
+    margin-right: 8px;
+    color: #667eea;
+}
+
+.form-control-modern, .form-select-modern, .form-textarea-modern {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.form-control-modern:focus, .form-select-modern:focus, .form-textarea-modern:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-textarea-modern {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+}
+
+.style-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.style-option-card {
+    padding: 15px;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.style-option-card:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.style-option-card input[type="radio"]:checked + label {
+    color: #667eea;
+}
+
+.style-option-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.style-option-desc {
+    font-size: 13px;
+    color: #6c757d;
+    margin: 0;
+}
+
+.platform-grid {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.platform-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border: 2px solid #e1e8ed;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.platform-item:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.platform-item input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.platform-item input[type="checkbox"]:checked + label {
+    color: #667eea;
+}
+
+.voice-input-card {
+    text-align: center;
+    padding: 20px;
+    border: 2px dashed #e1e8ed;
+    border-radius: 10px;
+    background: #f8f9fa;
+}
+
+.voice-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.voice-button:hover {
+    transform: scale(1.05);
+}
+
+.voice-transcript {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    background: #fff;
+    min-height: 80px;
+    resize: vertical;
+}
+
+.settings-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.generate-btn-modern {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 15px 40px;
+    font-weight: 600;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.generate-btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.floating-generate-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    font-size: 20px;
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    z-index: 1000;
+    display: none;
+}
+
+/* Use global theme variables from dashboard.css */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+    --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --sidebar-width: 280px;
+    --header-height: 80px;
+    --border-radius-modern: 16px;
+    --shadow-modern: 0 10px 30px rgba(0,0,0,0.3);
+    --shadow-hover: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+/* Dark theme is handled by global dashboard.css */
+
+/* Apply colorful theme */
+.settings-column,
+.generated-content-sidebar {
+    background: var(--card-bg);
+    color: var(--text-primary);
+}
+
+.form-control-modern,
+.form-select-modern,
+.form-textarea-modern {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-primary);
+}
+
+.style-option-card,
+.platform-item {
+    border-color: var(--card-border);
+    background: var(--darker-color);
+    color: var(--text-primary);
+}
+
+.style-option-card:hover,
+.platform-item:hover {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color) 0%, transparent 100%);
+}
+
+.voice-input-card {
+    background: var(--darker-color);
+    border-color: var(--card-border);
+}
+
+.voice-transcript {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-primary);
+}
+
+.sidebar-header {
+    border-bottom-color: var(--card-border);
+}
+
+.sidebar-header h3 {
+    color: var(--text-primary);
+}
+
+.empty-state {
+    color: var(--text-muted);
+}
+
+.empty-state h3 {
+    color: var(--text-primary);
+}
+
+/* Dark Theme Generated Content Sidebar */
+[data-theme="dark"] .generated-content-sidebar {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border-color: var(--card-border);
+}
+
+[data-theme="dark"] .sidebar-header {
+    border-bottom-color: var(--card-border);
+}
+
+[data-theme="dark"] .sidebar-header h3 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .content-stats {
+    background: var(--primary-gradient);
+}
+
+[data-theme="dark"] .empty-state {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .empty-state h3 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .simple-header {
+    background: var(--header-bg);
+    border-bottom-color: var(--card-border);
+}
+
+[data-theme="dark"] .header-title h1 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .header-title p {
+    color: var(--text-muted);
+}
+
+/* Header and Theme Toggle */
+.simple-header {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--card-border);
+    padding: 20px 0;
+    margin-bottom: 30px;
+}
+
+.theme-toggle {
+    background: var(--darker-color);
+    border: 2px solid var(--card-border);
+    color: var(--text-primary);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 18px;
+}
+
+.theme-toggle:hover {
+    background: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.header-top {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title h1 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header-title p {
+    margin: 5px 0 0 0;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+
+/* Template Section Styling */
+.template-section {
+    background: var(--darker-color);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--card-border);
+}
+
+.template-platforms {
+    margin-top: 15px;
+}
+
+.platform-template {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid var(--card-border);
+}
+
+.platform-label {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.platform-label i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.template-textarea {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.template-textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.template-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--card-border);
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.alert-info {
+    background: rgba(23, 162, 184, 0.1);
+    border: 1px solid rgba(23, 162, 184, 0.3);
+    color: #0c5460;
+}
+
+.alert-info i {
+    color: #17a2b8;
+}
+
+.alert strong {
+    color: #0c5460;
+}
+
+.alert code {
+    background: rgba(23, 162, 184, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.form-check-input {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.form-check-label {
+    cursor: pointer;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Content Generation Method Styling */
+.method-selection {
+    margin-top: 15px;
+}
+
+.method-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.method-option {
+    background: var(--card-bg);
+    border: 2px solid var(--card-border);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.method-option:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.method-option input[type="radio"] {
+    display: none;
+}
+
+.method-option input[type="radio"]:checked + .method-label {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color) 0%, transparent 10%);
+}
+
+.method-label {
+    display: block;
+    padding: 20px;
+    cursor: pointer;
+    border-radius: 10px;
+    border: 2px solid transparent;
+}
+
+.method-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.method-icon {
+    font-size: 20px;
+    margin-right: 10px;
+    color: var(--primary-color);
+}
+
+.method-header strong {
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.method-desc {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.method-input {
+    background: var(--darker-color);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--card-border);
+    margin-top: 15px;
+}
+
+.sub-label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.instruction-examples {
+    margin-top: 15px;
+    padding: 15px;
+    background: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+}
+
+.instruction-examples ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.instruction-examples li {
+    margin-bottom: 5px;
+    color: var(--text-muted);
+}
+
+.example-post {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid var(--card-border);
+}
+
+.example-post-text {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    border-radius: 6px;
+    padding: 10px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.example-post-text:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.generated-content-sidebar {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 20px;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.3rem;
+}
+
+.content-stats {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #dee2e6;
+    margin-bottom: 15px;
+}
+
+.empty-state h3 {
+    color: #495057;
+    margin-bottom: 10px;
+}
+
+/* Responsive fixes */
+@media (max-width: 1024px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .generated-content-sidebar {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-wrapper {
+        padding: 0 15px;
+    }
+
+    .settings-column, .generated-content-sidebar {
+        padding: 20px;
+        border-radius: 12px;
+    }
+}
+</style>
     <script>
+        // Template Functions
+        function toggleCustomTemplates() {
+            const checkbox = document.getElementById('useCustomTemplates');
+            const section = document.getElementById('customTemplatesSection');
+            section.style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function toggleTemplates() {
+            const section = document.getElementById('customTemplatesSection');
+            const currentDisplay = section.style.display;
+            section.style.display = currentDisplay === 'none' ? 'block' : 'none';
+        }
+
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            const themeIcon = document.getElementById('themeIcon');
+            themeIcon.className = newTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+
+        // Load saved theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const themeIcon = document.getElementById('themeIcon');
+            themeIcon.className = savedTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+        });
+
+        function resetTemplates() {
+            document.getElementById('linkedinTemplate').value = `🚀 [topic]
+
+[content]
+
+💡 Key Takeaways:
+• [key_point_1]
+• [key_point_2]
+
+#Leadership #Innovation #[hashtags]`;
+
+            document.getElementById('twitterTemplate').value = `🎯 [topic]
+
+[content]
+
+[hashtags] #Trending #[topic]`;
+
+            document.getElementById('instagramTemplate').value = `✨ [topic] ✨
+
+[content]
+
+📸 [call_to_action]
+
+[hashtags] #Instagram #[style] #[topic]`;
+        }
+
+        function previewTemplates() {
+            const topic = document.getElementById('topicInput').value || 'Sample Topic';
+            const content = 'This is sample content for your template preview...';
+            const hashtags = '#socialmedia #marketing';
+
+            const linkedinTemplate = document.getElementById('linkedinTemplate').value;
+            const preview = linkedinTemplate
+                .replace('[topic]', topic)
+                .replace('[content]', content)
+                .replace('[hashtags]', hashtags)
+                .replace('[key_point_1]', 'First key point')
+                .replace('[key_point_2]', 'Second key point');
+
+            alert('Template Preview (LinkedIn):\n\n' + preview);
+        }
+
+        // Example Post Functions
+        let examplePostCount = 1;
+
+        function addExamplePost() {
+            examplePostCount++;
+            const container = document.getElementById('examplePostsContainer');
+            const newExample = document.createElement('div');
+            newExample.className = 'example-post mb-3';
+            newExample.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="sub-label mb-0">Example ${examplePostCount}</label>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeExamplePost(this)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <textarea class="form-textarea-modern example-post-text" rows="3"
+                        placeholder="Paste an example post here..."></textarea>
+            `;
+            container.appendChild(newExample);
+        }
+
+        function removeExamplePost(button) {
+            const examplePost = button.closest('.example-post');
+            const container = document.getElementById('examplePostsContainer');
+            if (container.children.length > 1) {
+                examplePost.remove();
+                // Update example numbers
+                const examples = container.querySelectorAll('.example-post');
+                examples.forEach((example, index) => {
+                    const label = example.querySelector('.sub-label');
+                    label.textContent = `Example ${index + 1}`;
+                });
+            } else {
+                alert('You must have at least one example post.');
+            }
+        }
+
+        // Content Generation Method Toggle
+        function toggleGenerationMethod() {
+            const instructionMethod = document.getElementById('instructionMethod');
+            const exampleMethod = document.getElementById('exampleMethod');
+            const instructionsInput = document.getElementById('instructionsInput');
+            const examplesInput = document.getElementById('examplesInput');
+
+            if (instructionMethod.checked) {
+                instructionsInput.style.display = 'block';
+                examplesInput.style.display = 'none';
+                console.log('Switched to Custom Instructions mode');
+            } else if (exampleMethod.checked) {
+                instructionsInput.style.display = 'none';
+                examplesInput.style.display = 'block';
+                console.log('Switched to Learn from Examples mode');
+            }
+        }
+
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded - Setting up event listeners');
+
+            // Template toggle
+            const templateCheckbox = document.getElementById('useCustomTemplates');
+            if (templateCheckbox) {
+                templateCheckbox.addEventListener('change', toggleCustomTemplates);
+                console.log('Template checkbox listener added');
+            }
+
+            // Generation method toggle
+            const instructionMethod = document.getElementById('instructionMethod');
+            const exampleMethod = document.getElementById('exampleMethod');
+            const examplesInput = document.getElementById('examplesInput');
+
+            if (instructionMethod) {
+                instructionMethod.addEventListener('change', function() {
+                    console.log('Instruction method clicked');
+                    toggleGenerationMethod();
+                });
+            }
+
+            if (exampleMethod) {
+                exampleMethod.addEventListener('change', function() {
+                    console.log('Example method clicked');
+                    toggleGenerationMethod();
+                });
+            }
+
+            // Set initial state - show instructions, hide examples
+            if (examplesInput) {
+                examplesInput.style.display = 'none';
+                console.log('Examples input hidden by default');
+            }
+
+            // Test the toggle function
+            console.log('Initial state - Instruction method checked:', instructionMethod?.checked);
+            console.log('Initial state - Example method checked:', exampleMethod?.checked);
+        });
+
         let selectedStyle = 'educational';
         let availableTopics = [];
         let selectedTopics = new Set();
@@ -2903,6 +2877,20 @@
             }
         }
 
+        function resetForm() {
+            // Reset main form
+            document.getElementById('generatorForm').reset();
+            document.getElementById('voiceTranscript').value = '';
+            clearRecording();
+
+            // Reset to default values
+            document.getElementById('styleEducational').checked = true;
+            document.getElementById('linkedinCheck').checked = true;
+            document.getElementById('numPostsSelect').value = '1';
+            document.getElementById('creativityLevel').value = 'balanced';
+            document.getElementById('contentLength').value = 'medium';
+        }
+
         function clearRecording() {
             // Clear all recording data
             audioBlob = null;
@@ -2927,6 +2915,7 @@
             const topic = document.getElementById('topicInput')?.value;
             const selectedPlatforms = document.querySelectorAll('.platform-item input:checked');
             const platforms = Array.from(selectedPlatforms).map(cb => cb.value);
+            const numPosts = parseInt(document.getElementById('numPostsSelect').value);
 
             if (!topic || topic.trim() === '') {
                 showNotification('Please enter a topic', 'warning');
@@ -2938,6 +2927,29 @@
                 return;
             }
 
+            // Get generation method and inputs
+            const generationMethod = document.querySelector('input[name="generationMethod"]:checked').value;
+            let customInstructions = '';
+            let examplePosts = [];
+
+            if (generationMethod === 'instructions') {
+                customInstructions = document.getElementById('customInstructions').value.trim();
+                if (!customInstructions) {
+                    showNotification('Please provide custom instructions', 'warning');
+                    return;
+                }
+            } else if (generationMethod === 'examples') {
+                const exampleTextareas = document.querySelectorAll('.example-post-text');
+                examplePosts = Array.from(exampleTextareas)
+                    .map(textarea => textarea.value.trim())
+                    .filter(text => text.length > 0);
+
+                if (examplePosts.length === 0) {
+                    showNotification('Please provide at least one example post', 'warning');
+                    return;
+                }
+            }
+
             // Show loading state
             const container = document.getElementById('generatedContent');
             if (container) {
@@ -2946,16 +2958,17 @@
                         <div class="loading-spinner"></div>
                         <h3>Generating Content...</h3>
                         <p>Creating amazing content for ${platforms.join(', ')}</p>
+                        <small>Method: ${generationMethod === 'instructions' ? 'Custom Instructions' : 'Learning from Examples'}</small>
                     </div>
                 `;
             }
 
-            // Simulate generation (in real app, this would call your backend API)
-            setTimeout(() => {
-                const samplePosts = generateSamplePosts(topic, platforms);
-                displayGeneratedContent(samplePosts);
-                showNotification(`Generated ${samplePosts.length} posts successfully!`, 'success');
-            }, 2000);
+            // Call the real backend API with generation method
+            generatePostsForMultiplePlatforms(topic, platforms, numPosts, false, {
+                method: generationMethod,
+                customInstructions: customInstructions,
+                examplePosts: examplePosts
+            });
         }
 
         // Generate sample posts for testing
@@ -3045,7 +3058,7 @@
             generatePostsForMultipleTopics(allTopics, platforms, postsPerTopic);
         }
 
-        function generatePostsForMultiplePlatforms(topic, platforms, numPosts, isBatchMode) {
+        function generatePostsForMultiplePlatforms(topic, platforms, numPosts, isBatchMode, generationOptions = {}) {
             const container = document.getElementById('generatedContent');
             const totalPosts = platforms.length * numPosts;
 
@@ -3062,16 +3075,29 @@
             `;
 
             const promises = platforms.map(platform => {
+                const requestBody = {
+                    topic: topic,
+                    style: selectedStyle,
+                    platform: platform,
+                    num_posts: numPosts,
+                    use_fast: true
+                };
+
+                // Add generation method options
+                if (generationOptions.method) {
+                    requestBody.generation_method = generationOptions.method;
+                    if (generationOptions.customInstructions) {
+                        requestBody.custom_instructions = generationOptions.customInstructions;
+                    }
+                    if (generationOptions.examplePosts) {
+                        requestBody.example_posts = generationOptions.examplePosts;
+                    }
+                }
+
                 return fetch('/api/generate/content', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        topic: topic,
-                        style: selectedStyle,
-                        platform: platform,
-                        num_posts: numPosts,
-                        use_fast: true
-                    })
+                    body: JSON.stringify(requestBody)
                 })
                 .then(response => response.json())
                 .then(data => ({ platform, data }));
@@ -3287,6 +3313,13 @@
         function displayGeneratedContent(contentArray, isBatch = false) {
             const container = document.getElementById('generatedContent');
 
+            // Store content array for later use
+            storeGeneratedContent(contentArray);
+
+            // Update content count
+            const contentCount = document.getElementById('contentCount');
+            contentCount.textContent = contentArray.length;
+
             if (contentArray.length === 0) {
                 container.innerHTML = `
                     <div class="alert alert-warning" role="alert">
@@ -3313,19 +3346,42 @@
             }
 
             container.innerHTML = headerHtml + contentArray.map((content, index) => `
-                <div class="generated-content mb-4">
+                <div class="generated-content mb-4" id="generated-post-${index}">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <h6>${isBatch ? `Post ${index + 1}` : 'Generated Post'}</h6>
-                        <div>
-                            <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyContent(${index})">
-                                <i class="fas fa-copy"></i> Copy
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-sm btn-outline-primary" onclick="editGeneratedPost(${index})" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" onclick="saveGeneratedPost(${index})" title="Save to Database">
+                                <i class="fas fa-save"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteGeneratedPost(${index})" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="copyContent(${index})" title="Copy">
+                                <i class="fas fa-copy"></i>
                             </button>
                         </div>
                     </div>
-                    <div class="mb-2">${formatContent(content)}</div>
-                    <small class="text-muted">
-                        <i class="fas fa-clock"></i> Generated ${new Date().toLocaleTimeString()}
-                    </small>
+                    <div class="mb-2 content-display" id="content-display-${index}">${formatContent(content)}</div>
+                    <div class="mb-2 d-none" id="content-edit-${index}">
+                        <textarea class="form-control" id="content-textarea-${index}" rows="4" style="background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--card-border);">${content}</textarea>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> Generated ${new Date().toLocaleTimeString()}
+                        </small>
+                        <div class="edit-actions d-none" id="edit-actions-${index}">
+                            <button class="btn btn-sm btn-success" onclick="saveEdit(${index})">
+                                <i class="fas fa-check"></i> Save Edit
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="cancelEdit(${index})">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </div>
+                    <input type="hidden" id="content-original-${index}" value="${content.replace(/"/g, '&quot;')}">
                 </div>
             `).join('');
         }
@@ -3344,6 +3400,158 @@
                 showNotification('All posts copied to clipboard!', 'success');
             }).catch(err => {
                 showNotification('Failed to copy all content', 'error');
+            });
+        }
+
+        // Global store for generated content
+        let generatedContentArray = [];
+
+        // Store content when displayed
+        function storeGeneratedContent(contentArray) {
+            generatedContentArray = contentArray;
+        }
+
+        // Edit generated post
+        function editGeneratedPost(index) {
+            const displayDiv = document.getElementById(`content-display-${index}`);
+            const editDiv = document.getElementById(`content-edit-${index}`);
+            const editActions = document.getElementById(`edit-actions-${index}`);
+
+            displayDiv.classList.add('d-none');
+            editDiv.classList.remove('d-none');
+            editActions.classList.remove('d-none');
+        }
+
+        // Cancel edit
+        function cancelEdit(index) {
+            const displayDiv = document.getElementById(`content-display-${index}`);
+            const editDiv = document.getElementById(`content-edit-${index}`);
+            const editActions = document.getElementById(`edit-actions-${index}`);
+            const textarea = document.getElementById(`content-textarea-${index}`);
+            const originalContent = document.getElementById(`content-original-${index}`).value;
+
+            textarea.value = originalContent;
+            displayDiv.classList.remove('d-none');
+            editDiv.classList.add('d-none');
+            editActions.classList.add('d-none');
+        }
+
+        // Save edit
+        function saveEdit(index) {
+            const displayDiv = document.getElementById(`content-display-${index}`);
+            const editDiv = document.getElementById(`content-edit-${index}`);
+            const editActions = document.getElementById(`edit-actions-${index}`);
+            const textarea = document.getElementById(`content-textarea-${index}`);
+
+            const editedContent = textarea.value;
+            generatedContentArray[index] = editedContent;
+
+            displayDiv.innerHTML = formatContent(editedContent);
+            displayDiv.classList.remove('d-none');
+            editDiv.classList.add('d-none');
+            editActions.classList.add('d-none');
+
+            showNotification('Post edited successfully!', 'success');
+        }
+
+        // Save generated post to database
+        async function saveGeneratedPost(index) {
+            const content = generatedContentArray[index];
+            const platform = document.getElementById('platformSelect').value;
+            const topic = document.getElementById('topicInput').value || 'Generated Content';
+
+            if (!content.trim()) {
+                showNotification('Cannot save empty content!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/save-generated-post', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        platform: platform,
+                        topic: topic,
+                        generated_at: new Date().toISOString()
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification('Post saved to database successfully!', 'success');
+
+                    // Add visual indication that post is saved
+                    const postElement = document.getElementById(`generated-post-${index}`);
+                    const saveBtn = postElement.querySelector('button[onclick*="saveGeneratedPost"]');
+                    saveBtn.classList.remove('btn-outline-success');
+                    saveBtn.classList.add('btn-success');
+                    saveBtn.disabled = true;
+                    saveBtn.innerHTML = '<i class="fas fa-check"></i> Saved';
+
+                } else {
+                    showNotification(`Failed to save: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error saving post:', error);
+                showNotification('Error saving post', 'error');
+            }
+        }
+
+        // Delete generated post
+        function deleteGeneratedPost(index) {
+            if (confirm('Are you sure you want to delete this generated post?')) {
+                // Remove from array
+                generatedContentArray.splice(index, 1);
+
+                // Remove from DOM
+                const postElement = document.getElementById(`generated-post-${index}`);
+                postElement.remove();
+
+                // Update indices
+                updatePostIndices();
+
+                // Update content count
+                const contentCount = document.getElementById('contentCount');
+                contentCount.textContent = generatedContentArray.length;
+
+                // Show empty state if no posts left
+                if (generatedContentArray.length === 0) {
+                    document.getElementById('generatedContent').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-sparkles"></i>
+                            <h3>No Generated Posts</h3>
+                            <p>Generate new content to get started</p>
+                        </div>
+                    `;
+                }
+
+                showNotification('Post deleted successfully!', 'info');
+            }
+        }
+
+        // Update post indices after deletion
+        function updatePostIndices() {
+            const posts = document.querySelectorAll('.generated-content');
+            posts.forEach((post, index) => {
+                post.id = `generated-post-${index}`;
+
+                // Update all element IDs
+                post.querySelectorAll('[id]').forEach(element => {
+                    const oldId = element.id;
+                    const newId = oldId.replace(/\d+/, index);
+                    element.id = newId;
+                });
+
+                // Update onclick attributes
+                post.querySelectorAll('[onclick]').forEach(element => {
+                    const onclick = element.getAttribute('onclick');
+                    const newOnclick = onclick.replace(/\d+/, index);
+                    element.setAttribute('onclick', newOnclick);
+                });
             });
         }
 

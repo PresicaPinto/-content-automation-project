@@ -8,6 +8,7 @@ import asyncio
 import aiohttp
 import json
 import os
+import re
 import time
 import hashlib
 import sqlite3
@@ -82,24 +83,100 @@ class FastContentGenerator:
             conn.commit()
 
     def create_optimized_prompt(self, topic, style, platform="linkedin"):
-        """Create short, optimized prompts for faster generation"""
+        """Create optimized prompts with topic validation and proper AI instructions"""
+
+        # First, validate the topic and provide appropriate response
+        topic_validation = self._validate_topic(topic)
+
+        # If topic is invalid, return a prompt that asks for clarification
+        if not topic_validation['valid']:
+            return f"""I need clarification before generating content. The topic "{topic}" appears to be:
+
+{topic_validation['reason']}
+
+Please provide a clear, specific topic such as:
+- A person's name (e.g., "Elon Musk", "Marie Curie")
+- A company or organization (e.g., "Apple Inc.", "United Nations")
+- A concept or technology (e.g., "artificial intelligence", "climate change")
+- An event or historical fact (e.g., "World War II", "moon landing")
+- A product or service (e.g., "iPhone", "Netflix streaming")
+
+What specific topic would you like me to write about?"""
+
+        # Base attention instructions for all content generation
+        base_instructions = """ATTENTION AI: Before you generate any content, you MUST perform these critical steps:
+
+1. Analyze the Topic: Read the input topic carefully (e.g., "who is Shah Rukh Khan," "supply chain optimization," "the history of pizza").
+
+2. Identify the Topic's Nature: Is the topic a person, a company, an event, a technical concept, a historical fact, or something else?
+
+3. Conduct Research: Based on its nature, perform quick research to gather the 5-10 most critical facts about it.
+
+CRITICAL RULE: Do NOT use a generic business template for a topic that is clearly not a business buzzword. Failure to identify the topic's true nature is a critical error. A post about a person should sound like it's about a person. A post about a historical event should be factual and educational. A post about a technical concept should be informative and accurate."""
 
         style_prompts = {
             'educational': {
-                'linkedin': "Write a LinkedIn educational post about {topic}. Include 2-3 key insights and a question for engagement. 250-300 words. Professional tone.",
-                'twitter': "Write a Twitter thread starter about {topic}. Hook + 2 insights + question. 3 tweets max. Casual tone."
+                'linkedin': f"""{base_instructions}
+
+Write a LinkedIn educational post about {{topic}}. Requirements:
+- Research and include 2-3 genuinely interesting facts or insights
+- Make the content specific to what {{topic}} actually is (person, company, concept, etc.)
+- Include an engagement question
+- 250-300 words
+- Professional tone
+- CRITICAL: If {{topic}} is a person, write about that person. If it's a concept, explain that concept. Do NOT use generic business templates.""",
+
+                'twitter': f"""{base_instructions}
+
+Write a Twitter thread about {{topic}}. Requirements:
+- Research the actual nature of {{topic}}
+- Hook + 2-3 genuine insights + engagement question
+- Maximum 3 tweets
+- Casual but informative tone
+- CRITICAL: Match content type to topic - people need personal details, concepts need explanations, events need facts."""
             },
-            'case_study': {
-                'linkedin': "Write a LinkedIn case study about {topic}. Include specific result with numbers. Problem → Solution → Result. 250-300 words.",
-                'twitter': "Write Twitter thread about {topic} case study. Result → Problem → Solution. 3 tweets. Show specific numbers."
+            'promotional': {
+                'linkedin': f"""{base_instructions}
+
+Write a LinkedIn promotional post about {{topic}}. Requirements:
+- Research what {{topic}} actually is first
+- If it's a product/service: highlight genuine benefits
+- If it's a person/company: promote their actual achievements
+- If it's a concept: promote understanding or adoption of it
+- 250-300 words
+- Professional but persuasive tone
+- CRITICAL: Only write promotional content that makes sense for what {{topic}} actually is.""",
+
+                'twitter': f"""{base_instructions}
+
+Write a Twitter promotional thread about {{topic}}. Requirements:
+- Research the actual nature of {{topic}}
+- Promote based on what it really is (product, person, concept, etc.)
+- Value proposition + benefits + call to action
+- Maximum 3 tweets
+- Energetic and persuasive tone
+- CRITICAL: Match promotional approach to the actual topic type."""
             },
-            'story': {
-                'linkedin': "Write a LinkedIn story about {topic}. Challenge → Turning point → Current state. 250-300 words. Personal tone.",
-                'twitter': "Write Twitter thread story about {topic}. Past → Change → Present. 3 tweets. Relatable journey."
-            },
-            'insight': {
-                'linkedin': "Write a LinkedIn insight about {topic}. Contrarian view or trend. 250-300 words. Authoritative tone.",
-                'twitter': "Write Twitter thread insight about {topic. Unpopular opinion + reason + question. 3 tweets. Provocative."
+            'industry_insights': {
+                'linkedin': f"""{base_instructions}
+
+Write a LinkedIn industry insights post about {{topic}}. Requirements:
+- Research industry context related to {{topic}}
+- Provide genuine analysis, not generic business buzzwords
+- Include relevant trends, data, or developments
+- 250-300 words
+- Authoritative and analytical tone
+- CRITICAL: If {{topic}} isn't business-related, pivot to insightful analysis of its actual field/industry.""",
+
+                'twitter': f"""{base_instructions}
+
+Write a Twitter insights thread about {{topic}}. Requirements:
+- Research genuine insights about {{topic}}'s field
+- Share actual trends or analysis, not generic buzzwords
+- Insight → Context → Implication
+- Maximum 3 tweets
+- Knowledgeable and forward-looking tone
+- CRITICAL: Provide real value based on what {{topic}} actually is."""
             }
         }
 
@@ -108,6 +185,91 @@ class FastContentGenerator:
         prompt = prompt_templates.get(platform, prompt_templates['linkedin'])
 
         return prompt.format(topic=topic)
+
+    def _validate_topic(self, topic):
+        """Validate if the topic is meaningful for content generation"""
+
+        # Check for empty or too short topics
+        if not topic or len(topic.strip()) < 2:
+            return {
+                'valid': False,
+                'reason': 'Too short or empty - please provide a complete topic'
+            }
+
+        topic = topic.strip()
+
+        # Check for random letters/gibberish patterns
+        # 1. Consecutive letters without vowels that are too long (adjusted for longer phrases)
+        consonant_only = re.sub(r'[aeiouAEIOU\s\d\W]', '', topic)
+        # Only trigger if very long consonant sequences relative to total length
+        if len(consonant_only) > 8 and len(consonant_only) > len(topic) * 0.7:
+            return {
+                'valid': False,
+                'reason': 'Appears to be random letters or gibberish - please provide a meaningful topic'
+            }
+
+        # 2. Repeated character patterns (like "asdfasdf", "abcabc")
+        repeated_patterns = [
+            r'(.)\1{3,}',  # Same character repeated 4+ times
+            r'(.{2,4})\1{2,}',  # 2-4 character pattern repeated 3+ times
+        ]
+
+        for pattern in repeated_patterns:
+            if re.search(pattern, topic, re.IGNORECASE):
+                return {
+                    'valid': False,
+                    'reason': 'Appears to be repeated patterns or random typing - please provide a real topic'
+                }
+
+        # 3. Common keyboard row patterns (like "qwerty", "asdfgh")
+        keyboard_patterns = [
+            r'qwerty|asdfgh|zxcvbn|qazwsx|edcrfv|tgbnhy',
+            r'123456|234567|345678|456789|567890',
+            r'qwe|asd|zxc|rty|fgh|vbn|uio|jkl|pwe',
+        ]
+
+        for pattern in keyboard_patterns:
+            if re.search(pattern, topic, re.IGNORECASE):
+                return {
+                    'valid': False,
+                    'reason': 'Appears to be keyboard typing patterns - please provide a meaningful topic'
+                }
+
+        # 4. Check for common test/placeholder words
+        placeholder_words = [
+            'test', 'asdf', 'qwer', 'asdfghjkl', 'qwertyuiop',
+            'mnbvcxz', 'poiuytrewq', 'lkjhgfdsa', 'sample',
+            'example', 'placeholder', 'dummy', 'random', 'asdfg',
+            'hjkl', 'zxcv', 'bnm', 'mnb', 'bvc', 'xcv'
+        ]
+
+        if topic.lower() in placeholder_words:
+            return {
+                'valid': False,
+                'reason': 'This appears to be a test or placeholder word - please provide a real topic'
+            }
+
+        # 5. Check if it's mostly non-alphabetic characters
+        alpha_count = sum(1 for c in topic if c.isalpha())
+        if alpha_count < len(topic) * 0.3:
+            return {
+                'valid': False,
+                'reason': 'Contains too few letters to be a meaningful topic - please use words instead'
+            }
+
+        # 6. Check for suspicious patterns (mostly consonants, unusual letter combinations)
+        vowel_count = sum(1 for c in topic.lower() if c in 'aeiou')
+        if len(topic) > 3 and vowel_count == 0:
+            return {
+                'valid': False,
+                'reason': 'Appears to be random consonants - please provide a meaningful word or phrase'
+            }
+
+        # If we get here, the topic appears to be valid
+        return {
+            'valid': True,
+            'reason': 'Topic appears to be valid'
+        }
 
     async def generate_single_post_async(self, topic_data, session, platform="linkedin"):
         """Generate a single post asynchronously with caching"""

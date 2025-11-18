@@ -59,37 +59,67 @@
         <!-- Key Metrics -->
         <div class="row g-4 mb-4">
             <div class="col-md-3">
-                <div class="metric-card">
-                    <div class="metric-value" id="totalPosts">-</div>
-                    <p class="mb-0">Total Posts</p>
+                <div class="metric-card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="metric-value" id="totalPosts">-</div>
+                        <i class="fas fa-file-alt fa-2x text-white-50"></i>
+                    </div>
+                    <p class="mb-0 text-start mt-2">Total Posts</p>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="metric-card">
-                    <div class="metric-value" id="totalViews">-</div>
-                    <p class="mb-0">Total Views</p>
+                <div class="metric-card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="metric-value" id="totalViews">-</div>
+                        <i class="fas fa-eye fa-2x text-white-50"></i>
+                    </div>
+                    <p class="mb-0 text-start mt-2">Total Views</p>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="metric-card">
-                    <div class="metric-value" id="avgEngagement">-</div>
-                    <p class="mb-0">Avg. Engagement</p>
+                <div class="metric-card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="metric-value" id="avgEngagement">-</div>
+                        <i class="fas fa-thumbs-up fa-2x text-white-50"></i>
+                    </div>
+                    <p class="mb-0 text-start mt-2">Avg. Engagement</p>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="metric-card">
-                    <div class="metric-value" id="platformCount">-</div>
-                    <p class="mb-0">Platforms</p>
+                <div class="metric-card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="metric-value" id="platformCount">-</div>
+                        <i class="fas fa-share-alt fa-2x text-white-50"></i>
+                    </div>
+                    <p class="mb-0 text-start mt-2">Platforms</p>
                 </div>
             </div>
         </div>
+
+        <!-- Key Insight Card -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-lightbulb fa-3x text-warning"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">Key Insight</h5>
+                            <p class="card-text mb-0" id="keyInsightText">Analyzing data to find actionable insights...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Charts Row -->
         <div class="row g-4 mb-4">
             <div class="col-md-8">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white border-0">
-                        <h5 class="mb-0">Performance Overview</h5>
+                        <h5 class="mb-0">Performance Comparison</h5>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
@@ -101,7 +131,7 @@
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white border-0">
-                        <h5 class="mb-0">Platform Distribution</h5>
+                        <h5 class="mb-0">Engagement Breakdown</h5>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
@@ -154,59 +184,57 @@
         let platformChart = null;
 
         function initCharts() {
-            // Performance Chart
+            // Performance Chart (Combo Bar/Line)
             const performanceCtx = document.getElementById('performanceChart').getContext('2d');
             performanceChart = new Chart(performanceCtx, {
-                type: 'line',
+                type: 'bar',
                 data: {
-                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
-                    datasets: [{
-                        label: 'Views',
-                        data: [450, 520, 580, 640, 720, 810, 950],
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                        tension: 0.4
-                    }, {
-                        label: 'Engagement',
-                        data: [23, 28, 32, 38, 42, 48, 55],
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                        tension: 0.4
-                    }]
+                    labels: [],
+                    datasets: []
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'top'
+                        legend: { position: 'top' },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Counts (Views, Likes)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'Engagement Rate (%)' },
+                            grid: { drawOnChartArea: false }
                         }
                     }
                 }
             });
 
-            // Platform Chart
+            // Platform Chart (Stacked Bar)
             const platformCtx = document.getElementById('platformChart').getContext('2d');
             platformChart = new Chart(platformCtx, {
-                type: 'doughnut',
+                type: 'bar',
                 data: {
-                    labels: ['LinkedIn', 'Twitter', 'Facebook'],
-                    datasets: [{
-                        data: [65, 25, 10],
-                        backgroundColor: [
-                            'rgba(0, 123, 255, 0.8)',
-                            'rgba(29, 161, 242, 0.8)',
-                            'rgba(24, 119, 242, 0.8)'
-                        ]
-                    }]
+                    labels: [],
+                    datasets: []
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
+                        legend: { position: 'bottom' },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, title: { display: true, text: 'Total Engagements' } }
                     }
                 }
             });
@@ -227,6 +255,7 @@
                         updateMetrics(data);
                         updateCharts(data);
                         populateMetricsTable(data);
+                        updateKeyInsight(data);
                     } else {
                         console.warn('No analysis data found, using sample data');
                         loadSampleData();
@@ -237,6 +266,22 @@
                     console.warn('Loading sample data instead');
                     loadSampleData();
                 });
+        }
+
+        function updateKeyInsight(data) {
+            if (!data.metrics || data.metrics.length === 0) {
+                document.getElementById('keyInsightText').textContent = 'Not enough data to generate insights.';
+                return;
+            }
+
+            let topPlatform = data.metrics.reduce((prev, current) => {
+                return (prev.avg_engagement > current.avg_engagement) ? prev : current;
+            });
+
+            const platformName = topPlatform.platform.charAt(0).toUpperCase() + topPlatform.platform.slice(1);
+            const engagement = topPlatform.avg_engagement.toFixed(1);
+
+            document.getElementById('keyInsightText').innerHTML = `Focus on <strong>${platformName}</strong>. It's driving your highest engagement rate at <strong>${engagement}%</strong>.`;
         }
 
         function updateMetrics(data) {
@@ -253,13 +298,72 @@
         }
 
         function updateCharts(data) {
-            // Update platform chart with real data
-            if (platformChart && data.metrics) {
-                const platforms = data.metrics.map(m => m.platform);
-                const counts = data.metrics.map(m => m.total_posts || 0);
+            if (!data.metrics || data.metrics.length === 0) return;
 
-                platformChart.data.datasets[0].data = counts;
+            const platforms = data.metrics.map(m => m.platform.charAt(0).toUpperCase() + m.platform.slice(1));
+            
+            // --- Performance Chart (Grouped Bar) ---
+            if (performanceChart) {
+                const views = data.metrics.map(m => m.total_views || 0);
+                const likes = data.metrics.map(m => m.total_likes || 0);
+                const engagement = data.metrics.map(m => m.avg_engagement || 0);
+
+                performanceChart.data.labels = platforms;
+                performanceChart.data.datasets = [
+                    {
+                        label: 'Views',
+                        data: views,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Likes',
+                        data: likes,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Engagement Rate (%)',
+                        data: engagement,
+                        backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y1',
+                        type: 'line', // Overlay as a line
+                        tension: 0.4
+                    }
+                ];
+                performanceChart.update();
+            }
+
+            // --- Platform Chart (Stacked Bar for Engagement) ---
+            if (platformChart) {
+                const likes = data.metrics.map(m => m.total_likes || 0);
+                const comments = data.metrics.map(m => m.total_comments || 0);
+                const shares = data.metrics.map(m => m.total_shares || 0);
+
                 platformChart.data.labels = platforms;
+                platformChart.data.datasets = [
+                    {
+                        label: 'Likes',
+                        data: likes,
+                        backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                    },
+                    {
+                        label: 'Comments',
+                        data: comments,
+                        backgroundColor: 'rgba(255, 206, 86, 0.7)',
+                    },
+                    {
+                        label: 'Shares',
+                        data: shares,
+                        backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                    }
+                ];
                 platformChart.update();
             }
         }

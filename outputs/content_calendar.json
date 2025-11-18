@@ -42,6 +42,17 @@
     "prompt_type": "professional_post",
     "content": "Quick scheduled content about ai scheduler demo",
     "publish_date": "2025-11-08",
-    "status": "scheduled"
+    "status": "completed",
+    "completed_at": "2025-11-16T21:13:48.421534"
+  },
+  {
+    "post_number": 6,
+    "topic": "demos",
+    "platform": "linkedin",
+    "prompt_type": "professional_post",
+    "content": "Quick scheduled content about demos",
+    "publish_date": "2025-11-16",
+    "status": "deleted",
+    "deleted_at": "2025-11-16T21:18:21.659918"
   }
 ]

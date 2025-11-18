@@ -73,37 +73,37 @@
 
             <!-- Navigation Menu -->
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto mb-2 mb-lg-0" style="
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0" id="mobileNavContainer" style="
                     display: flex;
                     align-items: center;
                     gap: 0.25rem;
                 ">
                     <li class="nav-item">
-                        <a class="nav-link nav-link-modern {{ 'active' if request.endpoint in ['dashboard', 'dashboard_alt'] else '' }}" href="/">
+                        <a class="nav-link nav-link-modern nav-link-special {{ 'active' if request.endpoint in ['dashboard', 'dashboard_alt'] else '' }}" href="/">
                             <i class="fas fa-home nav-icon"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
                       <li class="nav-item">
-                        <a class="nav-link nav-link-modern {{ 'active' if request.endpoint == 'content_generator' else '' }}" href="/content-generator">
+                        <a class="nav-link nav-link-modern nav-link-special {{ 'active' if request.endpoint == 'content_generator' else '' }}" href="/content-generator">
                             <i class="fas fa-magic nav-icon"></i>
                             <span>Generator</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-modern {{ 'active' if request.endpoint == 'manual_posting' else '' }}" href="/manual-posting">
+                        <a class="nav-link nav-link-modern nav-link-special {{ 'active' if request.endpoint == 'manual_posting' else '' }}" href="/manual-posting">
                             <i class="fas fa-paper-plane nav-icon"></i>
                             <span>Post</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-modern {{ 'active' if request.endpoint == 'scheduler' else '' }}" href="/scheduler">
+                        <a class="nav-link nav-link-modern nav-link-special {{ 'active' if request.endpoint == 'scheduler' else '' }}" href="/scheduler">
                             <i class="fas fa-calendar-alt nav-icon"></i>
                             <span>Scheduler</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-modern {{ 'active' if request.endpoint == 'generated_posts' else '' }}" href="/generated-posts">
+                        <a class="nav-link nav-link-modern nav-link-special {{ 'active' if request.endpoint == 'generated_posts' else '' }}" href="/generated-posts">
                             <i class="fas fa-folder nav-icon"></i>
                             <span>All Posts</span>
                         </a>
@@ -115,7 +115,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-modern {{ 'active' if request.endpoint == 'social_media_setup' else '' }}" href="/social-media-setup">
+                        <a class="nav-link nav-link-modern nav-link-special {{ 'active' if request.endpoint == 'social_media_setup' else '' }}" href="/social-media-setup">
                             <i class="fas fa-cog nav-icon"></i>
                             <span>Social Setup</span>
                         </a>
@@ -329,7 +329,108 @@
         // Initialize theme on page load
         document.addEventListener('DOMContentLoaded', function() {
             initTheme();
+            setupMobileNavigation();
         });
+
+        // Setup enhanced mobile navigation
+        function setupMobileNavigation() {
+            const mobileNavContainer = document.getElementById('mobileNavContainer');
+            const navbarCollapse = document.getElementById('navbarNav');
+
+            if (!mobileNavContainer || !navbarCollapse) return;
+
+            // Function to restructure navigation for mobile
+            function restructureForMobile() {
+                if (window.innerWidth <= 991 && !mobileNavContainer.hasAttribute('data-restructured')) {
+                    const navItems = Array.from(mobileNavContainer.querySelectorAll('.nav-item'));
+
+                    // Group navigation items by category
+                    const navStructure = {
+                        main: [],
+                        management: [],
+                        analytics: []
+                    };
+
+                    navItems.forEach(item => {
+                        const link = item.querySelector('.nav-link');
+                        const span = link.querySelector('span');
+                        if (span) {
+                            const text = span.textContent.trim().toLowerCase();
+                            if (text.includes('dashboard') || text.includes('generator') || text.includes('post')) {
+                                navStructure.main.push(item);
+                            } else if (text.includes('scheduler') || text.includes('posts') || text.includes('social')) {
+                                navStructure.management.push(item);
+                            } else if (text.includes('analytics')) {
+                                navStructure.analytics.push(item);
+                            } else {
+                                navStructure.main.push(item); // Default to main
+                            }
+                        }
+                    });
+
+                    // Clear and rebuild navigation
+                    mobileNavContainer.innerHTML = '';
+
+                    // Add main category
+                    if (navStructure.main.length > 0) {
+                        mobileNavContainer.innerHTML += '<div class="nav-category">MAIN</div>';
+                        navStructure.main.forEach(item => mobileNavContainer.appendChild(item));
+                    }
+
+                    // Add management category
+                    if (navStructure.management.length > 0) {
+                        mobileNavContainer.innerHTML += '<div class="nav-category">MANAGEMENT</div>';
+                        navStructure.management.forEach(item => mobileNavContainer.appendChild(item));
+                    }
+
+                    // Add analytics category
+                    if (navStructure.analytics.length > 0) {
+                        mobileNavContainer.innerHTML += '<div class="nav-category">ANALYTICS</div>';
+                        navStructure.analytics.forEach(item => mobileNavContainer.appendChild(item));
+                    }
+
+                    // Add close button
+                    mobileNavContainer.innerHTML += '<button class="mobile-nav-close" onclick="closeMobileNav()">Close Navigation</button>';
+
+                    // Mark as restructured
+                    mobileNavContainer.setAttribute('data-restructured', 'true');
+                } else if (window.innerWidth > 991 && mobileNavContainer.hasAttribute('data-restructured')) {
+                    // Restore desktop navigation
+                    location.reload(); // Simple way to restore original structure
+                }
+            }
+
+            // Handle window resize
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(restructureForMobile, 250);
+            });
+
+            // Initial check
+            restructureForMobile();
+
+            // Handle mobile menu close when clicking outside
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 991 &&
+                    navbarCollapse.classList.contains('show') &&
+                    !navbarCollapse.contains(event.target) &&
+                    !event.target.closest('.navbar-toggler')) {
+                    closeMobileNav();
+                }
+            });
+        }
+
+        // Close mobile navigation
+        function closeMobileNav() {
+            const navbarCollapse = document.getElementById('navbarNav');
+            if (navbarCollapse) {
+                const bsCollapse = new bootstrap.Collapse(navbarCollapse, {
+                    toggle: false
+                });
+                bsCollapse.hide();
+            }
+        }
 
         // Clean up modal on page unload
         window.addEventListener('beforeunload', function() {

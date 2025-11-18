@@ -1005,11 +1005,11 @@
         function updateLastUpdatedTime() {
             console.log("⏰ Updating timestamp...");
             const now = new Date();
-            const timeString = now.toLocaleTimeString('de-DE', {
+            const timeString = now.toLocaleTimeString('en-IN', {
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit',
-                timeZone: 'Europe/Berlin'
+                timeZone: 'Asia/Kolkata'
             });
             const lastUpdatedElement = document.getElementById('lastUpdated');
             if (lastUpdatedElement) {
@@ -1042,15 +1042,31 @@
                     data.posts.slice(0, 6).forEach(post => { // Show up to 6 recent posts
                         let content = post.content || 'No content';
                         const topic = post.topic || 'AI Generated';
-                        const createdDate = post.created_at ? new Date(post.created_at).toLocaleDateString() : 'Recent';
+                        const createdDate = post.created_at ? new Date(post.created_at).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }) : 'Recent';
                         const status = post.status || 'generated';
+
+                        // Clean up content by removing template markers
+                        content = content
+                            .replace(/\*\*Tweet \d+ \(Hook\):\*\*/g, '') // Remove Tweet X (Hook): markers
+                            .replace(/\*\*Tweet \d+ \(Body\):\*\*/g, '') // Remove Tweet X (Body): markers
+                            .replace(/\*\*LinkedIn Post:\*\*/g, '') // Remove LinkedIn Post: markers
+                            .replace(/\*\*Instagram Caption:\*\*/g, '') // Remove Instagram Caption: markers
+                            .replace(/^\d+\.\s*/, '') // Remove numbered prefixes
+                            .replace(/Hook:/gi, '') // Remove Hook: markers
+                            .replace(/Body:/gi, '') // Remove Body: markers
+                            .trim();
+
+                        // If content is too short after cleaning, use topic as fallback
+                        if (content.length < 20) {
+                            content = `Latest content about ${topic}`;
+                        }
 
                         recentPostsHtml += `
                             <div class="col-md-4 mb-3">
                                 <div class="card h-100 border-light">
                                     <div class="card-body">
                                         <h6 class="card-subtitle mb-2 text-primary">${topic}</h6>
-                                        <p class="card-text small text-muted" style="max-height: 80px; overflow-y: auto;">${content.substring(0, 150)}${content.length > 150 ? '...' : ''}</p>
+                                        <p class="card-text small text-muted" style="max-height: 80px; overflow-y: auto; line-height: 1.4;">${content.substring(0, 150)}${content.length > 150 ? '...' : ''}</p>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <small class="text-muted">${createdDate}</small>
                                             <span class="badge bg-${status === 'published' ? 'success' : 'warning'}-subtle text-${status === 'published' ? 'success' : 'warning'}">${status}</span>
@@ -1107,75 +1123,105 @@
             }, 3000);
         }
 
-        // Load AI Insights Function
+        // Load AI Insights Function - Real Data Analysis
         async function loadAIInsights() {
-            console.log("🧠 Loading AI insights...");
+            console.log("🧠 Loading real AI insights...");
             try {
-                // Simulate AI analysis with contextual insights
-                const insights = [
-                    {
-                        type: 'positive',
-                        title: 'Engagement Up 23%',
-                        description: 'Your LinkedIn engagement rate has increased by 23% this week. Keep up the great content strategy!'
-                    },
-                    {
-                        type: 'warning',
-                        title: 'Posting Frequency Alert',
-                        description: 'You haven\'t posted on Twitter in 3 days. Consistent posting helps maintain audience engagement.'
-                    },
-                    {
-                        type: 'positive',
-                        title: 'Peak Performance Time',
-                        description: 'Your posts perform best between 2-4 PM on weekdays. Schedule your content during these hours for maximum reach.'
-                    },
-                    {
-                        type: 'negative',
-                        title: 'Instagram Engagement Drop',
-                        description: 'Instagram engagement decreased by 15%. Try using more interactive content like polls and questions.'
-                    },
-                    {
-                        type: 'positive',
-                        title: 'Follower Growth Trend',
-                        description: 'You\'re gaining an average of 50 followers per week across all platforms. Excellent growth rate!'
-                    },
-                    {
-                        type: 'warning',
-                        title: 'Content Mix Suggestion',
-                        description: 'Consider adding more video content. Posts with videos get 2x more engagement on average.'
-                    }
-                ];
+                const response = await fetch('/api/ai-insights');
+                const data = await response.json();
 
-                const container = document.getElementById('aiInsights');
-                if (container) {
-                    container.innerHTML = insights.map(insight => `
-                        <div class="insight-card ${insight.type}">
-                            <div class="insight-title">
-                                <i class="fas fa-${insight.type === 'positive' ? 'arrow-trend-up' : insight.type === 'negative' ? 'arrow-trend-down' : 'exclamation-triangle'}"></i>
-                                ${insight.title}
-                            </div>
-                            <div class="insight-description">${insight.description}</div>
-                        </div>
-                    `).join('');
-                    console.log("✅ AI insights loaded successfully");
+                if (data.success) {
+                    displayAIInsights(data.insights);
+                    console.log("✅ Real AI insights loaded successfully");
                 } else {
-                    console.error("❌ Could not find aiInsights container");
+                    console.log("⚠️ Using fallback insights due to API error");
+                    displayFallbackInsights();
                 }
             } catch (error) {
-                console.error('❌ Error loading AI insights:', error);
-                const container = document.getElementById('aiInsights');
-                if (container) {
-                    container.innerHTML = `
-                        <div class="col-12">
-                            <div class="alert alert-warning">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                Unable to load AI insights at this time. Please refresh the page.
-                            </div>
-                        </div>
-                    `;
-                }
+                console.error("Error loading AI insights:", error);
+                displayFallbackInsights();
             }
         }
 
+        function displayAIInsights(insights) {
+            const container = document.getElementById('aiInsights');
+
+            if (!insights || insights.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center py-4">
+                        <i class="fas fa-brain fa-3x text-muted mb-3"></i>
+                        <h5>Generate Content to Unlock AI Insights</h5>
+                        <p class="text-muted">Start creating content and our AI will analyze your patterns to provide personalized recommendations.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = insights.map(insight => {
+                const colorMap = {
+                    'success': '#10b981',
+                    'warning': '#f59e0b',
+                    'info': '#3b82f6',
+                    'primary': '#8b5cf6',
+                    'danger': '#ef4444'
+                };
+
+                const color = colorMap[insight.color] || '#6b7280';
+
+                return `
+                    <div class="insight-card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1rem; padding: 1.5rem; transition: all 0.3s ease;">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="insight-icon" style="width: 40px; height: 40px; border-radius: 0.5rem; background: linear-gradient(135deg, ${color}, ${color}dd); display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+                                <i class="${insight.icon}"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 style="color: var(--text-primary); margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 600;">${insight.title}</h5>
+                                <p style="color: var(--text-secondary); margin: 0 0 1rem 0; font-size: 0.9rem; line-height: 1.5;">${insight.description}</p>
+                                <div style="background: rgba(${color}, 0.1); border-left: 3px solid ${color}; padding: 0.75rem; border-radius: 0.25rem;">
+                                    <small style="color: ${color}; font-weight: 500;">
+                                        <i class="fas fa-lightbulb me-1"></i> ${insight.recommendation}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function displayFallbackInsights() {
+            // Fallback insights when no data is available
+            const fallbackInsights = [
+                {
+                    type: 'getting_started',
+                    title: 'Start Your Content Journey',
+                    description: 'Begin generating content to unlock AI-powered insights tailored to your strategy.',
+                    recommendation: 'Create your first few posts and watch as the AI learns your patterns.',
+                    icon: 'fas fa-rocket',
+                    color: 'info'
+                },
+                {
+                    type: 'content_strategy',
+                    title: 'Content Strategy Builder',
+                    description: 'Your content performance data will help shape optimal posting strategies.',
+                    recommendation: 'Focus on educational content first - it typically generates 2x more engagement.',
+                    icon: 'fas fa-lightbulb',
+                    color: 'warning'
+                },
+                {
+                    type: 'platform_optimization',
+                    title: 'Platform Excellence',
+                    description: 'Different platforms require different approaches for maximum impact.',
+                    recommendation: 'LinkedIn thrives on professional insights, Instagram on visual storytelling.',
+                    icon: 'fas fa-globe',
+                    color: 'primary'
+                }
+            ];
+
+            displayAIInsights(fallbackInsights);
+        }
+
+        
         // Cleanup on page unload
         window.addEventListener('beforeunload', function() {
             if (schedulerRefreshInterval) {

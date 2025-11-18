@@ -442,7 +442,7 @@
                                                 <i class="bi ${this.getPlatformIcon(post.platform)}"></i> ${post.platform}
                                             </span>
                                             <span class="time-indicator">
-                                                <i class="bi bi-clock"></i> ${this.formatTime(post.scheduled_time)}
+                                                <i class="bi bi-clock"></i> ${this.formatTime(post.scheduled_time || post.created_at)}
                                             </span>
                                         </div>
                                         <div>
@@ -520,6 +520,9 @@
             formatTime(timeString) {
                 if (!timeString) return 'No time set';
                 const date = new Date(timeString);
+                if (isNaN(date.getTime())) {
+                    return 'No time set';
+                }
                 return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
             }
 
@@ -658,33 +661,26 @@
             }
         }
 
-        async function openEditModal(postId) {
-            try {
-                const response = await fetch(`/api/posts/${postId}/edit`);
-                const data = await response.json();
+        function openEditModal(postId) {
+            const post = workflow.posts.find(p => p.id == postId);
 
-                if (data.success) {
-                    const post = data.post;
+            if (post) {
+                // Populate form fields
+                document.getElementById('editPostId').value = post.id;
+                document.getElementById('editTopic').value = post.topic || '';
+                document.getElementById('editContent').value = post.content || '';
+                document.getElementById('editHashtags').value = post.hashtags || '';
 
-                    // Populate form fields
-                    document.getElementById('editPostId').value = post.id || postId;
-                    document.getElementById('editTopic').value = post.topic || '';
-                    document.getElementById('editContent').value = post.content || '';
-                    document.getElementById('editHashtags').value = post.hashtags || '';
+                // Update character count and preview
+                updateCharCount();
+                updatePreview();
 
-                    // Update character count and preview
-                    updateCharCount();
-                    updatePreview();
-
-                    // Show modal
-                    const modal = new bootstrap.Modal(document.getElementById('editPostModal'));
-                    modal.show();
-                } else {
-                    showCopyFeedback('Failed to load post for editing', 'error');
-                }
-            } catch (error) {
-                console.error('Error loading post for edit:', error);
-                showCopyFeedback('Error loading post for editing', 'error');
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('editPostModal'));
+                modal.show();
+            } else {
+                showCopyFeedback('Failed to find post for editing', 'error');
+                console.error('Could not find post with ID:', postId);
             }
         }
 

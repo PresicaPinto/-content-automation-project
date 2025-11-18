@@ -208,23 +208,42 @@
                                 <span class="badge bg-${platform === 'linkedin' ? 'primary' : platform === 'twitter' ? 'info' : 'secondary'}">${platform}</span>
                             </div>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-outline-primary" onclick="copyPost(${postIndex})">
+                                <button class="btn btn-sm btn-outline-secondary edit-btn" onclick="editPost(${postIndex})">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-success save-btn d-none" onclick="savePost(${postIndex})">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                                <button class="btn btn-sm btn-outline-light cancel-btn d-none" onclick="cancelEdit(${postIndex})">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyPost(${postIndex})">
                                     <i class="fas fa-copy"></i> Copy
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="deletePost('${postId}', ${postIndex})">
+                                <button class="btn btn-sm btn-outline-danger delete-btn" onclick="deletePost('${postId}', ${postIndex})">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </div>
                         <div class="content-display">
-                            <div class="post-content mb-2">${formatContent(post.content || 'Generated content...')}</div>
+                            <div class="post-content mb-2 content-view">${formatContent(post.content || 'Generated content...')}</div>
+                            <div class="post-edit d-none">
+                                <textarea class="form-control content-textarea" rows="6" placeholder="Edit your post content...">${post.content || ''}</textarea>
+                            </div>
                         </div>
                         ${post.hashtags ? `
-                            <div class="hashtags mb-2">
+                            <div class="hashtags mb-2 hashtags-view">
                                 <small class="text-muted">Hashtags:</small><br>
                                 <span class="text-primary">${post.hashtags}</span>
                             </div>
-                        ` : ''}
+                            <div class="hashtags-edit d-none mb-2">
+                                <small class="text-muted">Hashtags:</small><br>
+                                <input type="text" class="form-control hashtags-input" value="${post.hashtags || ''}" placeholder="Add hashtags (e.g., #business #tech #innovation)">
+                            </div>
+                        ` : `<div class="hashtags-edit d-none mb-2">
+                            <small class="text-muted">Hashtags:</small><br>
+                            <input type="text" class="form-control hashtags-input" placeholder="Add hashtags (e.g., #business #tech #innovation)">
+                        </div>`}
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">
                                 <i class="fas fa-calendar"></i>
@@ -376,6 +395,148 @@
             setTimeout(() => {
                 notification.remove();
             }, 3000);
+        }
+
+        // Edit, Save, and Cancel functionality
+        let editingPostIndex = null;
+
+        function editPost(index) {
+            const posts = postsData[currentPlatform];
+            if (!posts || !posts[index]) return;
+
+            // Cancel any existing edit
+            if (editingPostIndex !== null && editingPostIndex !== index) {
+                cancelEdit(editingPostIndex);
+            }
+
+            editingPostIndex = index;
+            const post = posts[index];
+            const postCard = document.querySelector(`[data-original-index="${index}"]`);
+
+            // Toggle view/edit elements
+            postCard.querySelector('.content-view').classList.add('d-none');
+            postCard.querySelector('.post-edit').classList.remove('d-none');
+
+            const hashtagsView = postCard.querySelector('.hashtags-view');
+            const hashtagsEdit = postCard.querySelector('.hashtags-edit');
+            if (hashtagsView) hashtagsView.classList.add('d-none');
+            if (hashtagsEdit) hashtagsEdit.classList.remove('d-none');
+
+            // Toggle buttons
+            postCard.querySelector('.edit-btn').classList.add('d-none');
+            postCard.querySelector('.save-btn').classList.remove('d-none');
+            postCard.querySelector('.cancel-btn').classList.remove('d-none');
+            postCard.querySelector('.copy-btn').classList.add('d-none');
+            postCard.querySelector('.delete-btn').classList.add('d-none');
+
+            // Focus on textarea
+            postCard.querySelector('.content-textarea').focus();
+        }
+
+        async function savePost(index) {
+            const posts = postsData[currentPlatform];
+            if (!posts || !posts[index]) return;
+
+            const post = posts[index];
+            const postCard = document.querySelector(`[data-original-index="${index}"]`);
+
+            // Get updated content
+            const newContent = postCard.querySelector('.content-textarea').value.trim();
+            const newHashtags = postCard.querySelector('.hashtags-input')?.value.trim() || '';
+
+            if (!newContent) {
+                showNotification('Post content cannot be empty!', 'error');
+                return;
+            }
+
+            try {
+                // Show saving state
+                const saveBtn = postCard.querySelector('.save-btn');
+                const originalBtnContent = saveBtn.innerHTML;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                saveBtn.disabled = true;
+
+                // Send update to server
+                const response = await fetch(`/api/posts/${post.id}/save`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: newContent,
+                        hashtags: newHashtags
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Update local data
+                    post.content = newContent;
+                    post.hashtags = newHashtags;
+
+                    // Update UI
+                    postCard.querySelector('.content-view').innerHTML = formatContent(newContent);
+
+                    const hashtagsView = postCard.querySelector('.hashtags-view');
+                    if (hashtagsView) {
+                        hashtagsView.querySelector('span').textContent = newHashtags;
+                    }
+
+                    // Exit edit mode
+                    exitEditMode(index);
+
+                    showNotification('Post saved successfully!', 'success');
+                } else {
+                    showNotification('Failed to save post: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error saving post:', error);
+                showNotification('Error saving post', 'error');
+            } finally {
+                // Restore button state
+                const saveBtn = postCard.querySelector('.save-btn');
+                saveBtn.innerHTML = originalBtnContent;
+                saveBtn.disabled = false;
+            }
+        }
+
+        function cancelEdit(index) {
+            const posts = postsData[currentPlatform];
+            if (!posts || !posts[index]) return;
+
+            const post = posts[index];
+            const postCard = document.querySelector(`[data-original-index="${index}"]`);
+
+            // Restore original content in textarea
+            postCard.querySelector('.content-textarea').value = post.content || '';
+
+            const hashtagsInput = postCard.querySelector('.hashtags-input');
+            if (hashtagsInput) {
+                hashtagsInput.value = post.hashtags || '';
+            }
+
+            // Exit edit mode
+            exitEditMode(index);
+        }
+
+        function exitEditMode(index) {
+            editingPostIndex = null;
+            const postCard = document.querySelector(`[data-original-index="${index}"]`);
+
+            // Toggle view/edit elements
+            postCard.querySelector('.content-view').classList.remove('d-none');
+            postCard.querySelector('.post-edit').classList.add('d-none');
+
+            const hashtagsView = postCard.querySelector('.hashtags-view');
+            const hashtagsEdit = postCard.querySelector('.hashtags-edit');
+            if (hashtagsView) hashtagsView.classList.remove('d-none');
+            if (hashtagsEdit) hashtagsEdit.classList.add('d-none');
+
+            // Toggle buttons
+            postCard.querySelector('.edit-btn').classList.remove('d-none');
+            postCard.querySelector('.save-btn').classList.add('d-none');
+            postCard.querySelector('.cancel-btn').classList.add('d-none');
+            postCard.querySelector('.copy-btn').classList.remove('d-none');
+            postCard.querySelector('.delete-btn').classList.remove('d-none');
         }
 
         // Load posts on page load
